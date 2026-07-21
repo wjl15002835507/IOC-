@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>订单跟踪报表 - 主规格</title>
+  <style>
+    :root { font-family: Inter, "Microsoft YaHei", sans-serif; color: #20242a; background: #f5f7fb; --blue: #409eff; --line: #dfe4ee; --muted: #667085; }
+    * { box-sizing: border-box; } body { margin: 0; padding: 28px; } main { max-width: 1180px; margin: 0 auto; padding: 36px 42px 56px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgb(30 45 75 / 7%); }
+    h1 { margin: 0; font-size: 28px; } h2 { margin: 38px 0 16px; padding-bottom: 9px; border-bottom: 1px solid var(--line); font-size: 20px; } h3 { margin: 24px 0 10px; font-size: 16px; } p, li { font-size: 14px; line-height: 1.8; } .note { padding: 14px 16px; border-left: 3px solid var(--blue); background: #f3f8ff; color: #344054; } .muted { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; } th, td { padding: 9px 10px; border: 1px solid var(--line); text-align: left; vertical-align: top; line-height: 1.6; } th { background: #f4f8fb; font-weight: 600; } .table-wrap { overflow-x: auto; } code { padding: 2px 5px; border-radius: 4px; background: #eef2f7; } .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; color: #1764b0; background: #ecf5ff; }
+    @media (max-width: 720px) { body { padding: 0; } main { border: 0; border-radius: 0; padding: 24px 18px 40px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>订单跟踪报表</h1>
+    <p class="note">本规格为当前原型的事实依据。目标是还原用户提供地址中的单一报表页面，不新建其他报表、菜单页或业务流程。</p>
+
+    <h2>当前方案</h2>
+    <ul>
+      <li>使用场景：业务人员按订单、客户、渠道、产品与生产状态检索订单进度，并横向查看完整跟踪字段。</li>
+      <li>页面范围：一个桌面端报表工作台，包含筛选区、查询/导出按钮、宽表、分页和必要的轻量交互反馈。</li>
+      <li>数据策略：仅使用 3 行脱敏模拟数据，不连接真实接口，不产生真实导出文件。</li>
+    </ul>
+
+    <h2>事实与输入</h2>
+    <h3>用户确认事实</h3>
+    <ul>
+      <li>仅绘制“订单跟踪报表”，页面 UI、按钮、颜色、筛选条件和列表字段以当前页面为准。</li>
+      <li>设计基底选用 <code>src/themes/clickhouse/DESIGN.md</code>。</li>
+      <li>模拟数据只保留少量行，本次采用 3 行。</li>
+    </ul>
+    <h3>参考资料</h3>
+    <ul>
+      <li>源页面：<code>https://ioc.quanyou.com.cn/iocpccds/#/excel/orderTrack</code>。</li>
+      <li>真实前端模块：<code>chunk-ae499f94.0666f3ca.js</code>；已从模块提取筛选项、按钮、字段及接口名称 <code>rptCdsR09OrderTrackReport</code>。</li>
+    </ul>
+    <h3>当前假设</h3>
+    <ul>
+      <li>源页面的业务数据不访问；日期默认展示近一个月范围的静态示例。</li>
+      <li>源页面字段过宽，原型使用表格容器横向滚动；在窄屏下保持桌面数据表的可访问性。</li>
+    </ul>
+
+    <h2>本次范围</h2>
+    <div class="table-wrap"><table><thead><tr><th>本次呈现</th><th>本次不呈现</th></tr></thead><tbody><tr><td>报表标题、12 个筛选条件、查询与导出、56 列数据表、3 行示例、分页、加载/空结果/导出成功提示。</td><td>左侧业务导航、其他报表、真实 API、真实文件导出、权限判断、柜单明细弹窗及非当前报表页面。</td></tr></tbody></table></div>
+
+    <h2>页面与内容方案</h2>
+    <div class="table-wrap"><table><thead><tr><th>模块</th><th>内容</th><th>原页面事实</th></tr></thead><tbody>
+      <tr><td>标题区</td><td>订单跟踪报表</td><td>单一报表工作台，轻量标题，不使用营销型首屏。</td></tr>
+      <tr><td>筛选区</td><td>订单号、是否上样、是否电商、电商渠道、门店、客户姓名、产品类型、接单时间起止、销售类型、订单属性、是否生产下线、是否物流入库。</td><td>输入框提示“请输入”；下拉默认“全部”；电商渠道选项：天猫、京东、苏宁、唯品会、其他。</td></tr>
+      <tr><td>操作区</td><td>查询、导出</td><td>小尺寸蓝色主按钮；导出后提示“导出成功,请在导出列表中查看”。</td></tr>
+      <tr><td>列表区</td><td>3 行模拟数据、固定表头、横向滚动、分页。</td><td>表头浅蓝灰 <code>#F4F8FB</code>，边框表格，完整字段集见下表。</td></tr>
+    </tbody></table></div>
+
+    <h2>列表字段</h2>
+    <div class="table-wrap"><table><thead><tr><th>序号</th><th>字段</th><th>序号</th><th>字段</th></tr></thead><tbody>
+      <tr><td>1</td><td>办事处</td><td>2</td><td>经销商门店编码</td></tr><tr><td>3</td><td>经销商门店名称</td><td>4</td><td>接单编号</td></tr><tr><td>5</td><td>订单号</td><td>6</td><td>销售类型</td></tr><tr><td>7</td><td>产品类型</td><td>8</td><td>客户姓名</td></tr><tr><td>9</td><td>是否上样</td><td>10</td><td>是否电商</td></tr><tr><td>11</td><td>电商渠道</td><td>12</td><td>订单描述</td></tr><tr><td>13</td><td>紧急级别</td><td>14</td><td>客户ID</td></tr><tr><td>15</td><td>客户预留电话</td><td>16</td><td>接单时间</td></tr><tr><td>17</td><td>客户要货日期</td><td>18</td><td>生产下线日期</td></tr><tr><td>19</td><td>是否有外购件</td><td>20</td><td>当前状态</td></tr><tr><td>21</td><td>并行状态1</td><td>22</td><td>并行状态2</td></tr><tr><td>23</td><td>金额</td><td>24</td><td>审图完成时间</td></tr><tr><td>25</td><td>图纸确认完成时间</td><td>26</td><td>计料审核完成时间</td></tr><tr><td>27</td><td>报价处理时间</td><td>28</td><td>确认报价时间</td></tr><tr><td>29</td><td>分包完成时间</td><td>30</td><td>定额完成时间</td></tr><tr><td>31</td><td>主数据维护完成时间</td><td>32</td><td>外购件编码申请时间</td></tr><tr><td>33</td><td>外购件编码审核时间</td><td>34</td><td>外购件编码确认时间</td></tr><tr><td>35</td><td>实际生产下线时间</td><td>36</td><td>吸塑排程日期</td></tr><tr><td>37</td><td>柜体排程日期</td><td>38</td><td>拼框门排程日期</td></tr><tr><td>39</td><td>移门排程日期</td><td>40</td><td>实木排程日期</td></tr><tr><td>41</td><td>烤漆排程日期</td><td>42</td><td>五金排程日期</td></tr><tr><td>43</td><td>背板排程日期</td><td>44</td><td>门扇排程日期</td></tr><tr><td>45</td><td>门套排程日期</td><td>46</td><td>外购件处理时间</td></tr><tr><td>47</td><td>外购件到货时间</td><td>48</td><td>物流入库时间</td></tr><tr><td>49</td><td>物流发货时间</td><td>50</td><td>终止时间</td></tr><tr><td>51</td><td>暂停时间</td><td>52</td><td>恢复时间</td></tr><tr><td>53</td><td>终止/暂停原因</td><td></td><td></td></tr>
+    </tbody></table></div>
+
+    <h2>交互与状态方案</h2>
+    <div class="table-wrap"><table><thead><tr><th>对象</th><th>操作</th><th>原型表现</th></tr></thead><tbody>
+      <tr><td>筛选条件</td><td>输入或选择条件后点击查询</td><td>仅在 3 行模拟数据内本地筛选；无匹配时显示空结果。</td></tr>
+      <tr><td>导出</td><td>点击导出</td><td>不下载文件，展示成功提示。</td></tr>
+      <tr><td>分页</td><td>切换页码或每页条数</td><td>保持原页码控件形态；示例数据不足一页时仍显示总数。</td></tr>
+    </tbody></table></div>
+
+    <h2>设计基底与原型特有调整</h2>
+    <ul>
+      <li>设计基底：<code>src/themes/clickhouse/DESIGN.md</code>。</li>
+      <li>继承：紧凑间距、明确层级、8px 控件圆角、专业数据工作台语气。</li>
+      <li>特有调整：为遵循“当前页面一致”，页面采用源系统的浅色背景、白色表面、<span class="pill">#409EFF</span> 操作色和 <span class="pill">#F4F8FB</span> 表头，优先级高于 ClickHouse 的深色营销配色。</li>
+    </ul>
+
+    <h2>验收重点与确认</h2>
+    <ul>
+      <li>仅出现订单跟踪报表一个页面；筛选条件、按钮文案和 53 个真实列表字段不缺失。</li>
+      <li>宽表可横向滚动，3 行模拟数据可被本地筛选；查询、导出、重置/空结果反馈可用。</li>
+      <li>颜色和控件形态与来源页面一致，且不将整张截图作为页面背景。</li>
+    </ul>
+    <p class="note">请确认本规格后进入实现。确认后将创建 <code>src/prototypes/order-track-report/</code> 并同步本规格的最终结果。</p>
+  </main>
+</body>
+</html>
