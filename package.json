@@ -11,7 +11,7 @@
     "start": "npm run dev",
     "metadata:sync": "node scripts/sync-project-metadata.mjs",
     "build": "node scripts/sync-vendor-if-present.mjs && node scripts/scan-entries.js && node scripts/build-all.js",
-    "build:pages": "npm run build && npm run pages:prepare",
+    "build:pages": "node scripts/build-pages.mjs && npm run pages:prepare",
     "pages:prepare": "node scripts/generate-github-pages.mjs",
     "git:sync": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/git-auto-sync.ps1",
     "git:autosync:install": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-git-auto-sync.ps1",
