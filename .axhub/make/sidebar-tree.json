@@ -1,12 +1,19 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-21T03:25:46.973Z",
+  "updatedAt": "2026-07-22T06:57:28.365Z",
   "prototypes": [
     {
       "id": "folder-1784604338641-af3zkc",
       "kind": "folder",
       "title": "报表原型",
-      "children": []
+      "children": [
+        {
+          "id": "item:prototypes:order-track-report",
+          "kind": "item",
+          "title": "订单跟踪报表",
+          "itemKey": "prototypes/order-track-report"
+        }
+      ]
     }
   ],
   "docs": [],
