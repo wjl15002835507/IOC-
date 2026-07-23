@@ -33,6 +33,10 @@ type Filters = {
   orderPropertyCode: string;
   isActualDone: string;
   depotFilterQ: string;
+  customerPhone: string;
+  sapCode: string;
+  cabinetStoreName: string;
+  dealerShopCode: string;
 };
 
 type TableRow = Record<string, string>;
@@ -51,6 +55,10 @@ const initialFilters: Filters = {
   orderPropertyCode: '',
   isActualDone: '',
   depotFilterQ: '',
+  customerPhone: '',
+  sapCode: '',
+  cabinetStoreName: '',
+  dealerShopCode: '',
 };
 
 const columns = [
@@ -59,8 +67,11 @@ const columns = [
   ['regionName', '区域名称'],
   ['manager', '客户经理'],
   ['shopCode', '经销商门店编码'],
+  ['dealerCode', '经销商编码'],
   ['shopName', '经销商门店名称'],
+  ['cabinetStoreName', '店面'],
   ['orderNo', '订单号'],
+  ['cabinetNo', '柜单号'],
   ['orderCount', '订单套数'],
   ['salesType', '销售类型'],
   ['productType', '产品类型'],
@@ -160,8 +171,12 @@ const tableRows: TableRow[] = rowSeeds.map((seed, index) => {
     regionName,
     manager,
     shopCode,
+    dealerCode: `Z${269716 + index}`,
     shopName,
+    cabinetStoreName: `（定橱）（${regionName}）${shopName}`,
+    sapCode: String(1004710 + index),
     orderNo,
+    cabinetNo: `${orderNo}01`,
     orderCount: '1',
     salesType: '轻居',
     productType: '衣柜',
@@ -239,6 +254,10 @@ export default function OrderTrackReport() {
     return includes(row.orderNo, submitted.orderNo)
       && includes(row.shopName, submitted.shopName)
       && includes(row.custname, submitted.custname)
+      && includes(row.customerPhone, submitted.customerPhone)
+      && includes(row.sapCode, submitted.sapCode)
+      && includes(row.cabinetStoreName, submitted.cabinetStoreName)
+      && includes(row.shopCode, submitted.dealerShopCode)
       && (!submitted.isSample || row.isSample === submitted.isSample)
       && (!submitted.isEmallOrdr || row.isEmallOrdr === submitted.isEmallOrdr);
   }), [submitted]);
@@ -297,6 +316,10 @@ export default function OrderTrackReport() {
               <label><span>订单属性</span><SelectField value={filters.orderPropertyCode} onChange={(value) => update('orderPropertyCode', value)}><option value="">全部</option><option value="1">常规单</option><option value="2">补件单</option></SelectField></label>
               <label><span>是否生产下线</span><SelectField value={filters.isActualDone} onChange={(value) => update('isActualDone', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
               <label><span>是否物流入库</span><SelectField value={filters.depotFilterQ} onChange={(value) => update('depotFilterQ', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
+              <label><span>客户电话号码</span><input value={filters.customerPhone} placeholder="请输入" onChange={(event) => update('customerPhone', event.target.value)} /></label>
+              <label><span>SAP编码</span><input value={filters.sapCode} placeholder="请输入" onChange={(event) => update('sapCode', event.target.value)} /></label>
+              <label><span>定橱店面名称</span><input value={filters.cabinetStoreName} placeholder="请输入" onChange={(event) => update('cabinetStoreName', event.target.value)} /></label>
+              <label><span>经销商门店编码</span><input value={filters.dealerShopCode} placeholder="请输入" onChange={(event) => update('dealerShopCode', event.target.value)} /></label>
             </div>}
             <div className="filter-actions">
               <button type="button" className="collapse-button" onClick={() => setCollapsed((value) => !value)}>{collapsed ? '展开' : '收起'}</button>

@@ -123,6 +123,9 @@ export default defineConfig(({ command }) => {
       cors: true,
       hmr: { overlay: false },
       watch: {
+        // Windows network drives can terminate native fs.watch and drop ACP requests.
+        usePolling: true,
+        interval: 800,
         ignored: devServerWatchIgnored,
       },
       headers: {

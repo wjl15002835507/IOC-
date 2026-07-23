@@ -1013,7 +1013,7 @@ async function isHealthyAdminOrigin(origin: string | null | undefined): Promise<
   if (!origin) {
     return false;
   }
-  const health = await fetchHealth(origin, 600);
+  const health = await fetchHealth(origin, 3000);
   return isAdminHealthPayload(health)
     && hasAdminCapability(health, 'reviewReports')
     && Boolean(normalizeHealthServerInfo(health)?.origin);
@@ -1259,9 +1259,10 @@ export function clientPreviewPlugin(): Plugin {
             mode: 'dev',
           });
           const template = readTemplate(projectRoot, 'dev-template.html');
-          const serverOrigin = shouldInjectManagementRuntime(req.url)
-            ? await resolveAdminServerOrigin(projectRoot, req)
-            : null;
+          // Always expose quick-edit to prototype previews. Embedded host navigations can
+          // drop agentToolbar=host before the iframe loads, which otherwise leaves annotations
+          // without their runtime bridge.
+          const serverOrigin = await resolveAdminServerOrigin(projectRoot, req);
           let html = template
             .replace(/\{\{TITLE\}\}/g, title)
             .replace(
