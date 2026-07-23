@@ -675,6 +675,7 @@ function renderPreview(Component) {
 }
 
 renderPreview(PreviewComponent);
+notifyAxhubPreviewUpdated('initial');
 
 if (import.meta.hot) {
   import.meta.hot.accept(${JSON.stringify(importPath)}, (nextModule) => {
