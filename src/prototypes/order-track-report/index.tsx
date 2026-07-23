@@ -69,7 +69,7 @@ const columns = [
   ['shopCode', '经销商门店编码'],
   ['dealerCode', '经销商编码'],
   ['shopName', '经销商门店名称'],
-  ['cabinetStoreName', '店面'],
+  ['cabinetStoreName', '经销商全称'],
   ['orderNo', '订单号'],
   ['cabinetNo', '柜单号'],
   ['orderCount', '订单套数'],
@@ -306,7 +306,7 @@ export default function OrderTrackReport() {
               <label><span>是否上样</span><SelectField value={filters.isSample} onChange={(value) => update('isSample', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
               <label><span>是否电商</span><SelectField value={filters.isEmallOrdr} onChange={(value) => update('isEmallOrdr', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
               <label><span>电商渠道</span><SelectField value={filters.emallChannelCode} onChange={(value) => update('emallChannelCode', value)}>{channels.map(([value, label]) => <option value={value} key={value || 'all'}>{label}</option>)}</SelectField></label>
-              <label><span>门店</span><input value={filters.shopName} placeholder="请输入" onChange={(event) => update('shopName', event.target.value)} /></label>
+              <label><span>门店名称</span><input value={filters.shopName} placeholder="请输入" onChange={(event) => update('shopName', event.target.value)} /></label>
 
               <label><span>客户姓名</span><input value={filters.custname} placeholder="请输入" onChange={(event) => update('custname', event.target.value)} /></label>
               <label><span>产品类型</span><SelectField value={filters.prdLevel1Code} onChange={(value) => update('prdLevel1Code', value)}><option value="">全部</option><option value="wardrobe">衣柜</option><option value="cabinet">橱柜</option></SelectField></label>
@@ -317,9 +317,9 @@ export default function OrderTrackReport() {
               <label><span>是否生产下线</span><SelectField value={filters.isActualDone} onChange={(value) => update('isActualDone', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
               <label><span>是否物流入库</span><SelectField value={filters.depotFilterQ} onChange={(value) => update('depotFilterQ', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
               <label><span>客户电话号码</span><input value={filters.customerPhone} placeholder="请输入" onChange={(event) => update('customerPhone', event.target.value)} /></label>
-              <label><span>SAP编码</span><input value={filters.sapCode} placeholder="请输入" onChange={(event) => update('sapCode', event.target.value)} /></label>
-              <label><span>定橱店面名称</span><input value={filters.cabinetStoreName} placeholder="请输入" onChange={(event) => update('cabinetStoreName', event.target.value)} /></label>
-              <label><span>经销商门店编码</span><input value={filters.dealerShopCode} placeholder="请输入" onChange={(event) => update('dealerShopCode', event.target.value)} /></label>
+              <label><span>经销商编码</span><input value={filters.sapCode} placeholder="请输入" onChange={(event) => update('sapCode', event.target.value)} /></label>
+              <label><span>经销商全称</span><input value={filters.cabinetStoreName} placeholder="请输入" onChange={(event) => update('cabinetStoreName', event.target.value)} /></label>
+              <label><span>门店编码</span><input value={filters.dealerShopCode} placeholder="请输入" onChange={(event) => update('dealerShopCode', event.target.value)} /></label>
             </div>}
             <div className="filter-actions">
               <button type="button" className="collapse-button" onClick={() => setCollapsed((value) => !value)}>{collapsed ? '展开' : '收起'}</button>
