@@ -1,38 +1,45 @@
-{
-  "server": {
-    "host": "localhost",
-    "lanHost": "192.168.75.77",
-    "skipLanPreviewAuth": false,
-    "enableCommandAPI": false
-  },
-  "projectDefaults": {
-    "defaultTheme": null
-  },
-  "projectInfo": {
-    "description": null
-  },
-  "cloudPublishing": {
-    "vercel": {
-      "token": "",
-      "projectName": "",
-      "teamId": ""
-    },
-    "cloudflarePages": {
-      "apiToken": "",
-      "accountId": "",
-      "projectName": "",
-      "productionBranch": "main"
-    },
-    "githubPages": {
-      "repository": "",
-      "branch": "gh-pages",
-      "sourceDirectory": "/"
-    },
-    "publishSettings": {
-      "includeSource": false,
-      "visibleTargets": [
-        "axhub"
-      ]
-    }
-  }
+﻿{
+    "server":  {
+                   "host":  "localhost",
+                   "lanHost":  "192.168.75.77",
+                   "skipLanPreviewAuth":  false,
+                   "enableCommandAPI":  false
+               },
+    "projectDefaults":  {
+                            "defaultTheme":  null
+                        },
+    "projectInfo":  {
+                        "description":  null
+                    },
+    "cloudPublishing":  {
+                            "vercel":  {
+                                           "token":  "",
+                                           "projectName":  "",
+                                           "teamId":  ""
+                                       },
+                            "cloudflarePages":  {
+                                                    "apiToken":  "",
+                                                    "accountId":  "",
+                                                    "projectName":  "",
+                                                    "productionBranch":  "main"
+                                                },
+                            "githubPages":  {
+                                                "repository":  "",
+                                                "branch":  "gh-pages",
+                                                "sourceDirectory":  "/"
+                                            },
+                            "publishSettings":  {
+                                                    "includeSource":  false,
+                                                    "visibleTargets":  [
+                                                                           "axhub"
+                                                                       ]
+                                                }
+                        },
+    "automation":  {
+                       "acp":  {
+                                   "mode":  "prompt",
+                                   "permission":  "approve-all",
+                                   "timeout":  180
+                               }
+                   }
 }
