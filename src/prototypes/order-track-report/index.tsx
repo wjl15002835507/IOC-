@@ -316,7 +316,7 @@ export default function OrderTrackReport() {
               <label><span>订单属性</span><SelectField value={filters.orderPropertyCode} onChange={(value) => update('orderPropertyCode', value)}><option value="">全部</option><option value="1">常规单</option><option value="2">补件单</option></SelectField></label>
               <label><span>是否生产下线</span><SelectField value={filters.isActualDone} onChange={(value) => update('isActualDone', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
               <label><span>是否物流入库</span><SelectField value={filters.depotFilterQ} onChange={(value) => update('depotFilterQ', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
-              <label><span>客户电话号码</span><input value={filters.customerPhone} placeholder="请输入" onChange={(event) => update('customerPhone', event.target.value)} /></label>
+              <label className="new-filter-field"><span>客户电话号码</span><input value={filters.customerPhone} placeholder="请输入" onChange={(event) => update('customerPhone', event.target.value)} /><em className="new-filter-badge">新增</em></label>
               <label><span>经销商编码</span><input value={filters.sapCode} placeholder="请输入" onChange={(event) => update('sapCode', event.target.value)} /></label>
               <label><span>经销商全称</span><input value={filters.cabinetStoreName} placeholder="请输入" onChange={(event) => update('cabinetStoreName', event.target.value)} /></label>
               <label><span>门店编码</span><input value={filters.dealerShopCode} placeholder="请输入" onChange={(event) => update('dealerShopCode', event.target.value)} /></label>
