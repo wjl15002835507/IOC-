@@ -241,6 +241,41 @@ button { letter-spacing: 0; }
   line-height: 16px;
 }
 
+.filter-grid > label:nth-child(14),
+.filter-grid > label:nth-child(15),
+.filter-grid > label:nth-child(16) { position: relative; }
+
+.filter-grid > label:nth-child(14)::after,
+.filter-grid > label:nth-child(15)::after,
+.filter-grid > label:nth-child(16)::after,
+.table-panel th.column-dealerCode::after,
+.table-panel th.column-cabinetStoreName::after {
+  position: absolute;
+  z-index: 2;
+  padding: 1px 4px;
+  border-radius: 2px;
+  color: #fff;
+  background: #f05a28;
+  content: '\65b0\589e';
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.filter-grid > label:nth-child(14)::after,
+.filter-grid > label:nth-child(15)::after,
+.filter-grid > label:nth-child(16)::after {
+  top: -8px;
+  right: 4px;
+}
+
+.table-panel th.column-dealerCode::after,
+.table-panel th.column-cabinetStoreName::after {
+  top: 1px;
+  right: 2px;
+}
+
 .filter-grid input,
 .filter-grid select {
   width: 100%;
