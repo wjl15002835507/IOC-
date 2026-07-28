@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-22T06:57:28.365Z",
+  "updatedAt": "2026-07-28T03:20:07.684Z",
   "prototypes": [
     {
       "id": "folder-1784604338641-af3zkc",
@@ -10,7 +10,7 @@
         {
           "id": "item:prototypes:order-track-report",
           "kind": "item",
-          "title": "订单跟踪报表",
+          "title": "IOC原型全部",
           "itemKey": "prototypes/order-track-report"
         }
       ]
