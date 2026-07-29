@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>静态材料处理跟踪分析 - 主规格</title>
+  <style>
+    :root { font-family: Inter, "Microsoft YaHei", sans-serif; color: #222832; background: #f5f7fb; --brand: #08a67d; --line: #dfe4ee; --muted: #667085; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 28px 18px 56px; }
+    main { width: min(1120px, 100%); margin: 0 auto; padding: 38px 42px 52px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 6px 20px rgb(30 45 75 / 7%); }
+    h1 { margin: 0; font-size: 30px; letter-spacing: 0; }
+    h2 { margin: 38px 0 15px; padding-bottom: 8px; border-bottom: 1px solid #e7eaf0; font-size: 20px; }
+    h3 { margin: 24px 0 10px; font-size: 16px; }
+    p, li { font-size: 14px; line-height: 1.8; }
+    .definition, .review, .status { padding: 13px 16px; border-left: 3px solid var(--brand); background: #f1faf7; color: #344054; }
+    .status { border-left-color: #e69b22; background: #fff8eb; }
+    .muted { color: var(--muted); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 9px 10px; border: 1px solid var(--line); text-align: left; vertical-align: top; line-height: 1.55; }
+    th { background: #f4f7f9; font-weight: 600; }
+    code { padding: 2px 5px; border-radius: 4px; background: #eef2f7; }
+    .table-wrap { overflow-x: auto; }
+    @media (max-width: 720px) { body { padding: 0; } main { padding: 24px 18px 40px; border: 0; border-radius: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>静态材料处理跟踪分析</h1>
+    <p class="definition">本文件是当前原型的事实依据。需求与设计方向已由用户确认，本轮依据指定 Excel 固化数据口径，主规格评审通过后再实施生产级可运行原型。</p>
+    <p class="status"><strong>当前进度：第二步已完成并暂停。</strong> Excel 上下文已读取，主规格草案已落地并评审通过；原型代码尚未创建。下次从“实现静态材料处理跟踪分析原型”继续。</p>
+
+    <h2>当前方案</h2>
+    <ul>
+      <li>目标用户：负责静态材料治理的运营人员、开发负责人及管理人员。</li>
+      <li>核心任务：快速判断静态材料规模、处理方案结构和风险集中区域，并按开发类型、警报级别、处理方案、库龄、留存率检索明细。</li>
+      <li>页面形态：沿用现有 IOC 运营平台外壳的高密度分析工作台，采用“总览、警报分析、留用售后、材料明细”四个视图。</li>
+      <li>原型数据：使用 Excel 的汇总口径和脱敏样例，不连接真实接口，不读取运行时 Excel。</li>
+    </ul>
+
+    <h2>事实与输入</h2>
+    <h3>数据来源</h3>
+    <p><code>Z:/SVN/IOC运营平台/04定制开发/05版本管理/IOC2608001/2026年7月10日静态材料汇总 - 调整.xlsx</code></p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>事实</th><th>Excel 口径</th><th>原型表达</th></tr></thead>
+      <tbody>
+        <tr><td>静态材料总项</td><td>2,111 项</td><td>总览核心指标</td></tr>
+        <tr><td>开发类型</td><td>软体 445、板木 272、定制 1,394</td><td>分布卡片、筛选与图表</td></tr>
+        <tr><td>处理方案</td><td>留用/售后 1,553（73.6%）、材料替换 253（12.0%）、采购处理 140（6.6%）、报废/变卖 104（4.9%）、开发新品 61（2.9%）</td><td>方案结构图和联动筛选</td></tr>
+        <tr><td>警报级别</td><td>1级 1,884、2级 45、3级 51、6级 131</td><td>风险概览和可点击分级标签</td></tr>
+        <tr><td>二维分析</td><td>库龄：&lt;6、7-9、10-12、13-24、24个月以上；留存率：&lt;10% 至 90-100%</td><td>警报与留用售后矩阵</td></tr>
+        <tr><td>明细字段</td><td>物料编码、物料名称、开发类型、材料类别、库存地点、原/现库存、方案、单位、库龄、留存率、警报级别、静态原因、处理意见等</td><td>高密度可横向滚动表格</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>计算规则</h3>
+    <ul>
+      <li>留存率 = 现库存数量 / 提报呆滞时数据；出库比例为 1 - 留存率。</li>
+      <li>留存率级别与库龄级别共同映射为 1、2、3、6 四档；1级标识高危，2级标识警报，3级标识预警，6级标识正常。</li>
+      <li>总览与分析矩阵均按“物料编码计数”展示，不将库存数量相加作为材料项数。</li>
+    </ul>
+
+    <h2>原型范围</h2>
+    <h3>本次呈现</h3>
+    <ul>
+      <li>IOC 顶部栏、侧边导航、面包屑和安全水印。</li>
+      <li>全局筛选：开发类型、警报级别、处理方案、库龄、物料关键词；支持查询和重置。</li>
+      <li>总览：4 个关键指标、开发类型分布、处理方案结构、风险关注列表。</li>
+      <li>警报分析：按开发类型切换的留存率 × 库龄矩阵，显示数量和风险热度。</li>
+      <li>留用售后：1,553 项专项视图，展示三类开发的结构和风险矩阵。</li>
+      <li>材料明细：Excel 字段的代表性脱敏数据、横向滚动、分页、列显隐、查看详情抽屉和导出提示。</li>
+    </ul>
+    <h3>本次不呈现</h3>
+    <ul>
+      <li>真实接口、实时库存、实际 Excel 导入或导出文件、权限鉴权和后端分页。</li>
+      <li>对 Excel 源文件的写回、警报规则配置、材料处理审批及跨系统跳转。</li>
+    </ul>
+
+    <h2>页面与内容方案</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>视图</th><th>作用</th><th>主要模块</th><th>关键交互</th></tr></thead>
+      <tbody>
+        <tr><td>总览</td><td>快速识别规模、结构和风险</td><td>指标卡、开发分布、方案结构、风险关注</td><td>点击开发类型/方案进入筛选后的明细</td></tr>
+        <tr><td>警报分析</td><td>定位库龄与留存率叠加风险</td><td>开发类型分段控件、矩阵、规则说明</td><td>切换类型；点击矩阵格进入对应明细</td></tr>
+        <tr><td>留用售后</td><td>聚焦占比最高的处理方案</td><td>专项指标、类型分布、矩阵</td><td>点击类型或矩阵联动材料明细</td></tr>
+        <tr><td>材料明细</td><td>检索与查看单项材料处置事实</td><td>结果工具栏、宽表、分页、详情抽屉</td><td>搜索、重置、列设置、分页、查看详情、导出提示</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>交互与状态</h2>
+    <ul>
+      <li>全局筛选在点击“查询”后生效；“重置”恢复默认口径并返回总览。</li>
+      <li>图表、开发类型条和矩阵单元格可下钻到材料明细，并保留对应筛选条件。</li>
+      <li>详情抽屉显示物料事实、风险判断和处理建议；关闭后保留列表位置。</li>
+      <li>导出只显示“已生成当前筛选条件的导出任务”提示，不创建真实文件。</li>
+      <li>无匹配数据时显示明确空状态，并提供重置筛选操作。</li>
+    </ul>
+
+    <h2>设计基底与原型特有调整</h2>
+    <ul>
+      <li>设计基底：现有 <code>src/prototypes/order-track-report</code> 的 IOC 平台外壳和高密度业务界面。</li>
+      <li>视觉方向：白色工作区、青绿色导航与主操作、低饱和灰边界；风险信息使用红、橙、黄、青绿分级。</li>
+      <li>信息层级：首屏先看可行动指标和风险，再看分析矩阵，最后进入明细。</li>
+      <li>桌面优先适配 1366×768 至 1920×1080；窄屏保留核心筛选和横向表格滚动。</li>
+    </ul>
+
+    <h2>规格评审结论</h2>
+    <p class="review"><strong>结论：通过，可实施。</strong> 数据总项、分类小计、处理方案小计与警报小计均相互闭合；页面范围覆盖 Excel 的总体分析、1级警报分析、留用售后分析及材料明细；交互均为本地可逆操作，不越过真实接口与文件导出边界。</p>
+    <ul>
+      <li>需求覆盖：通过。四个视图分别对应决策概览、风险定位、专项治理和明细追踪。</li>
+      <li>数据一致性：通过。445 + 272 + 1,394 = 2,111；1,884 + 45 + 51 + 131 = 2,111；五类处理方案合计 2,111。</li>
+      <li>实施边界：通过。原型使用固定汇总数据与代表性脱敏明细。</li>
+      <li>待确认事项：无阻断项。</li>
+    </ul>
+
+    <h2>重要决策记录</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>日期</th><th>决策</th><th>影响</th></tr></thead>
+      <tbody>
+        <tr><td>2026-07-29</td><td>需求和设计方向已完成确认，读取指定 Excel 后落地主规格、评审并实施。</td><td>以 Excel 为数据事实，以现有 IOC 平台为视觉与结构基底。</td></tr>
+        <tr><td>2026-07-29</td><td>完成第二步后暂停，正常保存，次日继续。</td><td>当前只保存主规格和评审结论，不创建或修改原型实现文件。</td></tr>
+      </tbody>
+    </table></div>
+  </main>
+</body>
+</html>
