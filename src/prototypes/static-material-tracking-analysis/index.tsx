@@ -54,6 +54,36 @@ const planStats = [
   { name: '报废/变卖', value: 104, percent: 4.9, color: '#c85c54' },
   { name: '开发新品', value: 61, percent: 2.9, color: '#7767b4' },
 ] as const;
+const planAlertByDev = {
+  全部: { total: 2111, age24: 234, rows: [
+    { name:'留用/售后', total:1553, alerts:[1441,32,28,52] },
+    { name:'材料替换', total:253, alerts:[158,6,18,71] },
+    { name:'采购处理', total:140, alerts:[122,6,5,7] },
+    { name:'报废/变卖', total:104, alerts:[103,1,0,0] },
+    { name:'开发新品', total:61, alerts:[60,0,0,1] },
+  ]},
+  软体: { total: 445, age24: 103, rows: [
+    { name:'留用/售后', total:316, alerts:[272,3,6,35] },
+    { name:'材料替换', total:54, alerts:[44,4,1,5] },
+    { name:'采购处理', total:4, alerts:[3,1,0,0] },
+    { name:'报废/变卖', total:15, alerts:[15,0,0,0] },
+    { name:'开发新品', total:56, alerts:[55,0,0,1] },
+  ]},
+  板木: { total: 272, age24: 10, rows: [
+    { name:'留用/售后', total:122, alerts:[112,3,1,6] },
+    { name:'材料替换', total:121, alerts:[54,0,5,62] },
+    { name:'采购处理', total:26, alerts:[15,4,1,6] },
+    { name:'报废/变卖', total:2, alerts:[2,0,0,0] },
+    { name:'开发新品', total:1, alerts:[1,0,0,0] },
+  ]},
+  定制: { total: 1394, age24: 121, rows: [
+    { name:'留用/售后', total:1115, alerts:[1057,26,21,11] },
+    { name:'材料替换', total:78, alerts:[60,2,12,4] },
+    { name:'采购处理', total:110, alerts:[104,1,4,1] },
+    { name:'报废/变卖', total:87, alerts:[86,1,0,0] },
+    { name:'开发新品', total:4, alerts:[4,0,0,0] },
+  ]},
+} as const;
 
 const alertStats = [
   { level: 1, name: '高危', value: 1884, color: '#c84d49' },
@@ -159,6 +189,10 @@ export default function StaticMaterialTrackingAnalysis() {
   const pageSize = 6;
   const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize);
+  const overviewKey = (applied.dev || '全部') as keyof typeof planAlertByDev;
+  const overviewData = planAlertByDev[overviewKey];
+  const overviewAlertTotals = alertStats.map((_, index) => overviewData.rows.reduce((sum, row) => sum + row.alerts[index], 0));
+  const overviewContext = applied.dev || '全部开发类型';
 
   const runSearch = () => { setApplied({ ...draft }); setPage(1); showToast('查询完成，分析口径已更新'); };
   const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); setView('overview'); showToast('已恢复全部材料口径'); };
@@ -193,17 +227,24 @@ export default function StaticMaterialTrackingAnalysis() {
           <div className="view-content">
             {view === 'overview' && <div className="overview-view">
               <section className="metric-grid">
-                <button type="button" className="metric-card" onClick={() => drillDown({})}><span className="metric-icon total"><Boxes size={19}/></span><span><small>静态材料总项</small><strong>2,111</strong><em>项</em></span><p>软体、板木、定制</p></button>
-                <button type="button" className="metric-card danger" onClick={() => drillDown({ alert:'1' })}><span className="metric-icon"><ShieldAlert size={19}/></span><span><small>1级高危</small><strong>1,884</strong><em>项</em></span><p>占全部材料 89.2%</p></button>
-                <button type="button" className="metric-card warning" onClick={() => drillDown({ age:'24个月以上' })}><span className="metric-icon"><AlertTriangle size={19}/></span><span><small>24个月以上</small><strong>234</strong><em>项</em></span><p>定制类占比最高</p></button>
-                <button type="button" className="metric-card service" onClick={() => drillDown({ plan:'留用/售后' })}><span className="metric-icon"><CircleGauge size={19}/></span><span><small>留用/售后</small><strong>1,553</strong><em>项</em></span><p>整体占比 73.6%</p></button>
+                <button type="button" className="metric-card" onClick={() => drillDown({ dev:applied.dev })}><span className="metric-icon total"><Boxes size={19}/></span><span><small>静态材料总项</small><strong>{number.format(overviewData.total)}</strong><em>项</em></span><p>当前口径：{overviewContext}</p></button>
+                <button type="button" className="metric-card danger" onClick={() => drillDown({ dev:applied.dev, alert:'1' })}><span className="metric-icon"><ShieldAlert size={19}/></span><span><small>1级高危</small><strong>{number.format(overviewAlertTotals[0])}</strong><em>项</em></span><p>占当前口径 {((overviewAlertTotals[0] / overviewData.total) * 100).toFixed(1)}%</p></button>
+                <button type="button" className="metric-card warning" onClick={() => drillDown({ dev:applied.dev, age:'24个月以上' })}><span className="metric-icon"><AlertTriangle size={19}/></span><span><small>24个月以上</small><strong>{number.format(overviewData.age24)}</strong><em>项</em></span><p>按当前开发类型统计</p></button>
+                <button type="button" className="metric-card service" onClick={() => drillDown({ dev:applied.dev, plan:'留用/售后' })}><span className="metric-icon"><CircleGauge size={19}/></span><span><small>留用/售后</small><strong>{number.format(overviewData.rows[0].total)}</strong><em>项</em></span><p>占当前口径 {((overviewData.rows[0].total / overviewData.total) * 100).toFixed(1)}%</p></button>
               </section>
 
-              <div className="overview-grid">
-                <section className="panel dev-panel"><header><div><h2>开发类型分布</h2><p>按物料编码计数</p></div><span>合计 2,111</span></header><div className="stacked-bar" aria-label="开发类型占比">{devStats.map((item) => <button type="button" key={item.name} style={{ width:`${item.percent}%`, background:item.color }} onClick={() => drillDown({ dev:item.name })} title={`${item.name} ${item.value}项`} />)}</div><div className="distribution-list">{devStats.map((item) => <button type="button" key={item.name} onClick={() => drillDown({ dev:item.name })}><i style={{ background:item.color }}/><span>{item.name}</span><strong>{number.format(item.value)}</strong><em>{item.percent.toFixed(1)}%</em><ChevronRight size={14}/></button>)}</div></section>
-                <section className="panel plan-panel"><header><div><h2>处理方案结构</h2><p>留用/售后为主要处置方向</p></div></header><div className="plan-bars">{planStats.map((item) => <button type="button" key={item.name} onClick={() => drillDown({ plan:item.name })}><span>{item.name}</span><div><i style={{ width:`${item.percent}%`, background:item.color }}/></div><strong>{number.format(item.value)}</strong><em>{item.percent.toFixed(1)}%</em></button>)}</div></section>
-                <section className="panel focus-panel"><header><div><h2>风险关注</h2><p>优先跟进高留存、长库龄材料</p></div><button type="button" onClick={() => setView('alerts')}>查看矩阵<ChevronRight size={14}/></button></header><div className="focus-list"><button type="button" onClick={() => drillDown({ dev:'定制', alert:'1' })}><span className="focus-rank red">1</span><div><strong>定制 · 1级高危</strong><p>24个月以上且留存率 90-100% 集中</p></div><em>61 项</em></button><button type="button" onClick={() => drillDown({ dev:'软体', plan:'留用/售后' })}><span className="focus-rank orange">2</span><div><strong>软体 · 留用/售后</strong><p>专项材料占软体总项 71.0%</p></div><em>316 项</em></button><button type="button" onClick={() => drillDown({ dev:'板木', plan:'材料替换' })}><span className="focus-rank yellow">3</span><div><strong>板木 · 材料替换</strong><p>替换方案占板木总项 44.5%</p></div><em>121 项</em></button></div></section>
-              </div>
+              <section className="panel plan-alert-panel">
+                <header><div><h2>处理方案与警报等级结构</h2><p>{overviewContext} · 横向长度表示方案占比，颜色表示警报等级构成</p></div><div className="alert-legend">{alertStats.map((item, index) => <button type="button" key={item.level} onClick={() => drillDown({ dev:applied.dev, alert:String(item.level) })}><i style={{background:item.color}}/><span>{item.level}级 {item.name}</span><strong>{number.format(overviewAlertTotals[index])}</strong></button>)}</div></header>
+                <div className="plan-alert-rows">{overviewData.rows.map((row) => {
+                  const share = (row.total / overviewData.total) * 100;
+                  return <div className="plan-alert-row" key={row.name}>
+                    <button type="button" className="plan-label" onClick={() => drillDown({ dev:applied.dev, plan:row.name })}><strong>{row.name}</strong><span>{number.format(row.total)} 项</span></button>
+                    <div className="plan-share-track"><div className="plan-share-fill" style={{width:`${share}%`}}>{row.alerts.map((value,index) => value > 0 && <button type="button" key={alertStats[index].level} style={{width:`${(value / row.total) * 100}%`,background:alertStats[index].color}} onClick={() => drillDown({dev:applied.dev,plan:row.name,alert:String(alertStats[index].level)})} title={`${row.name} · ${alertStats[index].level}级：${value}项`}><span>{value >= Math.max(20,row.total * .09) ? number.format(value) : ''}</span></button>)}</div></div>
+                    <strong className="plan-share-value">{share.toFixed(1)}%</strong>
+                  </div>;
+                })}</div>
+                <footer><span>合计 {number.format(overviewData.total)} 项</span><em>点击方案、警报图例或色块可查看对应材料明细</em></footer>
+              </section>
             </div>}
 
             {view === 'alerts' && <div className="matrix-view"><div className="matrix-header"><div><h2>警报二维分析</h2><p>留存率与库龄交叉分布，点击单元格查看对应材料</p></div><div className="segmented-control">{devStats.map((item) => <button type="button" className={matrixDev === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div><div className="matrix-layout"><section className="panel matrix-panel"><MatrixView matrix={alertMatrices[matrixDev]} onSelect={(retention,age) => matrixDrill(retention,age)} /><footer><span><i className="heat-low"/>低</span><span><i className="heat-mid"/>中</span><span><i className="heat-high"/>高</span><em>颜色表示该开发类型中的相对集中度</em></footer></section><aside className="rule-panel"><h3>警报规则</h3>{alertStats.map((item) => <div key={item.level}><AlertBadge level={item.level}/><strong>{number.format(item.value)} 项</strong></div>)}<p>最终等级由库龄级别与留存率级别共同计算。1级优先跟进，6级为正常。</p></aside></div></div>}
