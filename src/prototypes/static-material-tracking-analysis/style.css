@@ -37,10 +37,7 @@ button { cursor: pointer; }
 .active-tab { display: flex; height: 25px; align-items: center; gap: 6px; padding: 0 8px; color: #fff; background: #0bb78e; white-space: nowrap; font-size: 13px; }
 .analysis-content { display: flex; height: calc(100% - 34px); min-height: 0; flex-direction: column; overflow: hidden; background: #f4f7f7; }
 
-.analysis-heading { display: flex; flex: 0 0 56px; align-items: center; justify-content: space-between; padding: 7px 16px 6px; border-bottom: 1px solid var(--line); background: #fff; }
-.analysis-heading h1 { margin: 0 0 3px; color: #26363c; font-size: 17px; font-weight: 600; line-height: 1.2; }
-.analysis-heading p { margin: 0; color: #879399; font-size: 11px; }
-.heading-actions, .filter-buttons, .toolbar-actions { display: flex; align-items: center; gap: 8px; }
+.filter-buttons, .toolbar-actions { display: flex; align-items: center; gap: 8px; }
 .primary-button, .ghost-button, .text-button { display: inline-flex; height: 28px; align-items: center; justify-content: center; gap: 5px; padding: 0 11px; border-radius: 3px; font-size: 12px; }
 .primary-button { border: 1px solid var(--green); color: #fff; background: var(--green); }
 .primary-button:hover { background: var(--green-dark); }
@@ -63,6 +60,7 @@ button { cursor: pointer; }
 .view-tabs button:hover { color: var(--green-dark); }
 .view-tabs button.active { color: var(--green-dark); font-weight: 600; }
 .view-tabs button.active::after { position: absolute; right: 10px; bottom: -1px; left: 10px; height: 2px; background: var(--green); content: ""; }
+.view-tabs-meta { display: flex; height: 38px; margin-left: auto; align-items: center; padding-right: 2px; color: #8a969a; white-space: nowrap; font-size: 11px; }
 .view-content { min-height: 0; flex: 1 1 auto; overflow: auto; padding: 12px 14px 15px; scrollbar-color: #b5bfbd #edf1f0; }
 
 .metric-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; }
@@ -224,10 +222,6 @@ button { cursor: pointer; }
   .sidebar nav { padding-top: 8px; }
   .nav-item { height: 45px; grid-template-columns: 1fr; justify-items: center; padding: 0; }
   .nav-item span { display: none; }
-  .analysis-heading { flex-basis: 52px; padding: 6px 9px; }
-  .analysis-heading h1 { font-size: 14px; }
-  .analysis-heading p { display: none; }
-  .heading-actions .ghost-button { display: none; }
   .filter-strip { display: flex; flex: 0 0 48px; gap: 6px; padding: 7px 8px; overflow-x: auto; scrollbar-width: none; }
   .filter-strip::-webkit-scrollbar { display: none; }
   .filter-strip label { min-width: 135px; flex: 0 0 135px; grid-template-columns: auto minmax(0,1fr); }
@@ -238,6 +232,7 @@ button { cursor: pointer; }
   .view-tabs { overflow-x: auto; padding: 0 6px; scrollbar-width: none; }
   .view-tabs::-webkit-scrollbar { display: none; }
   .view-tabs button { flex: 0 0 auto; padding: 0 11px; }
+  .view-tabs-meta { flex: 0 0 auto; margin-left: 12px; padding-right: 8px; }
   .view-content { padding: 8px; }
   .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
   .metric-card { height: 80px; grid-template-columns: 31px minmax(0,1fr); grid-template-rows: 50px 18px; padding: 7px 8px 4px; }

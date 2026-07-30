@@ -18,7 +18,6 @@ import {
   LayoutDashboard,
   Menu,
   PackageSearch,
-  RefreshCcw,
   Search,
   Settings,
   ShieldAlert,
@@ -177,7 +176,6 @@ export default function StaticMaterialTrackingAnalysis() {
       <main className="main-area">
         <div className="tabbar"><span className="tab-close"><X size={14}/></span><span className="active-tab">静态材料处理跟踪分析<X size={12}/></span></div>
         <div className="analysis-content">
-          <section className="analysis-heading"><div><h1>静态材料处理跟踪分析</h1><p>数据截止 2026 年 6 月 · 按物料编码计数</p></div><div className="heading-actions"><button type="button" className="ghost-button" onClick={() => showToast('数据口径已是最新版本')}><RefreshCcw size={14}/>刷新</button><button type="button" className="primary-button" onClick={() => showToast('已生成当前筛选条件的导出任务')}><Download size={14}/>导出</button></div></section>
 
           <section className="filter-strip" aria-label="全局筛选">
             <label><span>开发类型</span><select value={draft.dev} onChange={(event) => updateDraft('dev', event.target.value)}><option value="">全部</option>{devStats.map((item) => <option key={item.name}>{item.name}</option>)}</select></label>
@@ -190,7 +188,7 @@ export default function StaticMaterialTrackingAnalysis() {
 
           <nav className="view-tabs" aria-label="分析视图">{[
             ['overview','总览',LayoutDashboard],['alerts','警报分析',ShieldAlert],['after-sales','留用售后',PackageSearch],['details','材料明细',FileSearch],
-          ].map(([id,label,Icon]) => <button type="button" key={id as string} className={view === id ? 'active' : ''} onClick={() => setView(id as ViewId)}><Icon size={15}/>{label as string}</button>)}</nav>
+          ].map(([id,label,Icon]) => <button type="button" key={id as string} className={view === id ? 'active' : ''} onClick={() => setView(id as ViewId)}><Icon size={15}/>{label as string}</button>)}<span className="view-tabs-meta">数据截止 2026 年 6 月 · 按物料编码计数</span></nav>
 
           <div className="view-content">
             {view === 'overview' && <div className="overview-view">
