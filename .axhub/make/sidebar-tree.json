@@ -1,7 +1,13 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-28T03:20:07.684Z",
+  "updatedAt": "2026-07-30T02:11:12.802Z",
   "prototypes": [
+    {
+      "id": "item-prototypes-static-material-tracking-analysis",
+      "kind": "item",
+      "title": "static material tracking analysis",
+      "itemKey": "prototypes/static-material-tracking-analysis"
+    },
     {
       "id": "folder-1784604338641-af3zkc",
       "kind": "folder",
