@@ -270,3 +270,114 @@ button { cursor: pointer; }
   .detail-drawer dl { grid-template-columns: 1fr; }
   .detail-drawer dl .wide { grid-column: auto; }
 }
+/* Overview: treatment plan share combined with alert-level composition. */
+.overview-view {
+  display: flex;
+  height: 100%;
+  min-height: 500px;
+  flex-direction: column;
+  gap: 10px;
+}
+.overview-view .metric-grid { flex: 0 0 auto; }
+.plan-alert-panel {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  overflow: hidden;
+}
+.plan-alert-panel > header { flex: 0 0 auto; gap: 18px; }
+.plan-alert-panel > header > div:first-child { min-width: 230px; }
+.alert-legend { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.alert-legend button {
+  display: grid;
+  min-width: 92px;
+  height: 32px;
+  grid-template-columns: 8px minmax(0,1fr);
+  grid-template-rows: 14px 12px;
+  align-items: center;
+  gap: 0 6px;
+  padding: 2px 7px;
+  border: 1px solid #e5ebe9;
+  border-radius: 3px;
+  color: #68767c;
+  background: #fff;
+  text-align: left;
+}
+.alert-legend button:hover { border-color: #abc9c1; background: #f7fbfa; }
+.alert-legend button i { width: 8px; height: 8px; grid-row: 1 / 3; border-radius: 2px; }
+.alert-legend button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+.alert-legend button strong { color: #33454b; font-size: 11px; font-variant-numeric: tabular-nums; }
+.plan-alert-rows {
+  display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-rows: repeat(5,minmax(48px,1fr));
+  padding: 2px 14px;
+}
+.plan-alert-row {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: minmax(112px,.7fr) minmax(320px,4fr) 58px;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid #edf1f0;
+}
+.plan-alert-row:last-child { border-bottom: 0; }
+.plan-label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  color: #34454b;
+  background: transparent;
+  text-align: left;
+}
+.plan-label strong { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.plan-label span { color: #8a969a; font-size: 10px; }
+.plan-label:hover strong { color: var(--green-dark); }
+.plan-share-track { height: 22px; overflow: hidden; border-radius: 3px; background: #edf1f0; }
+.plan-share-fill { display: flex; height: 100%; min-width: 3px; overflow: hidden; border-radius: 3px; }
+.plan-share-fill > button {
+  display: grid;
+  min-width: 2px;
+  height: 100%;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  color: #fff;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 20%);
+}
+.plan-share-fill > button:hover { filter: brightness(.9); outline: 1px solid rgb(255 255 255 / 75%); outline-offset: -1px; }
+.plan-share-value { color: #46565c; text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+.plan-alert-panel > footer {
+  display: flex;
+  min-height: 36px;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 14px;
+  border-top: 1px solid #e8eeed;
+  color: #66757a;
+  font-size: 10px;
+}
+.plan-alert-panel > footer em { overflow: hidden; color: #929da1; text-overflow: ellipsis; white-space: nowrap; font-style: normal; }
+
+@media (max-width: 720px) {
+  .overview-view { height: auto; min-height: 0; }
+  .plan-alert-panel { flex: none; min-height: 390px; overflow: visible; }
+  .plan-alert-panel > header { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .alert-legend { width: 100%; justify-content: flex-start; overflow-x: auto; padding-bottom: 2px; }
+  .alert-legend button { min-width: 88px; }
+  .plan-alert-rows { display: flex; flex-direction: column; padding: 0 10px; }
+  .plan-alert-row { min-height: 58px; grid-template-columns: minmax(86px,.9fr) minmax(150px,2fr) 48px; gap: 8px; }
+  .plan-share-track { height: 18px; }
+  .plan-alert-panel > footer { padding: 0 10px; }
+  .plan-alert-panel > footer em { display: none; }
+}
