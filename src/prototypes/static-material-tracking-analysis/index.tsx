@@ -141,7 +141,7 @@ function AlertBadge({ level }: { level: number }) {
   return <span className={`alert-badge alert-${level}`}><i />{level}级 · {stat.name}</span>;
 }
 
-function MatrixView({ matrix, onSelect }: { matrix: Matrix; onSelect: (retention: string, age: string) => void }) {
+function MatrixView({ matrix, onSelect, total = 2111 }: { matrix: Matrix; onSelect: (retention: string, age: string) => void; total?: number }) {
   const max = Math.max(...matrix.values.flat());
   return <div className="matrix-scroll"><table className="risk-matrix">
     <thead><tr><th>留存率 \ 库龄</th>{matrix.columns.map((column) => <th key={column}>{column}</th>)}<th>合计</th></tr></thead>
@@ -149,7 +149,7 @@ function MatrixView({ matrix, onSelect }: { matrix: Matrix; onSelect: (retention
       const total = matrix.values[rowIndex].reduce((sum, value) => sum + value, 0);
       return <tr key={row}><th>{row}</th>{matrix.values[rowIndex].map((value, columnIndex) => {
         const intensity = max ? value / max : 0;
-        return <td key={matrix.columns[columnIndex]}><button type="button" style={{ '--heat': intensity } as React.CSSProperties} onClick={() => onSelect(row, matrix.columns[columnIndex])} aria-label={`${row}、${matrix.columns[columnIndex]}：${value}项`}><strong>{value || '-'}</strong>{value > 0 && <span>{((value / 2111) * 100).toFixed(1)}%</span>}</button></td>;
+        return <td key={matrix.columns[columnIndex]}><button type="button" style={{ '--heat': intensity } as React.CSSProperties} onClick={() => onSelect(row, matrix.columns[columnIndex])} aria-label={`${row}、${matrix.columns[columnIndex]}：${value}项`}><strong>{value || '-'}</strong>{value > 0 && <span>{((value / Math.max(total, 1)) * 100).toFixed(1)}%</span>}</button></td>;
       })}<td className="matrix-total">{total}</td></tr>;
     })}</tbody>
   </table></div>;
@@ -248,6 +248,27 @@ export default function StaticMaterialTrackingAnalysis() {
     : trendMode === 'submitted'
       ? { title: '每月新提出数量趋势', description: '按材料呆滞提出时间统计，6 月按当前筛选结果计算', legend: '当月新提出数量' }
       : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
+  const matrixDevScope = (applied.dev as DevType) || matrixDev;
+  const matrixDevOptions = applied.dev ? devStats.filter((item) => item.name === applied.dev) : devStats;
+  const projectMatrix = (matrix: Matrix, dev: DevType, afterSales = false): Matrix => {
+    const planData = planAlertByDev[dev];
+    const planRow = applied.plan ? planData.rows.find((row) => row.name === applied.plan) : null;
+    const planRatio = afterSales ? (applied.plan && applied.plan !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : applied.plan ? 0 : 1);
+    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
+    const alertRatio = alertIndex >= 0 ? planData.rows.reduce((sum, row) => sum + row.alerts[alertIndex], 0) / planData.total : 1;
+    const scale = planRatio * alertRatio * (applied.month !== '2026-06' ? .86 : 1) * (applied.keyword.trim() ? .58 : 1);
+    return { ...matrix, values: matrix.values.map((row, rowIndex) => row.map((value, columnIndex) => {
+      if (applied.retention.length && !applied.retention.includes(retentionRows[rowIndex])) return 0;
+      if (applied.age && ageColumns[columnIndex] !== applied.age) return 0;
+      return Math.round(value * scale);
+    })) };
+  };
+  const linkedAlertMatrix = projectMatrix(alertMatrices[matrixDevScope], matrixDevScope);
+  const linkedAfterMatrix = projectMatrix(afterMatrices[matrixDevScope], matrixDevScope, true);
+  const linkedAlertMatrixTotal = linkedAlertMatrix.values.flat().reduce((sum, value) => sum + value, 0);
+  const linkedAfterMatrixTotal = linkedAfterMatrix.values.flat().reduce((sum, value) => sum + value, 0);
+  const linkedAlertTotals = alertStats.map((_, index) => chartRows.reduce((sum, row) => sum + row.alerts[index], 0));
+  const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
   const runSearch = () => { setApplied({ ...draft }); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
   const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); setView('overview'); showToast('已恢复全部材料口径'); };
   const drillDown = (next: Partial<FilterState>) => { const filters = { ...blankFilters, ...next }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
