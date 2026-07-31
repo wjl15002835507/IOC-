@@ -361,8 +361,8 @@ export default function StaticMaterialTrackingAnalysis() {
             </div>}
             {view === 'alerts' && <div className="matrix-view combined-analysis-view">
               <div className="matrix-header combined-analysis-header">
-                <div><h2>警报与处理分析</h2><p>按留存率与库龄交叉分析，切换警报级别或处理方案查看材料分布</p></div>
                 <div className="analysis-header-actions"><div className="analysis-mode-switch" role="tablist" aria-label="分析维度"><button type="button" className={analysisMode === 'alert' ? 'active' : ''} onClick={() => setAnalysisMode('alert')}>警报级别</button><button type="button" className={analysisMode === 'plan' ? 'active' : ''} onClick={() => setAnalysisMode('plan')}>处理方案</button></div><div className="segmented-control">{matrixDevOptions.map((item) => <button type="button" className={matrixDevScope === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div>
+                <p className="combined-analysis-description">按留存率与库龄交叉分析，切换警报级别或处理方案查看材料分布</p>
               </div>
               <div className="matrix-layout combined-analysis-layout">
                 <section className="panel matrix-panel combined-matrix-panel"><MatrixView matrix={linkedAlertMatrix} total={linkedAlertMatrixTotal} onSelect={(retention,age) => matrixDrill(retention,age)} /><footer><span><i className="heat-low"/>低</span><span><i className="heat-mid"/>中</span><span><i className="heat-high"/>高</span><em>颜色表示当前筛选口径中的相对集中度</em></footer></section>

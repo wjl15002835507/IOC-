@@ -483,3 +483,5 @@ button { cursor: pointer; }
   .combined-analysis-layout { grid-template-columns: 1fr; }
   .analysis-selector-panel { min-height: 0; }
 }
+.combined-analysis-header { justify-content: flex-start; gap: 18px; }
+.combined-analysis-description { margin: 0; color: #8b969a; font-size: 10px; }
