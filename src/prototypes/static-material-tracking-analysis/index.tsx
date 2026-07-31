@@ -271,7 +271,7 @@ export default function StaticMaterialTrackingAnalysis() {
   const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
   const linkedAfterSalesByDev = matrixDevOptions.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
   const runSearch = () => { setApplied({ ...draft }); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
-  const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); setView('overview'); showToast('已恢复全部材料口径'); };
+  const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); showToast('已恢复全部材料口径'); };
   const drillDown = (next: Partial<FilterState>) => { const filters = { ...blankFilters, ...next }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
   const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDev, retention: [retention], age, plan });
   const toggleColumn = (key: string) => setVisibleColumns((current) => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
