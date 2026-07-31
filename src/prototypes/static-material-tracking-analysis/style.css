@@ -445,3 +445,41 @@ button { cursor: pointer; }
 .overview-view .metric-grid .metric-card:nth-child(4) { border-color: #cce8ee; background: #eff9fb; }
 .overview-view .metric-grid .metric-card:nth-child(5) { border-color: #d6ebe2; background: #f2faf6; }
 .overview-view .metric-grid .metric-card:hover { background: #fff; }
+/* Unified alert and treatment analysis. */
+.combined-analysis-view { min-width: 0; }
+.combined-analysis-header { min-height: 50px; }
+.analysis-header-actions { display: flex; align-items: center; gap: 10px; }
+.analysis-mode-switch { display: inline-flex; overflow: hidden; border: 1px solid #d6e0de; border-radius: 4px; background: #fff; }
+.analysis-mode-switch button { height: 30px; padding: 0 13px; border: 0; border-right: 1px solid #dfe7e5; color: #657278; background: #fff; font-size: 11px; }
+.analysis-mode-switch button:last-child { border-right: 0; }
+.analysis-mode-switch button.active { color: #fff; background: var(--green); font-weight: 600; }
+.combined-analysis-layout { grid-template-columns: minmax(0,1fr) 284px; align-items: stretch; }
+.combined-matrix-panel { min-height: 490px; }
+.analysis-selector-panel { display: flex; min-height: 490px; flex-direction: column; padding: 12px; border: 1px solid #dce6e4; border-radius: 6px; background: #fff; }
+.analysis-selector-panel > header { display: flex; min-height: 43px; align-items: flex-start; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid #e7edec; }
+.analysis-selector-panel h3 { margin: 0; color: #35454b; font-size: 13px; }
+.analysis-selector-panel header p { margin: 4px 0 0; color: #8b969a; font-size: 9px; }
+.analysis-selector-panel header > strong { color: var(--green-dark); font-size: 13px; }
+.analysis-option-list { display: grid; gap: 5px; margin-top: 9px; }
+.analysis-option-list button { display: grid; min-height: 36px; grid-template-columns: 9px minmax(0,1fr) auto; align-items: center; gap: 7px; padding: 5px 9px; border: 1px solid #e1e8e6; border-radius: 4px; color: #59676d; background: #fff; text-align: left; }
+.analysis-option-list button:hover { border-color: #acd0c7; background: #f7fbfa; }
+.analysis-option-list button.active { border-color: #78bda9; color: #166f5d; background: #edf9f5; box-shadow: inset 3px 0 #0da77f; }
+.analysis-option-list button i { width: 8px; height: 8px; border-radius: 2px; }
+.analysis-option-list .option-all { background: #66777c; }
+.analysis-option-list button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.analysis-option-list button strong { color: #33454b; font-size: 12px; font-variant-numeric: tabular-nums; }
+.alert-standard-compact { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e7edec; }
+.alert-standard-compact h4 { margin: 0 0 7px; color: #46565c; font-size: 11px; }
+.alert-standard-compact > div { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.alert-standard-compact table { width: 100%; border-spacing: 0; border-collapse: collapse; color: #5d6a70; font-size: 9px; }
+.alert-standard-compact th, .alert-standard-compact td { height: 21px; padding: 2px 4px; border: 1px solid #e0e7e5; text-align: center; }
+.alert-standard-compact thead th { background: #f2f6f5; font-weight: 600; }
+.alert-standard-compact .alert-badge { justify-content: center; font-size: 9px; }
+.alert-standard-compact .alert-badge i { width: 6px; height: 6px; }
+.alert-standard-compact p, .analysis-panel-note { margin: 8px 0 0; color: #8a9599; font-size: 9px; line-height: 1.55; }
+@media (max-width: 1100px) {
+  .combined-analysis-header { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .analysis-header-actions { width: 100%; justify-content: space-between; }
+  .combined-analysis-layout { grid-template-columns: 1fr; }
+  .analysis-selector-panel { min-height: 0; }
+}
