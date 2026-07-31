@@ -485,3 +485,6 @@ button { cursor: pointer; }
 }
 .combined-analysis-header { justify-content: flex-start; gap: 18px; }
 .combined-analysis-description { margin: 0; color: #8b969a; font-size: 10px; }
+.risk-matrix tfoot th, .risk-matrix tfoot td { height: 38px; border-right: 1px solid #d9e3e1; border-top: 1px solid #cfdad7; border-bottom: 0; color: #34484e; background: #eef4f3; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.risk-matrix tfoot th { padding: 0 9px; text-align: right; }
+.risk-matrix tfoot td:last-child { background: #e7efed; color: var(--green-dark); }

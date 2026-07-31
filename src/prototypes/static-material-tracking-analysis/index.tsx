@@ -143,6 +143,8 @@ function AlertBadge({ level }: { level: number }) {
 
 function MatrixView({ matrix, onSelect, total = 2111 }: { matrix: Matrix; onSelect: (retention: string, age: string) => void; total?: number }) {
   const max = Math.max(...matrix.values.flat());
+  const columnTotals = matrix.columns.map((_, columnIndex) => matrix.values.reduce((sum, row) => sum + row[columnIndex], 0));
+  const grandTotal = columnTotals.reduce((sum, value) => sum + value, 0);
   return <div className="matrix-scroll"><table className="risk-matrix">
     <thead><tr><th>留存率 \ 库龄</th>{matrix.columns.map((column) => <th key={column}>{column}</th>)}<th>合计</th></tr></thead>
     <tbody>{matrix.rows.map((row, rowIndex) => {
@@ -152,6 +154,7 @@ function MatrixView({ matrix, onSelect, total = 2111 }: { matrix: Matrix; onSele
         return <td key={matrix.columns[columnIndex]}><button type="button" style={{ '--heat': intensity } as React.CSSProperties} onClick={() => onSelect(row, matrix.columns[columnIndex])} aria-label={`${row}、${matrix.columns[columnIndex]}：${value}项`}><strong>{value || '-'}</strong>{value > 0 && <span>{((value / Math.max(total, 1)) * 100).toFixed(1)}%</span>}</button></td>;
       })}<td className="matrix-total">{total}</td></tr>;
     })}</tbody>
+    <tfoot><tr><th>合计</th>{columnTotals.map((value, index) => <td key={matrix.columns[index]}>{number.format(value)}</td>)}<td>{number.format(grandTotal)}</td></tr></tfoot>
   </table></div>;
 }
 
@@ -159,7 +162,7 @@ export default function StaticMaterialTrackingAnalysis() {
   const [view, setView] = useState<ViewId>('overview');
   const [draft, setDraft] = useState<FilterState>(blankFilters);
   const [applied, setApplied] = useState<FilterState>(blankFilters);
-  const [matrixDev, setMatrixDev] = useState<DevType>('定制');
+  const [matrixDev, setMatrixDev] = useState<DevType | '全部'>('全部');
   const [drawerRow, setDrawerRow] = useState<MaterialRow | null>(null);
   const [columnMenu, setColumnMenu] = useState(false);
   const [retentionMenu, setRetentionMenu] = useState(false);
@@ -249,9 +252,9 @@ export default function StaticMaterialTrackingAnalysis() {
     : trendMode === 'submitted'
       ? { title: '每月新提出数量趋势', description: '按材料呆滞提出时间统计，6 月按当前筛选结果计算', legend: '当月新提出数量' }
       : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
-  const matrixDevScope = (applied.dev as DevType) || matrixDev;
-  const matrixDevOptions = applied.dev ? devStats.filter((item) => item.name === applied.dev) : devStats;
-  const projectMatrix = (matrix: Matrix, dev: DevType, afterSales = false): Matrix => {
+  const aggregateMatrix = (matrices: Record<DevType, Matrix>): Matrix => ({ rows: retentionRows, columns: ageColumns, values: retentionRows.map((_, rowIndex) => ageColumns.map((_, columnIndex) => devStats.reduce((sum, item) => sum + matrices[item.name].values[rowIndex][columnIndex], 0))) });
+  const matrixDevScope = ((applied.dev as DevType) || matrixDev) as DevType | '全部';
+  const matrixDevOptions = [{ name: '全部', value: 2111 }, ...devStats] as const;  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false): Matrix => {
     const planData = planAlertByDev[dev];
     const planRow = applied.plan ? planData.rows.find((row) => row.name === applied.plan) : null;
     const planRatio = afterSales ? (applied.plan && applied.plan !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : applied.plan ? 0 : 1);
@@ -264,13 +267,13 @@ export default function StaticMaterialTrackingAnalysis() {
       return Math.round(value * scale);
     })) };
   };
-  const linkedAlertMatrix = projectMatrix(alertMatrices[matrixDevScope], matrixDevScope);
-  const linkedAfterMatrix = projectMatrix(afterMatrices[matrixDevScope], matrixDevScope, true);
+  const linkedAlertMatrix = projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope);
+  const linkedAfterMatrix = projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(afterMatrices) : afterMatrices[matrixDevScope], matrixDevScope, true);
   const linkedAlertMatrixTotal = linkedAlertMatrix.values.flat().reduce((sum, value) => sum + value, 0);
   const linkedAfterMatrixTotal = linkedAfterMatrix.values.flat().reduce((sum, value) => sum + value, 0);
   const linkedAlertTotals = alertStats.map((_, index) => chartRows.reduce((sum, row) => sum + row.alerts[index], 0));
   const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
-  const linkedAfterSalesByDev = matrixDevOptions.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
+  const linkedAfterSalesByDev = devStats.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
   const analysisAlertOptions = alertStats.map((item, index) => ({ ...item, value: Math.round(overviewData.rows.filter((row) => !applied.plan || row.name === applied.plan).reduce((sum, row) => sum + row.alerts[index], 0) * secondaryRatio) }));
   const analysisPlanOptions = overviewData.rows.map((row) => {
     const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
@@ -283,8 +286,9 @@ export default function StaticMaterialTrackingAnalysis() {
     setApplied(filters);
     setPage(1);
   };
-  const runSearch = () => { setApplied({ ...draft }); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
-  const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); showToast('已恢复全部材料口径'); };
+  const selectMatrixDev = (name: DevType | '全部') => { const dev = name === '全部' ? '' : name; const filters = { ...applied, dev }; setMatrixDev(name); setDraft(filters); setApplied(filters); setPage(1); };
+  const runSearch = () => { setApplied({ ...draft }); setMatrixDev((draft.dev as DevType) || '全部'); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
+  const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setMatrixDev('全部'); setPage(1); showToast('已恢复全部材料口径'); };
   const drillDown = (next: Partial<FilterState>) => { const filters = { ...blankFilters, ...next }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
   const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDevScope, retention: [retention], age, plan: plan || applied.plan, alert: applied.alert });
   const toggleColumn = (key: string) => setVisibleColumns((current) => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
@@ -361,7 +365,7 @@ export default function StaticMaterialTrackingAnalysis() {
             </div>}
             {view === 'alerts' && <div className="matrix-view combined-analysis-view">
               <div className="matrix-header combined-analysis-header">
-                <div className="analysis-header-actions"><div className="analysis-mode-switch" role="tablist" aria-label="分析维度"><button type="button" className={analysisMode === 'alert' ? 'active' : ''} onClick={() => setAnalysisMode('alert')}>警报级别</button><button type="button" className={analysisMode === 'plan' ? 'active' : ''} onClick={() => setAnalysisMode('plan')}>处理方案</button></div><div className="segmented-control">{matrixDevOptions.map((item) => <button type="button" className={matrixDevScope === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div>
+                <div className="analysis-header-actions"><div className="analysis-mode-switch" role="tablist" aria-label="分析维度"><button type="button" className={analysisMode === 'alert' ? 'active' : ''} onClick={() => setAnalysisMode('alert')}>警报级别</button><button type="button" className={analysisMode === 'plan' ? 'active' : ''} onClick={() => setAnalysisMode('plan')}>处理方案</button></div><div className="segmented-control">{matrixDevOptions.map((item) => <button type="button" className={matrixDevScope === item.name ? 'active' : ''} key={item.name} onClick={() => selectMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div>
                 <p className="combined-analysis-description">按留存率与库龄交叉分析，切换警报级别或处理方案查看材料分布</p>
               </div>
               <div className="matrix-layout combined-analysis-layout">
