@@ -290,7 +290,7 @@ export default function StaticMaterialTrackingAnalysis() {
   const runSearch = () => { setApplied({ ...draft }); setMatrixDev((draft.dev as DevType) || '全部'); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
   const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setMatrixDev('全部'); setPage(1); showToast('已恢复全部材料口径'); };
   const drillDown = (next: Partial<FilterState>) => { const filters = { ...blankFilters, ...next }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
-  const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDevScope, retention: [retention], age, plan: plan || applied.plan, alert: applied.alert });
+  const matrixDrill = (retention: string, age: string, plan = '') => { const filters: FilterState = { ...applied, dev: matrixDevScope === '全部' ? '' : matrixDevScope, retention: [retention], age, plan: plan || applied.plan }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
   const toggleColumn = (key: string) => setVisibleColumns((current) => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
 
   return <div className="ioc-shell material-analysis">
