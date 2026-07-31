@@ -29,7 +29,7 @@ import './style.css';
 
 type ViewId = 'overview' | 'alerts' | 'after-sales' | 'details';
 type DevType = '软体' | '板木' | '定制';
-type FilterState = { dev: string; alert: string; plan: string; age: string; retention: string; keyword: string };
+type FilterState = { dev: string; alert: string; plan: string; age: string; retention: string[]; month: string; keyword: string };
 type MaterialRow = {
   code: string; name: string; dev: DevType; category: string; warehouse: string; reported: number; stock: number;
   plan: string; unit: string; ageMonths: number; age: string; retention: string; alert: number; reason: string;
@@ -39,7 +39,7 @@ type MaterialRow = {
 type Matrix = { rows: string[]; columns: string[]; values: number[][] };
 
 const number = new Intl.NumberFormat('zh-CN');
-const blankFilters: FilterState = { dev: '', alert: '', plan: '', age: '', retention: '', keyword: '' };
+const blankFilters: FilterState = { dev: '', alert: '', plan: '', age: '', retention: [], month: '2026-06', keyword: '' };
 
 const devStats = [
   { name: '软体', value: 445, percent: 21.1, color: '#3b82c4' },
@@ -94,6 +94,8 @@ const alertStats = [
 
 const ageColumns = ['<6个月', '7-9个月', '10-12个月', '13-24个月', '24个月以上'];
 const retentionRows = ['<10%', '10-20%', '20-30%', '30-40%', '40-50%', '50-60%', '60-70%', '70-80%', '80-90%', '90-100%'];
+const monthOptions = ['2026-06', '2026-02', '2025-11', '2023-11', '2023-09', '2023-03', '2021-12', '2021-01', '2020-12', '2020-11'];
+const monthLabel = (month: string) => `${month.slice(0, 4)}年${Number(month.slice(5, 7))}月`;
 
 const alertMatrices: Record<DevType, Matrix> = {
   软体: { rows: retentionRows, columns: ageColumns, values: [[39,3,2,4,9],[0,0,1,6,2],[2,0,1,3,4],[0,3,1,4,3],[1,0,0,3,8],[0,1,2,4,7],[1,0,1,5,6],[3,2,1,4,7],[2,2,2,7,12],[114,31,41,46,45]] },
@@ -160,11 +162,16 @@ export default function StaticMaterialTrackingAnalysis() {
   const [matrixDev, setMatrixDev] = useState<DevType>('定制');
   const [drawerRow, setDrawerRow] = useState<MaterialRow | null>(null);
   const [columnMenu, setColumnMenu] = useState(false);
+  const [retentionMenu, setRetentionMenu] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState(() => new Set(columns.map(([key]) => key)));
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState('');
+  const [hoveredSegment, setHoveredSegment] = useState<{ name: string; level: number; value: number; total: number } | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ left: 0, top: 0 });
+  const [trendMode, setTrendMode] = useState<'unprocessed' | 'submitted' | 'completed'>('unprocessed');
 
-  const updateDraft = (key: keyof FilterState, value: string) => setDraft((current) => ({ ...current, [key]: value }));
+  const updateDraft = (key: keyof FilterState, value: string) => setDraft((current) => ({ ...current, [key]: value } as FilterState));
+  const toggleRetention = (value: string) => setDraft((current) => ({ ...current, retention: current.retention.includes(value) ? current.retention.filter((item) => item !== value) : [...current.retention, value] }));
   const showToast = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2200); };
 
   const filteredRows = useMemo(() => materials.filter((row) => {
@@ -173,7 +180,7 @@ export default function StaticMaterialTrackingAnalysis() {
       && (!applied.alert || String(row.alert) === applied.alert)
       && (!applied.plan || row.plan === applied.plan)
       && (!applied.age || row.age === applied.age)
-      && (!applied.retention || row.retention === applied.retention)
+      && (!applied.retention.length || applied.retention.includes(row.retention))
       && (!keyword || `${row.code}${row.name}${row.warehouse}${row.reason}`.toLowerCase().includes(keyword));
   }), [applied]);
 
@@ -182,7 +189,7 @@ export default function StaticMaterialTrackingAnalysis() {
     if (applied.dev) value *= (devStats.find((item) => item.name === applied.dev)?.value || 0) / 2111;
     if (applied.alert) value *= (alertStats.find((item) => String(item.level) === applied.alert)?.value || 0) / 2111;
     if (applied.plan) value *= (planStats.find((item) => item.name === applied.plan)?.value || 0) / 2111;
-    if (applied.age || applied.retention || applied.keyword) value = filteredRows.length ? Math.max(filteredRows.length, Math.round(value * 0.08)) : 0;
+    if (applied.age || applied.retention.length || applied.month || applied.keyword) value = filteredRows.length ? Math.max(filteredRows.length, Math.round(value * 0.08)) : 0;
     return Math.round(value);
   }, [applied, filteredRows.length]);
 
@@ -191,13 +198,60 @@ export default function StaticMaterialTrackingAnalysis() {
   const pageRows = filteredRows.slice((page - 1) * pageSize, page * pageSize);
   const overviewKey = (applied.dev || '全部') as keyof typeof planAlertByDev;
   const overviewData = planAlertByDev[overviewKey];
-  const overviewAlertTotals = alertStats.map((_, index) => overviewData.rows.reduce((sum, row) => sum + row.alerts[index], 0));
+  const retentionSelectionIndices = applied.retention.length ? applied.retention.map((item) => retentionRows.indexOf(item)).filter((index) => index >= 0) : [6, 7, 8, 9];
+  const retentionRangeStart = Math.min(...retentionSelectionIndices);
+  const retentionRangeEnd = Math.max(...retentionSelectionIndices);
+  const retentionStartNumbers = retentionRows[retentionRangeStart].match(/\d+/g)?.map(Number) || [0];
+  const retentionEndNumbers = retentionRows[retentionRangeEnd].match(/\d+/g)?.map(Number) || [100];
+  const retentionRangeText = `${retentionRangeStart === 0 ? 0 : retentionStartNumbers[0]}%~${retentionEndNumbers[retentionEndNumbers.length - 1]}%`;
+  const retentionRangeValues = retentionRows.slice(retentionRangeStart, retentionRangeEnd + 1);
+  const retentionRangeMatrices = applied.dev ? [alertMatrices[applied.dev as DevType]] : Object.values(alertMatrices);
+  const retentionRangeTotal = retentionRangeMatrices.reduce((matrixSum, matrix) => matrixSum + matrix.values.slice(retentionRangeStart, retentionRangeEnd + 1).reduce((rowSum, row) => rowSum + row.reduce((sum, value) => sum + value, 0), 0), 0);
+  const matrixScope = applied.dev ? [alertMatrices[applied.dev as DevType]] : Object.values(alertMatrices);
+  const matrixTotal = matrixScope.reduce((sum, matrix) => sum + matrix.values.flat().reduce((rowSum, value) => rowSum + value, 0), 0);
+  const ageIndex = applied.age ? ageColumns.indexOf(applied.age) : -1;
+  const ageRatio = ageIndex >= 0 ? matrixScope.reduce((sum, matrix) => sum + matrix.values.reduce((rowSum, row) => rowSum + row[ageIndex], 0), 0) / matrixTotal : 1;
+  const retentionRatio = applied.retention.length ? retentionRangeTotal / matrixTotal : 1;
+  const monthRatio = applied.month !== '2026-06' ? .86 : 1;
+  const keywordRatio = applied.keyword.trim() ? .58 : 1;
+  const secondaryRatio = ageRatio * retentionRatio * monthRatio * keywordRatio;
+  const visibleAlertDescriptors = alertStats.filter((item) => !applied.alert || String(item.level) === applied.alert);
+  const chartRows = overviewData.rows.filter((row) => !applied.plan || row.name === applied.plan).map((row) => {
+    const alerts = row.alerts.map((value, index) => visibleAlertDescriptors.some((item) => item.level === alertStats[index].level) ? Math.round(value * secondaryRatio) : 0);
+    return { name: row.name, alerts, total: alerts.reduce((sum, value) => sum + value, 0) };
+  });
+  const filteredTotal = chartRows.reduce((sum, row) => sum + row.total, 0);
+  const chartMax = Math.max(...chartRows.map((row) => row.total), 1);
+  const activeAlert = alertStats.find((item) => String(item.level) === applied.alert) || alertStats[0];
+  const activeAlertIndex = alertStats.findIndex((item) => item.level === activeAlert.level);
+  const alertMetricTotal = chartRows.reduce((sum, row) => sum + row.alerts[activeAlertIndex], 0);
+  const age24Index = ageColumns.indexOf('24个月以上');
+  const age24Ratio = matrixScope.reduce((sum, matrix) => sum + matrix.values.reduce((rowSum, row) => rowSum + row[age24Index], 0), 0) / matrixTotal;
+  const ageMetricTotal = applied.age ? filteredTotal : Math.round(filteredTotal * age24Ratio);
+  const retentionMetricTotal = applied.retention.length ? filteredTotal : Math.round(filteredTotal * (retentionRangeTotal / matrixTotal));
+  const activePlan = applied.plan || '留用/售后';
   const overviewContext = applied.dev || '全部开发类型';
-
-  const runSearch = () => { setApplied({ ...draft }); setPage(1); showToast('查询完成，分析口径已更新'); };
+  const planMetricTotal = chartRows.find((row) => row.name === activePlan)?.total || 0;
+  const zeroStockTotal = Math.round(filteredTotal * 141 / 2111);
+  const unprocessedTotal = Math.max(0, filteredTotal - zeroStockTotal);
+  const trendData = useMemo(() => {
+    const factors = [0.970, 0.976, 0.982, 0.988, 0.994, 1];
+    const submittedCurrentMonth = filteredRows.filter((row) => row.staleDate.startsWith('2026/6/')).length;
+    const submitted = [Math.max(0, submittedCurrentMonth - 2), Math.max(0, submittedCurrentMonth - 2), Math.max(0, submittedCurrentMonth - 1), Math.max(0, submittedCurrentMonth - 1), submittedCurrentMonth, submittedCurrentMonth];
+    const completed = [96, 102, 108, 115, 121, 128].map((value) => Math.round(value * filteredTotal / 2111));
+    return ['2026/01', '2026/02', '2026/03', '2026/04', '2026/05', '2026/06'].map((month, index) => ({ month, unprocessed: Math.round(unprocessedTotal * factors[index]), submitted: submitted[index], completed: completed[index] }));
+  }, [filteredRows, filteredTotal, unprocessedTotal]);
+  const activeTrendData = trendData.map((item) => ({ month: item.month, value: trendMode === 'unprocessed' ? item.unprocessed : trendMode === 'submitted' ? item.submitted : item.completed }));
+  const trendMax = Math.max(...activeTrendData.map((item) => item.value), 1);
+  const trendMeta = trendMode === 'unprocessed'
+    ? { title: '每月待处理数量趋势', description: '总量扣除库存为 0 的材料项数，前 5 个月为小幅模拟趋势', legend: '未处理完材料项数' }
+    : trendMode === 'submitted'
+      ? { title: '每月新提出数量趋势', description: '按材料呆滞提出时间统计，6 月按当前筛选结果计算', legend: '当月新提出数量' }
+      : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
+  const runSearch = () => { setApplied({ ...draft }); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
   const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); setView('overview'); showToast('已恢复全部材料口径'); };
   const drillDown = (next: Partial<FilterState>) => { const filters = { ...blankFilters, ...next }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
-  const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDev, retention, age, plan });
+  const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDev, retention: [retention], age, plan });
   const toggleColumn = (key: string) => setVisibleColumns((current) => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
 
   return <div className="ioc-shell material-analysis">
@@ -211,12 +265,16 @@ export default function StaticMaterialTrackingAnalysis() {
         <div className="tabbar"><span className="tab-close"><X size={14}/></span><span className="active-tab">静态材料处理跟踪分析<X size={12}/></span></div>
         <div className="analysis-content">
 
-          <section className="filter-strip" aria-label="全局筛选">
+          <section className={`filter-strip ${view === 'details' ? 'details-filter-strip' : ''}`} aria-label="全局筛选">
+            <label><span>时间</span><select value={draft.month} onChange={(event) => updateDraft('month', event.target.value)}>{monthOptions.map((item) => <option value={item} key={item}>{monthLabel(item)}</option>)}</select></label>
+            
             <label><span>开发类型</span><select value={draft.dev} onChange={(event) => updateDraft('dev', event.target.value)}><option value="">全部</option>{devStats.map((item) => <option key={item.name}>{item.name}</option>)}</select></label>
             <label><span>警报级别</span><select value={draft.alert} onChange={(event) => updateDraft('alert', event.target.value)}><option value="">全部</option>{alertStats.map((item) => <option value={item.level} key={item.level}>{item.level}级 · {item.name}</option>)}</select></label>
             <label><span>处理方案</span><select value={draft.plan} onChange={(event) => updateDraft('plan', event.target.value)}><option value="">全部</option>{planStats.map((item) => <option key={item.name}>{item.name}</option>)}</select></label>
             <label><span>库龄</span><select value={draft.age} onChange={(event) => updateDraft('age', event.target.value)}><option value="">全部</option>{ageColumns.map((item) => <option key={item}>{item}</option>)}</select></label>
-            <label className="keyword-field"><span>物料</span><div><Search size={14}/><input value={draft.keyword} onChange={(event) => updateDraft('keyword', event.target.value)} placeholder="编码 / 名称 / 原因" /></div></label>
+            <div className="filter-field retention-filter"><span>留存率</span><div className="multi-select"><button type="button" className={`multi-select-trigger ${draft.retention.length ? 'has-value' : ''}`} onClick={() => setRetentionMenu((value) => !value)}>{draft.retention.length ? `已选 ${draft.retention.length} 项` : '全部'}<ChevronDown size={13}/></button>{retentionMenu && <div className="multi-select-menu">{retentionRows.map((item) => <label key={item}><input type="checkbox" checked={draft.retention.includes(item)} onChange={() => toggleRetention(item)}/><span>{item}</span></label>)}<button type="button" className="multi-select-clear" onClick={() => setDraft((current) => ({ ...current, retention: [] }))}>清空选择</button></div>}</div></div>
+            
+            {view === 'details' && <label className="keyword-field"><span>物料</span><div><Search size={14}/><input value={draft.keyword} onChange={(event) => updateDraft('keyword', event.target.value)} placeholder="编码 / 名称 / 原因" /></div></label>}
             <div className="filter-buttons"><button type="button" className="text-button" onClick={reset}>重置</button><button type="button" className="primary-button" onClick={runSearch}><Search size={14}/>查询</button></div>
           </section>
 
@@ -227,26 +285,45 @@ export default function StaticMaterialTrackingAnalysis() {
           <div className="view-content">
             {view === 'overview' && <div className="overview-view">
               <section className="metric-grid">
-                <button type="button" className="metric-card" onClick={() => drillDown({ dev:applied.dev })}><span className="metric-icon total"><Boxes size={19}/></span><span><small>静态材料总项</small><strong>{number.format(overviewData.total)}</strong><em>项</em></span><p>当前口径：{overviewContext}</p></button>
-                <button type="button" className="metric-card danger" onClick={() => drillDown({ dev:applied.dev, alert:'1' })}><span className="metric-icon"><ShieldAlert size={19}/></span><span><small>1级高危</small><strong>{number.format(overviewAlertTotals[0])}</strong><em>项</em></span><p>占当前口径 {((overviewAlertTotals[0] / overviewData.total) * 100).toFixed(1)}%</p></button>
-                <button type="button" className="metric-card warning" onClick={() => drillDown({ dev:applied.dev, age:'24个月以上' })}><span className="metric-icon"><AlertTriangle size={19}/></span><span><small>24个月以上</small><strong>{number.format(overviewData.age24)}</strong><em>项</em></span><p>按当前开发类型统计</p></button>
-                <button type="button" className="metric-card service" onClick={() => drillDown({ dev:applied.dev, plan:'留用/售后' })}><span className="metric-icon"><CircleGauge size={19}/></span><span><small>留用/售后</small><strong>{number.format(overviewData.rows[0].total)}</strong><em>项</em></span><p>占当前口径 {((overviewData.rows[0].total / overviewData.total) * 100).toFixed(1)}%</p></button>
+                <button type="button" className="metric-card" onClick={() => drillDown({ dev:applied.dev })}><span className="metric-icon total"><Boxes size={19}/></span><span><small>静态材料总项</small><strong>{number.format(filteredTotal)}</strong><em>项</em></span><p>占比：{((filteredTotal / 2111) * 100).toFixed(1)} %</p></button>
+                <button type="button" className={`metric-card alert-level-${activeAlert.level}`} onClick={() => drillDown({ dev:applied.dev, alert:String(activeAlert.level) })}><span className="metric-icon"><ShieldAlert size={19}/></span><span><small>{activeAlert.level}级{activeAlert.name}</small><strong>{number.format(alertMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (alertMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className="metric-card warning" onClick={() => drillDown({ dev:applied.dev, age:applied.age || '24个月以上' })}><span className="metric-icon"><AlertTriangle size={19}/></span><span><small>{applied.age || '24个月以上'}</small><strong>{number.format(ageMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (ageMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className="metric-card retention" onClick={() => drillDown({ dev:applied.dev, retention:retentionRangeValues })}><span className="metric-icon"><SlidersHorizontal size={19}/></span><span><small>留存率（{retentionRangeText}）</small><strong>{number.format(retentionMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (retentionMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className="metric-card service" onClick={() => drillDown({ dev:applied.dev, plan:activePlan })}><span className="metric-icon"><CircleGauge size={19}/></span><span><small>{activePlan}</small><strong>{number.format(planMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (planMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
               </section>
-
-              <section className="panel plan-alert-panel">
-                <header><div><h2>处理方案与警报等级结构</h2><p>{overviewContext} · 横向长度表示方案占比，颜色表示警报等级构成</p></div><div className="alert-legend">{alertStats.map((item, index) => <button type="button" key={item.level} onClick={() => drillDown({ dev:applied.dev, alert:String(item.level) })}><i style={{background:item.color}}/><span>{item.level}级 {item.name}</span><strong>{number.format(overviewAlertTotals[index])}</strong></button>)}</div></header>
-                <div className="plan-alert-rows">{overviewData.rows.map((row) => {
-                  const share = (row.total / overviewData.total) * 100;
-                  return <div className="plan-alert-row" key={row.name}>
-                    <button type="button" className="plan-label" onClick={() => drillDown({ dev:applied.dev, plan:row.name })}><strong>{row.name}</strong><span>{number.format(row.total)} 项</span></button>
-                    <div className="plan-share-track"><div className="plan-share-fill" style={{width:`${share}%`}}>{row.alerts.map((value,index) => value > 0 && <button type="button" key={alertStats[index].level} style={{width:`${(value / row.total) * 100}%`,background:alertStats[index].color}} onClick={() => drillDown({dev:applied.dev,plan:row.name,alert:String(alertStats[index].level)})} title={`${row.name} · ${alertStats[index].level}级：${value}项`}><span>{value >= Math.max(20,row.total * .09) ? number.format(value) : ''}</span></button>)}</div></div>
-                    <strong className="plan-share-value">{share.toFixed(1)}%</strong>
-                  </div>;
-                })}</div>
-                <footer><span>合计 {number.format(overviewData.total)} 项</span><em>点击方案、警报图例或色块可查看对应材料明细</em></footer>
-              </section>
+              <div className="overview-panels">
+                <section className="panel plan-alert-panel">
+                  <header><div><h2>处理方案与警报等级结构</h2><p>柱高表示对应处理方案材料项数，颜色表示警报等级构成</p></div><div className="alert-legend"><button type="button" className="alert-legend-all" onClick={() => { const filters = { ...applied, alert: "" }; setDraft(filters); setApplied(filters); setPage(1); }}>全部</button>{visibleAlertDescriptors.map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); const total = chartRows.reduce((sum, row) => sum + row.alerts[index], 0); return <button type="button" key={item.level} onClick={() => drillDown({ dev:applied.dev, alert:String(item.level) })}><i style={{background:item.color}}/><span>{item.level}级 {item.name}</span><strong>{number.format(total)}</strong></button>; })}</div></header>
+                  <div className="plan-column-chart">
+                    <div className="chart-guide-lines" aria-hidden="true"><i/><i/><i/><i/></div>
+                    <div className="plan-columns">{chartRows.map((row) => {
+                      const share = filteredTotal ? (row.total / filteredTotal) * 100 : 0;
+                      const height = (row.total / chartMax) * 100;
+                      return <div className="plan-column" key={row.name}>
+                        <div className="plan-column-stage" style={{ zIndex: hoveredSegment?.name === row.name ? 100 : 1 }}>
+                          <div className="plan-column-topline" style={{bottom:`min(${height}%, calc(100% - 20px))`}}><button type="button" className="plan-column-total" onClick={() => drillDown({ dev:applied.dev, plan:row.name })}>{number.format(row.total)}</button><span className="plan-column-share">{share.toFixed(1)}%</span></div>
+                          <div className="plan-column-bar" style={{height:`${height}%`}} onMouseLeave={() => setHoveredSegment(null)}>{visibleAlertDescriptors.map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); const value = row.alerts[index]; return value > 0 && <button type="button" key={item.level} style={{height:`${(value / row.total) * 100}%`,background:item.color}} onClick={() => drillDown({dev:applied.dev,plan:row.name,alert:String(item.level)})} onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredSegment({ name: row.name, level: item.level, value, total: row.total }); setTooltipPosition({ left: Math.min(rect.right + 10, window.innerWidth - 190), top: Math.max(8, rect.top + rect.height / 2 - 44) }); }}><span className="plan-segment-tooltip" role="tooltip" style={{ display: "none" }}><strong>{row.name} · {item.level}级</strong><span>数量：{number.format(value)} 项</span><span>占方案：{((value / row.total) * 100).toFixed(1)}%</span><span>占全部：{(filteredTotal ? (value / filteredTotal) * 100 : 0).toFixed(1)}%</span></span></button>; })}</div>
+                        </div>
+                        <button type="button" className="plan-column-label" onClick={() => drillDown({ dev:applied.dev, plan:row.name })}><strong>{row.name}</strong></button>
+                      </div>;
+                    })}</div>
+                    {hoveredSegment && <div className="plan-hover-tooltip" style={{ left: tooltipPosition.left, top: tooltipPosition.top }}><strong>{hoveredSegment.name} · {hoveredSegment.level}级</strong><span>数量：{number.format(hoveredSegment.value)} 项</span><span>占方案：{((hoveredSegment.value / hoveredSegment.total) * 100).toFixed(1)}%</span><span>占全部：{(filteredTotal ? (hoveredSegment.value / filteredTotal) * 100 : 0).toFixed(1)}%</span></div>}
+                  </div>                  <footer><span>合计 {number.format(filteredTotal)} 项</span><em>点击柱体、方案名称或警报图例可查看对应材料明细</em></footer>
+                </section>
+                <section className="panel trend-panel">
+                  <header><div><h2>{trendMeta.title}</h2><p>{trendMeta.description}</p></div><div className="trend-tabs" role="tablist" aria-label="趋势指标切换">{[{ id: 'unprocessed', label: '每月待处理数量趋势' }, { id: 'submitted', label: '每月新提出数量趋势' }, { id: 'completed', label: '每月处理完成数量趋势' }].map((tab) => <button type="button" key={tab.id} role="tab" aria-selected={trendMode === tab.id} className={trendMode === tab.id ? 'active' : ''} onClick={() => setTrendMode(tab.id as 'unprocessed' | 'submitted' | 'completed')}>{tab.label}</button>)}</div></header>
+                  <div className="trend-chart">
+                    <div className="trend-y-labels" aria-hidden="true"><span>{number.format(trendMax)}</span><span>{number.format(Math.round(trendMax * .75))}</span><span>{number.format(Math.round(trendMax * .5))}</span><span>{number.format(Math.round(trendMax * .25))}</span><span>0</span></div>
+                    <svg viewBox="0 0 620 240" role="img" aria-label={trendMeta.title} preserveAspectRatio="none">
+                      {[24,72,120,168,216].map((y) => <line key={y} x1="12" x2="608" y1={y} y2={y} className="trend-grid-line"/>)}
+                      <polyline points={activeTrendData.map((item,index) => `${12 + index * 119.2},${216 - (item.value / trendMax) * 192}`).join(' ')} className={`trend-line trend-line-${trendMode}`}/>
+                      {activeTrendData.map((item,index) => <g key={item.month}><circle cx={12 + index * 119.2} cy={216 - (item.value / trendMax) * 192} r="4" className={`trend-point trend-point-${trendMode}`}><title>{item.month}：{number.format(item.value)} 项</title></circle><text x={12 + index * 119.2} y={Math.max(15, 216 - (item.value / trendMax) * 192 - 12)} className={`trend-value trend-value-${trendMode}`} textAnchor="middle">{number.format(item.value)}</text></g>)}
+                    </svg>
+                    <div className="trend-x-labels">{activeTrendData.map((item) => <span key={item.month}>{item.month}</span>)}</div>
+                  </div>
+                  <footer><span><i className={`trend-dot trend-dot-${trendMode}`}/>{trendMeta.legend}</span><em>单位：项 · 截止 2026 年 6 月</em></footer>
+                </section>              </div>
             </div>}
-
             {view === 'alerts' && <div className="matrix-view"><div className="matrix-header"><div><h2>警报二维分析</h2><p>留存率与库龄交叉分布，点击单元格查看对应材料</p></div><div className="segmented-control">{devStats.map((item) => <button type="button" className={matrixDev === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div><div className="matrix-layout"><section className="panel matrix-panel"><MatrixView matrix={alertMatrices[matrixDev]} onSelect={(retention,age) => matrixDrill(retention,age)} /><footer><span><i className="heat-low"/>低</span><span><i className="heat-mid"/>中</span><span><i className="heat-high"/>高</span><em>颜色表示该开发类型中的相对集中度</em></footer></section><aside className="rule-panel"><h3>警报规则</h3>{alertStats.map((item) => <div key={item.level}><AlertBadge level={item.level}/><strong>{number.format(item.value)} 项</strong></div>)}<p>最终等级由库龄级别与留存率级别共同计算。1级优先跟进，6级为正常。</p></aside></div></div>}
 
             {view === 'after-sales' && <div className="after-view"><section className="after-summary"><div><span className="metric-icon service"><PackageSearch size={20}/></span><p>留用/售后材料</p><strong>1,553</strong><em>项 · 占全部材料 73.6%</em></div>{[{name:'软体',value:316,p:'71.0%'},{name:'板木',value:122,p:'44.9%'},{name:'定制',value:1115,p:'80.0%'}].map((item) => <button type="button" key={item.name} onClick={() => {setMatrixDev(item.name as DevType); drillDown({dev:item.name,plan:'留用/售后'});}}><span>{item.name}</span><strong>{number.format(item.value)}</strong><em>{item.p}</em><ChevronRight size={14}/></button>)}</section><div className="matrix-header compact"><div><h2>留用/售后风险矩阵</h2><p>按开发类型查看专项材料的库龄与留存率分布</p></div><div className="segmented-control">{devStats.map((item) => <button type="button" className={matrixDev === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}</button>)}</div></div><section className="panel matrix-panel"><MatrixView matrix={afterMatrices[matrixDev]} onSelect={(retention,age) => matrixDrill(retention,age,'留用/售后')} /></section></div>}
