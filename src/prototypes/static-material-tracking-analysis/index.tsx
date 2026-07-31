@@ -169,6 +169,7 @@ export default function StaticMaterialTrackingAnalysis() {
   const [hoveredSegment, setHoveredSegment] = useState<{ name: string; level: number; value: number; total: number } | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ left: 0, top: 0 });
   const [trendMode, setTrendMode] = useState<'unprocessed' | 'submitted' | 'completed'>('unprocessed');
+  const [analysisMode, setAnalysisMode] = useState<'alert' | 'plan'>('alert');
 
   const updateDraft = (key: keyof FilterState, value: string) => setDraft((current) => ({ ...current, [key]: value } as FilterState));
   const toggleRetention = (value: string) => setDraft((current) => ({ ...current, retention: current.retention.includes(value) ? current.retention.filter((item) => item !== value) : [...current.retention, value] }));
@@ -270,10 +271,22 @@ export default function StaticMaterialTrackingAnalysis() {
   const linkedAlertTotals = alertStats.map((_, index) => chartRows.reduce((sum, row) => sum + row.alerts[index], 0));
   const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
   const linkedAfterSalesByDev = matrixDevOptions.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
+  const analysisAlertOptions = alertStats.map((item, index) => ({ ...item, value: Math.round(overviewData.rows.filter((row) => !applied.plan || row.name === applied.plan).reduce((sum, row) => sum + row.alerts[index], 0) * secondaryRatio) }));
+  const analysisPlanOptions = overviewData.rows.map((row) => {
+    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
+    const base = alertIndex >= 0 ? row.alerts[alertIndex] : row.total;
+    return { name: row.name, value: Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
+  });
+  const applyAnalysisFilter = (key: 'alert' | 'plan', value: string) => {
+    const filters = { ...applied, [key]: value };
+    setDraft(filters);
+    setApplied(filters);
+    setPage(1);
+  };
   const runSearch = () => { setApplied({ ...draft }); setRetentionMenu(false); setPage(1); showToast('查询完成，分析口径已更新'); };
   const reset = () => { setDraft(blankFilters); setApplied(blankFilters); setPage(1); showToast('已恢复全部材料口径'); };
   const drillDown = (next: Partial<FilterState>) => { const filters = { ...blankFilters, ...next }; setDraft(filters); setApplied(filters); setPage(1); setView('details'); };
-  const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDev, retention: [retention], age, plan });
+  const matrixDrill = (retention: string, age: string, plan = '') => drillDown({ dev: matrixDevScope, retention: [retention], age, plan: plan || applied.plan, alert: applied.alert });
   const toggleColumn = (key: string) => setVisibleColumns((current) => { const next = new Set(current); next.has(key) ? next.delete(key) : next.add(key); return next; });
 
   return <div className="ioc-shell material-analysis">
@@ -301,17 +314,17 @@ export default function StaticMaterialTrackingAnalysis() {
           </section>
 
           <nav className="view-tabs" aria-label="分析视图">{[
-            ['overview','总览',LayoutDashboard],['alerts','警报分析',ShieldAlert],['after-sales','留用售后',PackageSearch],['details','材料明细',FileSearch],
+            ['overview','总览',LayoutDashboard],['alerts','警报与处理分析',ShieldAlert],['details','材料明细',FileSearch],
           ].map(([id,label,Icon]) => <button type="button" key={id as string} className={view === id ? 'active' : ''} onClick={() => setView(id as ViewId)}><Icon size={15}/>{label as string}</button>)}<span className="view-tabs-meta">数据截止 2026 年 6 月 · 按物料编码计数</span></nav>
 
           <div className="view-content">
             {view === 'overview' && <div className="overview-view">
               <section className="metric-grid">
                 <button type="button" className="metric-card" onClick={() => setView('details')}><span className="metric-icon total"><Boxes size={19}/></span><span><small>静态材料总项</small><strong>{number.format(filteredTotal)}</strong><em>项</em></span><p>占比：{((filteredTotal / 2111) * 100).toFixed(1)} %</p></button>
-                <button type="button" className={`metric-card alert-level-${activeAlert.level}`} onClick={() => setView('alerts')}><span className="metric-icon"><ShieldAlert size={19}/></span><span><small>{activeAlert.level}级{activeAlert.name}</small><strong>{number.format(alertMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (alertMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
-                <button type="button" className="metric-card warning" onClick={() => setView('alerts')}><span className="metric-icon"><AlertTriangle size={19}/></span><span><small>{applied.age || '24个月以上'}</small><strong>{number.format(ageMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (ageMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
-                <button type="button" className="metric-card retention" onClick={() => setView('alerts')}><span className="metric-icon"><SlidersHorizontal size={19}/></span><span><small>留存率（{retentionRangeText}）</small><strong>{number.format(retentionMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (retentionMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
-                <button type="button" className="metric-card service" onClick={() => setView('after-sales')}><span className="metric-icon"><CircleGauge size={19}/></span><span><small>{activePlan}</small><strong>{number.format(planMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (planMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className={`metric-card alert-level-${activeAlert.level}`} onClick={() => { setAnalysisMode('alert'); setView('alerts'); }}><span className="metric-icon"><ShieldAlert size={19}/></span><span><small>{activeAlert.level}级{activeAlert.name}</small><strong>{number.format(alertMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (alertMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className="metric-card warning" onClick={() => { setAnalysisMode('alert'); setView('alerts'); }}><span className="metric-icon"><AlertTriangle size={19}/></span><span><small>{applied.age || '24个月以上'}</small><strong>{number.format(ageMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (ageMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className="metric-card retention" onClick={() => { setAnalysisMode('alert'); setView('alerts'); }}><span className="metric-icon"><SlidersHorizontal size={19}/></span><span><small>留存率（{retentionRangeText}）</small><strong>{number.format(retentionMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (retentionMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
+                <button type="button" className="metric-card service" onClick={() => { setAnalysisMode('plan'); setView('alerts'); }}><span className="metric-icon"><CircleGauge size={19}/></span><span><small>{activePlan}</small><strong>{number.format(planMetricTotal)}</strong><em>项</em></span><p>占比：{(filteredTotal ? (planMetricTotal / filteredTotal) * 100 : 0).toFixed(1)} %</p></button>
               </section>
               <div className="overview-panels">
                 <section className="panel plan-alert-panel">
@@ -346,9 +359,24 @@ export default function StaticMaterialTrackingAnalysis() {
                   <footer><span><i className={`trend-dot trend-dot-${trendMode}`}/>{trendMeta.legend}</span><em>单位：项 · 截止 2026 年 6 月</em></footer>
                 </section>              </div>
             </div>}
-            {view === 'alerts' && <div className="matrix-view"><div className="matrix-header"><div><h2>警报二维分析</h2><p>留存率与库龄交叉分布，点击单元格查看对应材料</p></div><div className="segmented-control">{devStats.map((item) => <button type="button" className={matrixDev === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div><div className="matrix-layout"><section className="panel matrix-panel"><MatrixView matrix={linkedAlertMatrix} total={linkedAlertMatrixTotal} onSelect={(retention,age) => matrixDrill(retention,age)} /><footer><span><i className="heat-low"/>低</span><span><i className="heat-mid"/>中</span><span><i className="heat-high"/>高</span><em>颜色表示该开发类型中的相对集中度</em></footer></section><aside className="rule-panel"><h3>警报规则</h3>{alertStats.filter((item) => !applied.alert || String(item.level) === applied.alert).map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); return <div key={item.level}><AlertBadge level={item.level}/><strong>{number.format(linkedAlertTotals[index])} 项</strong></div>; })}<p>最终等级由库龄级别与留存率级别共同计算。1级优先跟进，6级为正常。</p></aside></div></div>}
-
-            {view === 'after-sales' && <div className="after-view"><section className="after-summary"><div><span className="metric-icon service"><PackageSearch size={20}/></span><p>留用/售后材料</p><strong>{number.format(linkedAfterSalesTotal)}</strong><em>项 · 占当前筛选材料 {((linkedAfterSalesTotal / Math.max(filteredTotal, 1)) * 100).toFixed(1)}%</em></div>{linkedAfterSalesByDev.map((item) => <button type="button" key={item.name} onClick={() => {setMatrixDev(item.name as DevType); drillDown({dev:item.name,plan:'留用/售后'});}}><span>{item.name}</span><strong>{number.format(item.value)}</strong><em>当前筛选</em><ChevronRight size={14}/></button>)}</section><div className="matrix-header compact"><div><h2>留用/售后风险矩阵</h2><p>按开发类型查看专项材料的库龄与留存率分布</p></div><div className="segmented-control">{devStats.map((item) => <button type="button" className={matrixDev === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}</button>)}</div></div><section className="panel matrix-panel"><MatrixView matrix={linkedAfterMatrix} total={linkedAfterMatrixTotal} onSelect={(retention,age) => matrixDrill(retention,age,'留用/售后')} /></section></div>}
+            {view === 'alerts' && <div className="matrix-view combined-analysis-view">
+              <div className="matrix-header combined-analysis-header">
+                <div><h2>警报与处理分析</h2><p>按留存率与库龄交叉分析，切换警报级别或处理方案查看材料分布</p></div>
+                <div className="analysis-header-actions"><div className="analysis-mode-switch" role="tablist" aria-label="分析维度"><button type="button" className={analysisMode === 'alert' ? 'active' : ''} onClick={() => setAnalysisMode('alert')}>警报级别</button><button type="button" className={analysisMode === 'plan' ? 'active' : ''} onClick={() => setAnalysisMode('plan')}>处理方案</button></div><div className="segmented-control">{matrixDevOptions.map((item) => <button type="button" className={matrixDevScope === item.name ? 'active' : ''} key={item.name} onClick={() => setMatrixDev(item.name)}>{item.name}<span>{number.format(item.value)}</span></button>)}</div></div>
+              </div>
+              <div className="matrix-layout combined-analysis-layout">
+                <section className="panel matrix-panel combined-matrix-panel"><MatrixView matrix={linkedAlertMatrix} total={linkedAlertMatrixTotal} onSelect={(retention,age) => matrixDrill(retention,age)} /><footer><span><i className="heat-low"/>低</span><span><i className="heat-mid"/>中</span><span><i className="heat-high"/>高</span><em>颜色表示当前筛选口径中的相对集中度</em></footer></section>
+                <aside className="analysis-selector-panel">
+                  <header><div><h3>{analysisMode === 'alert' ? '警报级别' : '处理方案'}</h3><p>点击切换矩阵数据</p></div><strong>{number.format(linkedAlertMatrixTotal)} 项</strong></header>
+                  <div className="analysis-option-list">
+                    <button type="button" className={analysisMode === 'alert' ? (!applied.alert ? 'active' : '') : (!applied.plan ? 'active' : '')} onClick={() => applyAnalysisFilter(analysisMode, '')}><i className="option-all"/><span>全部</span><strong>{number.format(analysisMode === 'alert' ? analysisAlertOptions.reduce((sum,item) => sum + item.value,0) : analysisPlanOptions.reduce((sum,item) => sum + item.value,0))}</strong></button>
+                    {analysisMode === 'alert' ? analysisAlertOptions.map((item) => <button type="button" className={applied.alert === String(item.level) ? 'active' : ''} key={item.level} onClick={() => applyAnalysisFilter('alert', String(item.level))}><i style={{background:item.color}}/><span>{item.level}级 {item.name}</span><strong>{number.format(item.value)}</strong></button>) : analysisPlanOptions.map((item) => <button type="button" className={applied.plan === item.name ? 'active' : ''} key={item.name} onClick={() => applyAnalysisFilter('plan', item.name)}><i style={{background:item.color}}/><span>{item.name}</span><strong>{number.format(item.value)}</strong></button>)}
+                  </div>
+                  {analysisMode === 'alert' && <section className="alert-standard-compact"><h4>警报标准</h4><div><table><thead><tr><th>留存率</th><th>级别</th></tr></thead><tbody>{retentionRows.map((item,index) => { const level = index < 3 ? 6 : index < 5 ? 3 : index === 5 ? 2 : 1; return <tr key={item}><td>{item}</td><td><AlertBadge level={level}/></td></tr>; })}</tbody></table><table><thead><tr><th>库龄</th><th>级别</th></tr></thead><tbody>{ageColumns.map((item,index) => <tr key={item}><td>{item}</td><td><AlertBadge level={[6,3,2,1,1][index]}/></td></tr>)}</tbody></table></div><p>最终警报等级取留存率与库龄判定中的较高风险等级。</p></section>}
+                  {analysisMode === 'plan' && <p className="analysis-panel-note">处理方案数量按当前开发类型、警报级别、库龄、留存率和时间筛选结果计算。</p>}
+                </aside>
+              </div>
+            </div>}
 
             {view === 'details' && <div className="details-view"><section className="detail-toolbar"><div><strong>材料明细</strong><span>共 {number.format(estimatedTotal)} 项</span><em>当前表格展示 Excel 代表性脱敏数据</em></div><div className="toolbar-actions"><div className="column-control"><button type="button" className="ghost-button" onClick={() => setColumnMenu(!columnMenu)}><Columns3 size={14}/>列设置</button>{columnMenu && <div className="column-popover"><header><strong>显示字段</strong><button type="button" onClick={() => setColumnMenu(false)}><X size={14}/></button></header>{columns.map(([key,label]) => <label key={key}><input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)}/><span>{label}</span></label>)}</div>}</div><button type="button" className="primary-button" onClick={() => showToast('已生成当前筛选条件的导出任务')}><Download size={14}/>导出</button></div></section><section className="detail-table-panel"><div className="detail-table-scroll"><table><thead><tr><th className="sticky-action">操作</th>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key} className={`col-${key}`}>{label}</th>)}</tr></thead><tbody>{pageRows.length ? pageRows.map((row) => <tr key={row.code}><td className="sticky-action"><button type="button" onClick={() => setDrawerRow(row)}>查看</button></td>{columns.filter(([key]) => visibleColumns.has(key)).map(([key]) => { const raw = row[key as keyof MaterialRow]; const value = typeof raw === 'number' && !['alert','ageMonths'].includes(key) ? number.format(raw) : raw; return <td key={key} title={String(value)} className={`col-${key}`}>{key === 'alert' ? <AlertBadge level={Number(raw)}/> : value}</td>; })}</tr>) : <tr><td colSpan={visibleColumns.size + 1} className="empty-state"><FileSearch size={32}/><strong>未找到匹配材料</strong><p>请调整筛选条件后重新查询</p><button type="button" onClick={reset}>重置筛选</button></td></tr>}</tbody></table></div><footer className="pagination"><span>第 {page} / {pageCount} 页</span><button type="button" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1,value-1))}><ChevronLeft size={15}/></button>{Array.from({length:pageCount},(_,index) => index+1).map((item) => <button type="button" className={page === item ? 'current' : ''} key={item} onClick={() => setPage(item)}>{item}</button>)}<button type="button" disabled={page >= pageCount} onClick={() => setPage((value) => Math.min(pageCount,value+1))}><ChevronRight size={15}/></button></footer></section></div>}
           </div>
