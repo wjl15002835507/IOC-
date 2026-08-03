@@ -278,7 +278,7 @@ export default function OrderTrackReport() {
     window.setTimeout(() => setToast(''), 3000);
   };
 
-  if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => setActiveReport('order-track')} />;
+  if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} />;
 
   return <div className="ioc-shell">
     <header className="topbar">
