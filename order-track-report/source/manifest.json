@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "format": "axhub-published-source",
+  "sourceRoot": "source",
+  "entry": "index.tsx",
+  "files": [
+    {
+      "path": "custom-sales-report.css",
+      "kind": "source"
+    },
+    {
+      "path": "CustomSalesReport.tsx",
+      "kind": "source"
+    },
+    {
+      "path": "index.tsx",
+      "kind": "entry"
+    },
+    {
+      "path": "style.css",
+      "kind": "source"
+    }
+  ]
+}
