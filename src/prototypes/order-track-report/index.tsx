@@ -247,6 +247,7 @@ function DateValue({ value, onChange }: { value: string; onChange: (value: strin
 export default function OrderTrackReport() {
   const [activeReport, setActiveReport] = useState<'order-track' | 'custom-sales'>('order-track');
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
+  const [analysisMenuOpen, setAnalysisMenuOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [submitted, setSubmitted] = useState<Filters>(initialFilters);
   const [collapsed, setCollapsed] = useState(false);
@@ -291,12 +292,20 @@ export default function OrderTrackReport() {
     <div className="workspace">
       <aside className="sidebar" aria-label="IOC 导航">
         <div className="platform-title">IOC运营平台</div>
-        <nav>
+        <nav onClick={(event) => {
+          const target = (event.target as HTMLElement).closest('button');
+          if (target?.textContent?.trim() === '分析看板') {
+            setAnalysisMenuOpen((value) => !value);
+            setReportMenuOpen(false);
+          }
+          if (target?.textContent?.trim() === '报表中心') setAnalysisMenuOpen(false);
+        }}>
           {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${label === '报表中心' && reportMenuOpen ? 'menu-active' : ''}`} onClick={() => label === '报表中心' && setReportMenuOpen((value) => !value)} key={label} aria-label={label}>
             <Icon size={17} strokeWidth={2} />
             <span>{label}</span>
           </button>)}
         </nav>
+        {analysisMenuOpen && <div className='report-menu'><b>分析看板</b><button onClick={() => window.location.assign('/prototypes/static-material-tracking-analysis')}>静态材料处理跟踪分析</button></div>}
         {reportMenuOpen && <div className="report-menu"><b>定制</b><button className="selected" onClick={() => setReportMenuOpen(false)}>订单跟踪报表</button><button onClick={() => setActiveReport('custom-sales')}>定制接单打款销售统计报表</button></div>}      </aside>
 
       <main className="main-area">
