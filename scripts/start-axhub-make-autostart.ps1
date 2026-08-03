@@ -7,6 +7,7 @@ $logDirectory = Join-Path $projectRoot '.axhub\make\logs'
 $logFile = Join-Path $logDirectory 'autostart.log'
 $acpRuntimeRoot = Join-Path $env:USERPROFILE '.axhub\make\acp-runtime'
 $acpRuntimeEntry = Join-Path $acpRuntimeRoot 'node_modules\@axhub\acp\bin\acp.mjs'
+$acpWorkspacePatcher = Join-Path $acpRuntimeRoot 'patch-windows-workspace.ps1'
 $requiredPath = @('C:\Windows\System32'; 'C:\Windows'; 'C:\Program Files\nodejs'; "$env:APPDATA\npm")
 $env:PATH = (($requiredPath + ($env:PATH -split ';')) | Select-Object -Unique) -join ';'
 try {
@@ -20,6 +21,8 @@ while (-not (Test-Path -LiteralPath $projectRoot) -and (Get-Date) -lt $projectDe
 if (-not (Test-Path -LiteralPath $projectRoot)) { throw "Axhub Make project path is unavailable: $projectRoot" }
 if (-not (Test-Path -LiteralPath $npx)) { throw "npx was not found: $npx" }
 if (Test-Path -LiteralPath $acpRuntimeEntry) {
+    if (-not (Test-Path -LiteralPath $acpWorkspacePatcher)) { throw "ACP workspace patcher is unavailable: $acpWorkspacePatcher" }
+    & $acpWorkspacePatcher -AcpRuntimeRoot $acpRuntimeRoot
     $env:AXHUB_ACP_UI_PROJECT_ROOT = $acpRuntimeRoot
 } else {
     Write-Warning "Fixed ACP runtime is unavailable; Make will fall back to npx."
