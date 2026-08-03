@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "format": "axhub-published-source",
+  "sourceRoot": "source",
+  "entry": "index.tsx",
+  "files": [
+    {
+      "path": "index.tsx",
+      "kind": "entry"
+    },
+    {
+      "path": "style.css",
+      "kind": "source"
+    }
+  ]
+}
