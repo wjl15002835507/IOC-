@@ -10,6 +10,7 @@ $acpRuntimeEntry = Join-Path $acpRuntimeRoot 'node_modules\@axhub\acp\bin\acp.mj
 $acpWorkspacePatcher = Join-Path $acpRuntimeRoot 'patch-windows-workspace.ps1'
 $requiredPath = @('C:\Windows\System32'; 'C:\Windows'; 'C:\Program Files\nodejs'; "$env:APPDATA\npm")
 $env:PATH = (($requiredPath + ($env:PATH -split ';')) | Select-Object -Unique) -join ';'
+Remove-Item -LiteralPath Env:CODEX_PATH -ErrorAction SilentlyContinue
 try {
     $response = Invoke-WebRequest -UseBasicParsing -Uri $healthUrl -TimeoutSec 3
     if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500) { exit 0 }
