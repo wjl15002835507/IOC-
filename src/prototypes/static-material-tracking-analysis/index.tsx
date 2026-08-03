@@ -12,12 +12,15 @@ import {
   CircleGauge,
   Columns3,
   Download,
+  FolderPlus,
   FileSearch,
   FileText,
   Grid2X2,
   LayoutDashboard,
   Menu,
   PackageSearch,
+  PieChart,
+  Printer,
   Search,
   Settings,
   ShieldAlert,
@@ -26,6 +29,7 @@ import {
   X,
 } from 'lucide-react';
 import './style.css';
+import '../shared/ioc-navigation.css';
 
 type ViewId = 'overview' | 'alerts' | 'after-sales' | 'details';
 type DevType = '软体' | '板木' | '定制';
@@ -133,7 +137,8 @@ const columns = [
 
 const menuItems = [
   { label:'我的应用', icon:Grid2X2 }, { label:'分析看板', icon:BarChart3 }, { label:'报表中心', icon:FileText },
-  { label:'材料管理', icon:Boxes }, { label:'配置中心', icon:Settings }, { label:'自定义报表', icon:SlidersHorizontal },
+  { label:'电商运营', icon:PieChart }, { label:'配置中心', icon:Settings }, { label:'导入导出', icon:Printer },
+  { label:'导入', icon:FolderPlus }, { label:'自定义报表配置', icon:SlidersHorizontal },
 ];
 
 function AlertBadge({ level }: { level: number }) {
@@ -173,6 +178,8 @@ export default function StaticMaterialTrackingAnalysis() {
   const [tooltipPosition, setTooltipPosition] = useState({ left: 0, top: 0 });
   const [trendMode, setTrendMode] = useState<'unprocessed' | 'submitted' | 'completed'>('unprocessed');
   const [analysisMode, setAnalysisMode] = useState<'alert' | 'plan'>('alert');
+  const [analysisMenuOpen, setAnalysisMenuOpen] = useState(false);
+  const [reportMenuOpen, setReportMenuOpen] = useState(false);
 
   const updateDraft = (key: keyof FilterState, value: string) => setDraft((current) => ({ ...current, [key]: value } as FilterState));
   const toggleRetention = (value: string) => setDraft((current) => ({ ...current, retention: current.retention.includes(value) ? current.retention.filter((item) => item !== value) : [...current.retention, value] }));
@@ -299,7 +306,7 @@ export default function StaticMaterialTrackingAnalysis() {
       <div className="topbar-main"><div className="breadcrumb"><Menu size={16}/><b>IOC运营平台</b><span>›</span><strong>报表中心</strong><span>›</span><b>静态材料处理跟踪分析</b></div><div className="user-area"><UserRound size={15}/><span>王俊励</span><ChevronDown size={14}/></div></div>
     </header>
     <div className="workspace">
-      <aside className="sidebar"><div className="platform-title">IOC运营平台</div><nav>{menuItems.map(({ label, icon: Icon }) => <button type="button" key={label} className={`nav-item ${label === '报表中心' ? 'menu-active' : ''}`}><Icon size={17}/><span>{label}</span></button>)}</nav></aside>
+    <aside className="sidebar" aria-label="IOC 导航"><div className="platform-title">IOC运营平台</div><nav>{menuItems.map(({ label, icon: Icon }) => <button type='button' key={label} className={`nav-item ${label === '分析看板' || (label === '报表中心' && reportMenuOpen) ? 'menu-active' : ''}`} onClick={() => { if (label === '分析看板') { setAnalysisMenuOpen((value) => !value); setReportMenuOpen(false); } if (label === '报表中心') { setReportMenuOpen((value) => !value); setAnalysisMenuOpen(false); } }}><Icon size={17}/><span>{label}</span></button>)}</nav>{analysisMenuOpen && <div className='ioc-sidebar-menu'><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' className='selected'>静态材料处理跟踪分析</button></div></div>}{reportMenuOpen && <div className='ioc-sidebar-menu'><h3>定制</h3><div className='ioc-sidebar-menu-list'><button type='button' onClick={() => window.location.assign('/prototypes/order-track-report')}>订单跟踪报表</button><button type='button' onClick={() => window.location.assign('/prototypes/order-track-report?report=custom-sales')}>定制接单打款销售统计报表</button></div></div>}</aside>
       <main className="main-area">
         <div className="tabbar"><span className="tab-close"><X size={14}/></span><span className="active-tab">静态材料处理跟踪分析<X size={12}/></span></div>
         <div className="analysis-content">
