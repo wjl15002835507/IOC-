@@ -261,7 +261,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
       : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
   const aggregateMatrix = (matrices: Record<DevType, Matrix>): Matrix => ({ rows: retentionRows, columns: ageColumns, values: retentionRows.map((_, rowIndex) => ageColumns.map((_, columnIndex) => devStats.reduce((sum, item) => sum + matrices[item.name].values[rowIndex][columnIndex], 0))) });
   const matrixDevScope = ((applied.dev as DevType) || matrixDev) as DevType | '全部';
-  const matrixDevOptions = [{ name: '全部', value: 2111 }, ...devStats] as const;  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false): Matrix => {
+  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false): Matrix => {
     const planData = planAlertByDev[dev];
     const planRow = applied.plan ? planData.rows.find((row) => row.name === applied.plan) : null;
     const planRatio = afterSales ? (applied.plan && applied.plan !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : applied.plan ? 0 : 1);
@@ -276,16 +276,20 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   };
   const linkedAlertMatrix = projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope);
   const linkedAfterMatrix = projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(afterMatrices) : afterMatrices[matrixDevScope], matrixDevScope, true);
+  const matrixDevOptions: Array<{ name: DevType | '全部'; value: number }> = [
+    { name: '全部', value: projectMatrix(aggregateMatrix(alertMatrices), '全部').values.flat().reduce((sum, value) => sum + value, 0) },
+    ...devStats.map((item) => ({ name: item.name, value: projectMatrix(alertMatrices[item.name], item.name).values.flat().reduce((sum, value) => sum + value, 0) })),
+  ];
   const linkedAlertMatrixTotal = linkedAlertMatrix.values.flat().reduce((sum, value) => sum + value, 0);
   const linkedAfterMatrixTotal = linkedAfterMatrix.values.flat().reduce((sum, value) => sum + value, 0);
   const linkedAlertTotals = alertStats.map((_, index) => chartRows.reduce((sum, row) => sum + row.alerts[index], 0));
   const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
   const linkedAfterSalesByDev = devStats.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
-  const analysisAlertOptions = alertStats.map((item, index) => ({ ...item, value: Math.round(overviewData.rows.filter((row) => !applied.plan || row.name === applied.plan).reduce((sum, row) => sum + row.alerts[index], 0) * secondaryRatio) }));
+  const analysisAlertOptions = alertStats.map((item, index) => ({ ...item, value: linkedAlertTotals[index] }));
   const analysisPlanOptions = overviewData.rows.map((row) => {
     const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
     const base = alertIndex >= 0 ? row.alerts[alertIndex] : row.total;
-    return { name: row.name, value: Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
+    return { name: row.name, value: applied.plan && applied.plan !== row.name ? 0 : Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
   });
   const applyAnalysisFilter = (key: 'alert' | 'plan', value: string) => {
     const filters = { ...applied, [key]: value };
