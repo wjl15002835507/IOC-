@@ -521,8 +521,12 @@ button { cursor: pointer; }
 .analysis-option-list button { min-height: 30px; padding: 3px 8px; }
 .alert-standard-compact { margin-top: 8px; padding-top: 8px; }
 .alert-standard-compact th, .alert-standard-compact td { height: 18px; padding: 1px 3px; }
-.alert-standard-compact p { margin-top: 5px; font-size: 8px; }`r`n/* Tighten the combined alert-analysis header so the matrix and standards have more room. */
+.alert-standard-compact p { margin-top: 5px; font-size: 8px; }
+/* Tighten the combined alert-analysis header so the matrix and standards have more room. */
 .view-content > .combined-analysis-view { margin-top: -8px; }
 .combined-analysis-header { min-height: 34px; margin-bottom: 4px; }
 .combined-analysis-layout { grid-template-columns: minmax(0,1fr) 310px; align-items: start; }
 .alert-standard-compact > div { gap: 8px; }
+/* Keep the matrix and alert-standard panels on the same height. */
+.combined-analysis-layout { align-items: stretch; }
+.combined-matrix-panel, .analysis-selector-panel { min-height: 0; height: auto; }
