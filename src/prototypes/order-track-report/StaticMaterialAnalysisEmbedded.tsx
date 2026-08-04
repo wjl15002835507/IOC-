@@ -290,7 +290,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
     return { ...item, value };
   });
   const analysisPlanOptions = overviewData.rows.map((row) => {
-    const alertIndex = alertStats.findIndex((item) => String(item.level) === alertFilter);
+    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
     const base = alertIndex >= 0 ? row.alerts[alertIndex] : row.total;
     return { name: row.name, value: applied.plan && applied.plan !== row.name ? 0 : Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
   });
