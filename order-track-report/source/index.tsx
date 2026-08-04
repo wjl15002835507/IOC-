@@ -20,6 +20,7 @@ import {
 import './style.css';
 import './custom-sales-report.css';
 import CustomSalesReport from './CustomSalesReport';
+import StaticMaterialAnalysis from './StaticMaterialAnalysisEmbedded';
 import '../shared/ioc-navigation.css';
 
 type Filters = {
@@ -92,8 +93,8 @@ const columns = [
   ['planDoneDate', '生产下线日期'],
   ['purchaseStatus', '是否有外购件'],
   ['currentStatus', '当前状态'],
-  ['parallelState1', '并行状态1'],
-  ['parallelState2', '并行状态2'],
+  ['parallelState1', '并行状态'],
+  ['parallelState2', '并行状态'],
   ['amount', '金额'],
   ['reviewDone', '审图完成时间'],
   ['drawingDone', '图纸确认完成时间'],
@@ -139,29 +140,29 @@ const menuItems = [
 ];
 
 const rowSeeds = [
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽刚'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56663', '李爽'],
   ['1001', '四川区域', '刘博文', 'K101109701', '泸州市龙马潭区巨洋大楼华宇装饰轻居店', 'EF56664', '卢艳'],
-  ['1011', '山东区域', '李文斌', 'K100565101', '临沂市兰山区柳青街道轻居店', 'EF56665', '郝凤昆'],
-  ['1003', '河北区域', '李泽茜', 'K100566502', '沧州市河间市米各庄镇东大线轻居店', 'EF56666', '马亚青'],
-  ['1011', '山东区域', '李文斌', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56667', '张兵'],
-  ['1011', '山东区域', '李文斌', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56667', '张兵'],
-  ['1011', '山东区域', '李文斌', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56667', '张兵'],
-  ['1020', '河南区域', '陈海东', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花芸'],
-  ['1020', '河南区域', '陈海东', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花芸'],
-  ['1020', '河南区域', '陈海东', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花芸'],
-  ['1020', '河南区域', '陈海东', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花芸'],
-  ['1011', '山东区域', '李文斌', 'K101057001', '德州市宁津县曼城街道河西四村轻居店', 'EF56669', '张璐'],
+  ['1011', '山东区域', '李文静', 'K100565101', '临沂市兰山区柳青街道轻居店', 'EF56665', '郭凤霞'],
+  ['1003', '河北区域', '李泽茂', 'K100566502', '沧州市河间市米各庄镇东大线轻居店', 'EF56666', '马亚飞'],
+  ['1011', '山东区域', '李文静', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56667', '张兵'],
+  ['1011', '山东区域', '李文静', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56667', '张兵'],
+  ['1011', '山东区域', '李文静', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56667', '张兵'],
+  ['1020', '河南区域', '陈海涛', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花花'],
+  ['1020', '河南区域', '陈海涛', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花花'],
+  ['1020', '河南区域', '陈海涛', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花花'],
+  ['1020', '河南区域', '陈海涛', 'K100623901', '开封市尉氏县城关镇友家装饰轻居店', 'EF56668', '李花花'],
+  ['1011', '山东区域', '李文静', 'K101057001', '德州市宁津县曼城街道河西四村轻居店', 'EF56669', '张璐'],
   ['1013', '安徽区域', '肖欢', 'K101085001', '阜阳市阜南县鹿城镇国邦建材城轻居店', 'EF56670', '王小林'],
-  ['1020', '河南区域', '陈海东', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56671', '李爽刚'],
+  ['1020', '河南区域', '陈海涛', 'K101097701', '驻马店市泌阳县花园街道中州国际未来装修轻居店', 'EF56671', '李爽'],
   ['1001', '四川区域', '刘博文', 'K101109701', '泸州市龙马潭区巨洋大楼华宇装饰轻居店', 'EF56672', '卢艳'],
-  ['1011', '山东区域', '李文斌', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56673', '张兵'],
-  ['1003', '河北区域', '李泽茜', 'K100566502', '沧州市河间市米各庄镇东大线轻居店', 'EF56674', '马亚青'],
+  ['1011', '山东区域', '李文静', 'K100626402', '济南市平阴县榆山街道文笔山路轻居店', 'EF56673', '张兵'],
+  ['1003', '河北区域', '李泽茂', 'K100566502', '沧州市河间市米各庄镇东大线轻居店', 'EF56674', '马亚飞'],
   ['1013', '安徽区域', '肖欢', 'K101085001', '阜阳市阜南县鹿城镇国邦建材城轻居店', 'EF56675', '王小林'],
 ] as const;
 
@@ -176,7 +177,7 @@ const tableRows: TableRow[] = rowSeeds.map((seed, index) => {
     shopCode,
     dealerCode: `Z${269716 + index}`,
     shopName,
-    cabinetStoreName: `（定橱）（${regionName}）${shopName}`,
+    cabinetStoreName: `定制柜 ${regionName} ${shopName}`,
     sapCode: String(1004710 + index),
     orderNo,
     cabinetNo: `${orderNo}01`,
@@ -234,7 +235,7 @@ const tableRows: TableRow[] = rowSeeds.map((seed, index) => {
 });
 
 const yesNo = ['', '是', '否'];
-const channels = [['', '全部'], ['1', '天猫'], ['2', '京东'], ['3', '苏宁'], ['4', '唯品会'], ['5', '其他']];
+const channels = [['', '全部'], ['1', '天猫'], ['2', '浜笢'], ['3', '鑻忓畞'], ['4', '鍞搧浼?'], ['5', '其他']];
 
 function SelectField({ value, onChange, children }: { value: string; onChange: (value: string) => void; children: React.ReactNode }) {
   return <select value={value} onChange={(event) => onChange(event.target.value)}>{children}</select>;
@@ -246,7 +247,11 @@ function DateValue({ value, onChange }: { value: string; onChange: (value: strin
 }
 
 export default function OrderTrackReport() {
-  const [activeReport, setActiveReport] = useState<'order-track' | 'custom-sales'>(() => new URLSearchParams(window.location.search).get('report') === 'custom-sales' ? 'custom-sales' : 'order-track');
+  const [activeReport, setActiveReport] = useState<'order-track' | 'custom-sales' | 'static-material'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('view') === 'static-material') return 'static-material';
+    return params.get('report') === 'custom-sales' ? 'custom-sales' : 'order-track';
+  });
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
   const [analysisMenuOpen, setAnalysisMenuOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(initialFilters);
@@ -278,7 +283,7 @@ export default function OrderTrackReport() {
     window.setTimeout(() => setToast(''), 3000);
   };
 
-  if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} />;
+  if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} onOpenStatic={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setActiveReport('static-material'); }} />;
 
   return <div className="ioc-shell">
     <header className="topbar">
@@ -306,8 +311,8 @@ export default function OrderTrackReport() {
             <span>{label}</span>
           </button>)}
         </nav>
-        {analysisMenuOpen && <div className='ioc-sidebar-menu'><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' onClick={() => window.location.assign('/prototypes/static-material-tracking-analysis')}>静态材料处理跟踪分析</button></div></div>}
-        {reportMenuOpen && <div className='ioc-sidebar-menu'><h3>定制</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button></div></div>}      </aside>
+        {analysisMenuOpen && <div className='ioc-sidebar-menu'><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'static-material' ? 'selected' : ''} onClick={() => { setActiveReport('static-material'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>静态材料处理跟踪分析</button></div></div>}
+        {reportMenuOpen && <div className='ioc-sidebar-menu'><h3>定制</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); window.history.replaceState(null, '', '/prototypes/order-track-report'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button></div></div>}      </aside>
 
       <main className="main-area">
         <div className="tabbar">
@@ -315,7 +320,7 @@ export default function OrderTrackReport() {
           <div className="active-tab"><Circle size={8} fill="currentColor" /><span>订单跟踪报表</span><X size={13} /></div>
         </div>
 
-        <div className="report-content">
+        {activeReport === 'static-material' ? <StaticMaterialAnalysis embedded /> : <div className="report-content">
           <section className={`filter-panel ${collapsed ? 'is-collapsed' : ''}`} aria-label="订单筛选条件">
             {!collapsed && <div className="filter-grid">
               <label><span>订单号</span><input value={filters.orderNo} placeholder="请输入" onChange={(event) => update('orderNo', event.target.value)} /></label>
@@ -326,8 +331,8 @@ export default function OrderTrackReport() {
 
               <label><span>客户姓名</span><input value={filters.custname} placeholder="请输入" onChange={(event) => update('custname', event.target.value)} /></label>
               <label><span>产品类型</span><SelectField value={filters.prdLevel1Code} onChange={(value) => update('prdLevel1Code', value)}><option value="">全部</option><option value="wardrobe">衣柜</option><option value="cabinet">橱柜</option></SelectField></label>
-              <label className="date-range"><span>接单时间</span><div className="date-controls"><DateValue value={filters.startDate} onChange={(value) => update('startDate', value)} /><em>----至----</em><DateValue value={filters.endDate} onChange={(value) => update('endDate', value)} /></div></label>
-              <label><span>销售类型</span><SelectField value={filters.cusLevel1Code} onChange={(value) => update('cusLevel1Code', value)}><option value="">全部</option><option value="light">轻居</option><option value="retail">零售</option></SelectField></label>
+              <label className="date-range"><span>接单时间</span><div className="date-controls"><DateValue value={filters.startDate} onChange={(value) => update('startDate', value)} /><em>---- 至 ----</em><DateValue value={filters.endDate} onChange={(value) => update('endDate', value)} /></div></label>
+              <label><span>销鍞被鍨</span><SelectField value={filters.cusLevel1Code} onChange={(value) => update('cusLevel1Code', value)}><option value="">全部</option><option value="light">杞诲眳</option><option value="retail">闆跺敭</option></SelectField></label>
 
               <label><span>订单属性</span><SelectField value={filters.orderPropertyCode} onChange={(value) => update('orderPropertyCode', value)}><option value="">全部</option><option value="1">常规单</option><option value="2">补件单</option></SelectField></label>
               <label><span>是否生产下线</span><SelectField value={filters.isActualDone} onChange={(value) => update('isActualDone', value)}>{yesNo.map((item) => <option value={item} key={item || 'all'}>{item || '全部'}</option>)}</SelectField></label>
@@ -353,16 +358,16 @@ export default function OrderTrackReport() {
             </div>
             <footer className="pagination">
               <span>共 240862 条</span>
-              <select defaultValue="50" aria-label="每页条数"><option value="50">50条/页</option></select>
-              <button type="button" disabled>‹</button>
+              <select defaultValue="50" aria-label="每页条数"><option value="50">50 条/页</option></select>
+              <button type="button" disabled>·</button>
               {[1, 2, 3, 4, 5, 6].map((page) => <button type="button" className={page === 1 ? 'current' : ''} key={page}>{page}</button>)}
-              <span className="ellipsis">•••</span>
+              <span className="ellipsis">···</span>
               <button type="button">4818</button>
-              <button type="button">›</button>
+              <button type="button">·</button>
               <span>前往</span><input aria-label="前往页码" defaultValue="1" /><span>页</span>
             </footer>
           </section>
-        </div>
+        </div>}
       </main>
     </div>
 

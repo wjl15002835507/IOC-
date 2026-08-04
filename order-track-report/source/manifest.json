@@ -17,6 +17,14 @@
       "kind": "entry"
     },
     {
+      "path": "static-material-analysis.css",
+      "kind": "source"
+    },
+    {
+      "path": "StaticMaterialAnalysisEmbedded.tsx",
+      "kind": "source"
+    },
+    {
       "path": "style.css",
       "kind": "source"
     }
