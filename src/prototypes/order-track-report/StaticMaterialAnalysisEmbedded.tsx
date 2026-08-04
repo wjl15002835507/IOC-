@@ -261,11 +261,11 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
       : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
   const aggregateMatrix = (matrices: Record<DevType, Matrix>): Matrix => ({ rows: retentionRows, columns: ageColumns, values: retentionRows.map((_, rowIndex) => ageColumns.map((_, columnIndex) => devStats.reduce((sum, item) => sum + matrices[item.name].values[rowIndex][columnIndex], 0))) });
   const matrixDevScope = ((applied.dev as DevType) || matrixDev) as DevType | '全部';
-  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false): Matrix => {
+  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false, alertFilter = applied.alert): Matrix => {
     const planData = planAlertByDev[dev];
     const planRow = applied.plan ? planData.rows.find((row) => row.name === applied.plan) : null;
     const planRatio = afterSales ? (applied.plan && applied.plan !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : applied.plan ? 0 : 1);
-    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
+    const alertIndex = alertStats.findIndex((item) => String(item.level) === alertFilter);
     const alertRatio = alertIndex >= 0 ? planData.rows.reduce((sum, row) => sum + row.alerts[alertIndex], 0) / planData.total : 1;
     const scale = planRatio * alertRatio * (applied.month !== '2026-06' ? .86 : 1) * (applied.keyword.trim() ? .58 : 1);
     return { ...matrix, values: matrix.values.map((row, rowIndex) => row.map((value, columnIndex) => {
@@ -285,9 +285,12 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   const linkedAlertTotals = alertStats.map((_, index) => chartRows.reduce((sum, row) => sum + row.alerts[index], 0));
   const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
   const linkedAfterSalesByDev = devStats.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
-  const analysisAlertOptions = alertStats.map((item, index) => ({ ...item, value: linkedAlertTotals[index] }));
+  const analysisAlertOptions = alertStats.map((item) => {
+    const value = applied.alert && applied.alert !== String(item.level) ? 0 : projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope, false, String(item.level)).values.flat().reduce((sum, matrixValue) => sum + matrixValue, 0);
+    return { ...item, value };
+  });
   const analysisPlanOptions = overviewData.rows.map((row) => {
-    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
+    const alertIndex = alertStats.findIndex((item) => String(item.level) === alertFilter);
     const base = alertIndex >= 0 ? row.alerts[alertIndex] : row.total;
     return { name: row.name, value: applied.plan && applied.plan !== row.name ? 0 : Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
   });
@@ -382,7 +385,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
                 <aside className="analysis-selector-panel">
                   <header><div><h3>{analysisMode === 'alert' ? '警报级别' : '处理方案'}</h3><p>点击切换矩阵数据</p></div><strong>{number.format(linkedAlertMatrixTotal)} 项</strong></header>
                   <div className="analysis-option-list">
-                    <button type="button" className={analysisMode === 'alert' ? (!applied.alert ? 'active' : '') : (!applied.plan ? 'active' : '')} onClick={() => applyAnalysisFilter(analysisMode, '')}><i className="option-all"/><span>全部</span><strong>{number.format(analysisMode === 'alert' ? analysisAlertOptions.reduce((sum,item) => sum + item.value,0) : analysisPlanOptions.reduce((sum,item) => sum + item.value,0))}</strong></button>
+                    <button type="button" className={analysisMode === 'alert' ? (!applied.alert ? 'active' : '') : (!applied.plan ? 'active' : '')} onClick={() => applyAnalysisFilter(analysisMode, '')}><i className="option-all"/><span>全部</span><strong>{number.format(linkedAlertMatrixTotal)}</strong></button>
                     {analysisMode === 'alert' ? analysisAlertOptions.map((item) => <button type="button" className={applied.alert === String(item.level) ? 'active' : ''} key={item.level} onClick={() => applyAnalysisFilter('alert', String(item.level))}><i style={{background:item.color}}/><span>{item.level}级{item.name}</span><strong>{number.format(item.value)}</strong></button>) : analysisPlanOptions.map((item) => <button type="button" className={applied.plan === item.name ? 'active' : ''} key={item.name} onClick={() => applyAnalysisFilter('plan', item.name)}><i style={{background:item.color}}/><span>{item.name}</span><strong>{number.format(item.value)}</strong></button>)}
                   </div>
                   {analysisMode === 'alert' && <section className="alert-standard-compact"><h4>警报标准</h4><div><table><thead><tr><th>留存率</th><th>级别</th></tr></thead><tbody>{retentionRows.map((item,index) => { const level = index < 3 ? 6 : index < 5 ? 3 : index === 5 ? 2 : 1; return <tr key={item}><td>{item}</td><td><AlertBadge level={level}/></td></tr>; })}</tbody></table><table><thead><tr><th>库龄</th><th>级别</th></tr></thead><tbody>{ageColumns.map((item,index) => <tr key={item}><td>{item}</td><td><AlertBadge level={[6,3,2,1,1][index]}/></td></tr>)}</tbody></table></div><p>最终警报等级取留存率与库龄判定中的较高风险等级。</p></section>}
