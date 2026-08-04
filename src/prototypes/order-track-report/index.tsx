@@ -285,12 +285,14 @@ export default function OrderTrackReport() {
 
   if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} onOpenStatic={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setActiveReport('static-material'); }} />;
 
+  const activeReportTitle = activeReport === 'static-material' ? '静态材料跟踪处理分析' : '订单跟踪报表';
+
   return <div className="ioc-shell">
     <header className="topbar">
       <div className="brand"><span className="brand-latin">QUANU</span><span>全友</span></div>
       <div className="topbar-main">
         <Menu size={17} strokeWidth={2.2} aria-hidden="true" />
-        <div className="breadcrumb"><span>首页</span><b>/</b><strong>订单跟踪报表</strong></div>
+        <div className="breadcrumb"><span>首页</span><b>/</b><strong>{activeReportTitle}</strong></div>
         <div className="user-area"><UserRound size={15} fill="currentColor" /><span>王俊励</span><ChevronDown size={14} /></div>
       </div>
     </header>
@@ -317,7 +319,7 @@ export default function OrderTrackReport() {
       <main className="main-area">
         <div className="tabbar">
           <div className="tab-close"><X size={18} /></div>
-          <div className="active-tab"><Circle size={8} fill="currentColor" /><span>订单跟踪报表</span><X size={13} /></div>
+          <div className="active-tab"><Circle size={8} fill="currentColor" /><span>{activeReportTitle}</span><X size={13} /></div>
         </div>
 
         {activeReport === 'static-material' ? <StaticMaterialAnalysis embedded /> : <div className="report-content">
