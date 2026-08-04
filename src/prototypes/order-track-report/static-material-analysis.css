@@ -56,6 +56,7 @@ button { cursor: pointer; }
 .keyword-field input::placeholder { color: #b0b9bd; }
 
 .view-tabs { display: flex; flex: 0 0 39px; align-items: end; gap: 2px; padding: 0 14px; border-bottom: 1px solid #d8e2e0; background: #fff; }
+.view-tabs nav { display: flex; min-width: 0; flex: 1 1 auto; align-items: end; gap: 2px; }
 .view-tabs button { position: relative; display: flex; height: 38px; align-items: center; gap: 6px; padding: 0 17px; border: 0; color: #657278; background: transparent; font-size: 13px; }
 .view-tabs button:hover { color: var(--green-dark); }
 .view-tabs button.active { color: var(--green-dark); font-weight: 600; }
@@ -124,6 +125,8 @@ button { cursor: pointer; }
 .risk-matrix { width: 100%; min-width: 720px; border-spacing: 0; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
 .risk-matrix th, .risk-matrix td { height: 40px; padding: 0; border-right: 1px solid #e3eae9; border-bottom: 1px solid #e3eae9; text-align: center; }
 .risk-matrix thead th { height: 39px; color: #657278; background: #f3f6f6; font-weight: 600; }
+.risk-matrix thead th.matrix-axis-heading { height: 39px; padding: 0 6px; text-align: center; vertical-align: middle; white-space: nowrap; }
+.matrix-axis-heading i { color: #9aa6a9; font-size: 10px; font-style: normal; font-weight: 400; }
 .risk-matrix thead th:first-child, .risk-matrix tbody th { width: 102px; }
 .risk-matrix tbody th { padding: 0 9px; color: #637076; background: #fafcfc; text-align: right; font-weight: 500; }
 .risk-matrix td button { position: relative; display: flex; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; border: 0; color: #4c5a60; background: rgb(195 66 62 / calc(.03 + var(--heat) * .72)); }
@@ -488,3 +491,38 @@ button { cursor: pointer; }
 .risk-matrix tfoot th, .risk-matrix tfoot td { height: 38px; border-right: 1px solid #d9e3e1; border-top: 1px solid #cfdad7; border-bottom: 0; color: #34484e; background: #eef4f3; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .risk-matrix tfoot th { padding: 0 9px; text-align: right; }
 .risk-matrix tfoot td:last-child { background: #e7efed; color: var(--green-dark); }
+.material-analysis-embedded {
+  display: contents;
+}
+
+.material-analysis-embedded > .topbar,
+.material-analysis-embedded > .watermark-layer {
+  display: none;
+}
+
+.material-analysis-embedded > .workspace,
+.material-analysis-embedded > .workspace > .main-area,
+.material-analysis-embedded > .workspace > .main-area > .analysis-content {
+  display: contents;
+}
+
+.material-analysis-embedded > .workspace > .sidebar,
+.material-analysis-embedded > .workspace > .main-area > .tabbar {
+  display: none;
+}
+
+.material-analysis-embedded > .workspace > .main-area > .analysis-content {
+  width: 100%;
+  height: 100%;
+}
+/* Keep the complete alert standard visible beside the matrix. */
+.analysis-selector-panel { overflow: visible; }
+.analysis-option-list { gap: 4px; margin-top: 7px; }
+.analysis-option-list button { min-height: 30px; padding: 3px 8px; }
+.alert-standard-compact { margin-top: 8px; padding-top: 8px; }
+.alert-standard-compact th, .alert-standard-compact td { height: 18px; padding: 1px 3px; }
+.alert-standard-compact p { margin-top: 5px; font-size: 8px; }`r`n/* Tighten the combined alert-analysis header so the matrix and standards have more room. */
+.view-content > .combined-analysis-view { margin-top: -8px; }
+.combined-analysis-header { min-height: 34px; margin-bottom: 4px; }
+.combined-analysis-layout { grid-template-columns: minmax(0,1fr) 310px; align-items: start; }
+.alert-standard-compact > div { gap: 8px; }
