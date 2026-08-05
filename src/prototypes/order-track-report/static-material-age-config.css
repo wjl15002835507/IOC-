@@ -28,4 +28,15 @@
 .dev-tag { padding:2px 6px; border-radius:2px; color:#008f72; background:transparent; }
 .edit-button { color:#00a887; font-size:12px; }
 .rule-example { color:#596b72; }
-.config-dialog-backdrop { inset:30px 0 0 150px; }
+.config-dialog-backdrop { inset:30px 0 0 150px; }/* Screenshot-aligned layout */
+.age-config-content { padding: 8px 6px 10px; background: #dff2ea; }
+.config-heading { display:none; }
+.config-filter { min-height:44px; margin:0 0 5px; padding:6px 12px; border:0; border-radius:4px; background:#fff; }
+.config-filter .text-button { height:28px; border:1px solid #ff6738; border-radius:3px; color:#fff; background:#ff6738; }
+.config-table-toolbar { display:flex; height:38px; align-items:center; padding:4px 10px; background:#fff; }
+.config-table-toolbar .primary-button { height:25px; padding:0 13px; border-radius:3px; font-size:12px; }
+.config-table-panel { margin:0; border:0; border-radius:0; background:#fff; }
+.config-table-panel table { font-size:12px; }
+.config-table-panel th { height:34px; padding:0 10px; background:#f1f4f8; }
+.config-table-panel td { height:28px; padding:0 10px; }
+.config-table-panel footer { height:42px; padding:0 12px; }
