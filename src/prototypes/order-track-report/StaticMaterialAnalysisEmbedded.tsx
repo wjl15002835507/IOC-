@@ -177,6 +177,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState('');
   const [hoveredSegment, setHoveredSegment] = useState<{ name: string; level: number; value: number; total: number } | null>(null);
+  const [chartAlertLevel, setChartAlertLevel] = useState<number | ''>('');
   const [tooltipPosition, setTooltipPosition] = useState({ left: 0, top: 0 });
   const [trendMode, setTrendMode] = useState<'unprocessed' | 'submitted' | 'completed'>('unprocessed');
   const [analysisMode, setAnalysisMode] = useState<'alert' | 'plan'>('alert');
@@ -226,7 +227,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   const monthRatio = applied.month !== '2026-06' ? .86 : 1;
   const keywordRatio = applied.keyword.trim() ? .58 : 1;
   const secondaryRatio = ageRatio * retentionRatio * monthRatio * keywordRatio;
-  const visibleAlertDescriptors = alertStats.filter((item) => !applied.alert || String(item.level) === applied.alert);
+  const visibleAlertDescriptors = alertStats.filter((item) => (!applied.alert || String(item.level) === applied.alert) && (chartAlertLevel === '' || item.level === chartAlertLevel));
   const chartRows = overviewData.rows.filter((row) => !applied.plan || row.name === applied.plan).map((row) => {
     const alerts = row.alerts.map((value, index) => visibleAlertDescriptors.some((item) => item.level === alertStats[index].level) ? Math.round(value * secondaryRatio) : 0);
     return { name: row.name, alerts, total: alerts.reduce((sum, value) => sum + value, 0) };
