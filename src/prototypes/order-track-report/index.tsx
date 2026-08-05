@@ -298,17 +298,11 @@ export default function OrderTrackReport() {
     </header>
 
     <div className="workspace">
-      <aside className="sidebar" aria-label="IOC 导航">
+      <aside className="sidebar" aria-label="IOC 导航" onMouseLeave={() => { setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>
         <div className="platform-title">IOC运营平台</div>
-        <nav onClick={(event) => {
-          const target = (event.target as HTMLElement).closest('button');
-          if (target?.textContent?.trim() === '分析看板') {
-            setAnalysisMenuOpen((value) => !value);
-            setReportMenuOpen(false);
-          }
-          if (target?.textContent?.trim() === '报表中心') setAnalysisMenuOpen(false);
-        }}>
-          {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onClick={() => label === '报表中心' && setReportMenuOpen((value) => !value)} key={label} aria-label={label}>
+        <nav data-hover-navigation>
+>
+          {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onMouseEnter={() => { if (label === '分析看板') { setAnalysisMenuOpen(true); setReportMenuOpen(false); } else if (label === '报表中心') { setReportMenuOpen(true); setAnalysisMenuOpen(false); } else { setAnalysisMenuOpen(false); setReportMenuOpen(false); } }} key={label} aria-label={label}>
             <Icon size={17} strokeWidth={2} />
             <span>{label}</span>
           </button>)}

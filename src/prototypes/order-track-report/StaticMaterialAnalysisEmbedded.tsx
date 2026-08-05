@@ -261,10 +261,10 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
       : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
   const aggregateMatrix = (matrices: Record<DevType, Matrix>): Matrix => ({ rows: retentionRows, columns: ageColumns, values: retentionRows.map((_, rowIndex) => ageColumns.map((_, columnIndex) => devStats.reduce((sum, item) => sum + matrices[item.name].values[rowIndex][columnIndex], 0))) });
   const matrixDevScope = ((applied.dev as DevType) || matrixDev) as DevType | '全部';
-  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false, alertFilter = applied.alert): Matrix => {
+  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false, alertFilter = applied.alert, planFilter = applied.plan): Matrix => {
     const planData = planAlertByDev[dev];
-    const planRow = applied.plan ? planData.rows.find((row) => row.name === applied.plan) : null;
-    const planRatio = afterSales ? (applied.plan && applied.plan !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : applied.plan ? 0 : 1);
+    const planRow = planFilter ? planData.rows.find((row) => row.name === planFilter) : null;
+    const planRatio = afterSales ? (planFilter && planFilter !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : planFilter ? 0 : 1);
     const alertIndex = alertStats.findIndex((item) => String(item.level) === alertFilter);
     const alertRatio = alertIndex >= 0 ? planData.rows.reduce((sum, row) => sum + row.alerts[alertIndex], 0) / planData.total : 1;
     const scale = planRatio * alertRatio * (applied.month !== '2026-06' ? .86 : 1) * (applied.keyword.trim() ? .58 : 1);
@@ -290,9 +290,8 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
     return { ...item, value };
   });
   const analysisPlanOptions = overviewData.rows.map((row) => {
-    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
-    const base = alertIndex >= 0 ? row.alerts[alertIndex] : row.total;
-    return { name: row.name, value: applied.plan && applied.plan !== row.name ? 0 : Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
+    const value = applied.plan && applied.plan !== row.name ? 0 : projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope, false, applied.alert, row.name).values.flat().reduce((sum, matrixValue) => sum + matrixValue, 0);
+    return { name: row.name, value, color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
   });
   const applyAnalysisFilter = (key: 'alert' | 'plan', value: string) => {
     const filters = { ...applied, [key]: value };
