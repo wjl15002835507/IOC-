@@ -531,4 +531,7 @@ button { cursor: pointer; }
 .combined-analysis-layout { align-items: stretch; }
 .combined-matrix-panel, .analysis-selector-panel { min-height: 0; height: auto; }
 .alert-legend button.selected { border-color:#08a580; color:#087d66; background:#e8f7f2; box-shadow:inset 0 -2px 0 #08a580; }
-.alert-legend button.alert-legend-all.selected { border:1px solid #08a580 !important; color:#087d66 !important; background:#e8f7f2 !important; }
+.alert-legend button.alert-legend-all.selected { border:1px solid #08a580 !important; color:#087d66 !important; background:#e8f7f2 !important; }/* 全部按钮与警报级别按钮保持一致 */
+.alert-legend button.alert-legend-all { display:grid !important; min-width:92px !important; height:32px !important; grid-template-columns:8px minmax(0,1fr) !important; grid-template-rows:14px 12px !important; align-items:center !important; gap:0 6px !important; padding:2px 7px !important; border:1px solid #e5ebe9 !important; border-radius:3px !important; color:#68767c !important; background:#fff !important; font-size:inherit !important; font-weight:400 !important; text-align:left !important; box-shadow:none !important; }
+.alert-legend button.alert-legend-all::before { width:8px; height:8px; grid-row:1 / 3; border-radius:2px; background:#168b72; content:""; }
+.alert-legend button.alert-legend-all.selected { border-color:#08a580 !important; color:#087d66 !important; background:#e8f7f2 !important; box-shadow:inset 0 -2px 0 #08a580 !important; font-weight:600 !important; }
