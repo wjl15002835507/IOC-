@@ -304,16 +304,17 @@ export default function OrderTrackReport() {
     </header>
 
     <div className="workspace">
-      <aside className="sidebar" aria-label="IOC 导航" onMouseLeave={() => { setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>
+      <aside className="sidebar" aria-label="IOC 导航" onMouseLeave={() => { setAnalysisMenuOpen(false); setReportMenuOpen(false); setConfigMenuOpen(false); }}>
         <div className="platform-title">IOC运营平台</div>
         <nav data-hover-navigation>
-          {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onMouseEnter={(event) => { const sidebarTop = event.currentTarget.closest('.sidebar')?.getBoundingClientRect().top || 0; setSidebarMenuTop(event.currentTarget.getBoundingClientRect().top - sidebarTop); if (label === '分析看板') { setAnalysisMenuOpen(true); setReportMenuOpen(false); } else if (label === '报表中心') { setReportMenuOpen(true); setAnalysisMenuOpen(false); } else { setAnalysisMenuOpen(false); setReportMenuOpen(false); } }} key={label} aria-label={label}>
+          {menuItems.map(({ label, icon: Icon }, itemIndex) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onMouseEnter={(event) => { const sidebarTop = event.currentTarget.closest('.sidebar')?.getBoundingClientRect().top || 0; setSidebarMenuTop(event.currentTarget.getBoundingClientRect().top - sidebarTop); if (label === '分析看板') { setAnalysisMenuOpen(true); setReportMenuOpen(false); setConfigMenuOpen(false); } else if (label === '报表中心') { setReportMenuOpen(true); setAnalysisMenuOpen(false); setConfigMenuOpen(false); } else if (itemIndex === 4) { setConfigMenuOpen(true); setAnalysisMenuOpen(false); setReportMenuOpen(false); } else { setAnalysisMenuOpen(false); setReportMenuOpen(false); setConfigMenuOpen(false); } }} key={label} aria-label={label}>
             <Icon size={17} strokeWidth={2} />
             <span>{label}</span>
           </button>)}
         </nav>
         {analysisMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'static-material' ? 'selected' : ''} onClick={() => { setActiveReport('static-material'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>静态材料处理跟踪分析</button></div></div>}
         {reportMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>定制</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); window.history.replaceState(null, '', '/prototypes/order-track-report'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button></div></div>}      </aside>
+        {configMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>配置中心</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'age-config' ? 'selected' : ''} onClick={() => { setActiveReport('age-config'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=age-config'); setConfigMenuOpen(false); }}>静态材料库龄配置</button></div></div>}
 
       <main className="main-area">
         <div className="tabbar">
