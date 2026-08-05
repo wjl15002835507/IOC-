@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { BarChart3, Circle, FileText, FolderPlus, Grid2X2, Menu, PieChart, Printer, Settings, SlidersHorizontal, UserRound, X } from 'lucide-react';
 
 type Props = { onBack: () => void; onOpenStatic: () => void };
@@ -41,12 +41,12 @@ export default function CustomSalesReport({ onBack, onOpenStatic }: Props) {
         </div>
       </header>
       <div className="workspace">
-        <aside className="sidebar">
+        <aside className="sidebar" onMouseLeave={() => { setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>
           <div className="platform-title">IOC运营平台</div>
           <nav>
             <button type="button" className="nav-item"><Grid2X2 size={17} />我的应用</button>
-            <button type="button" className={'nav-item ' + (analysisMenuOpen ? 'menu-active' : '')} onClick={() => { setAnalysisMenuOpen(value => !value); setReportMenuOpen(false); }}><BarChart3 size={17} />分析看板</button>
-            <button type="button" className={'nav-item ' + (reportMenuOpen ? 'menu-active' : '')} onClick={() => { setReportMenuOpen(value => !value); setAnalysisMenuOpen(false); }}><FileText size={17} />报表中心</button>
+            <button type="button" className={'nav-item ' + (analysisMenuOpen ? 'menu-active' : '')} onMouseEnter={() => { setAnalysisMenuOpen(true); setReportMenuOpen(false); }}><BarChart3 size={17} />分析看板</button>
+            <button type="button" className={'nav-item ' + (reportMenuOpen ? 'menu-active' : '')} onMouseEnter={() => { setReportMenuOpen(true); setAnalysisMenuOpen(false); }}><FileText size={17} />报表中心</button>
             <button type="button" className="nav-item"><PieChart size={17} />电商运营</button>
             <button type="button" className="nav-item"><Settings size={17} />配置中心</button>
             <button type="button" className="nav-item"><Printer size={17} />导入导出</button>

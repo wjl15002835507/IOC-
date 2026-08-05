@@ -301,7 +301,6 @@ export default function OrderTrackReport() {
       <aside className="sidebar" aria-label="IOC 导航" onMouseLeave={() => { setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>
         <div className="platform-title">IOC运营平台</div>
         <nav data-hover-navigation>
->
           {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onMouseEnter={() => { if (label === '分析看板') { setAnalysisMenuOpen(true); setReportMenuOpen(false); } else if (label === '报表中心') { setReportMenuOpen(true); setAnalysisMenuOpen(false); } else { setAnalysisMenuOpen(false); setReportMenuOpen(false); } }} key={label} aria-label={label}>
             <Icon size={17} strokeWidth={2} />
             <span>{label}</span>
