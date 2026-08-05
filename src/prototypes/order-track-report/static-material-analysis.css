@@ -530,3 +530,5 @@ button { cursor: pointer; }
 /* Keep the matrix and alert-standard panels on the same height. */
 .combined-analysis-layout { align-items: stretch; }
 .combined-matrix-panel, .analysis-selector-panel { min-height: 0; height: auto; }
+.alert-legend button.selected { border-color:#08a580; color:#087d66; background:#e8f7f2; box-shadow:inset 0 -2px 0 #08a580; }
+.alert-legend button.alert-legend-all.selected { border:1px solid #08a580 !important; color:#087d66 !important; background:#e8f7f2 !important; }
