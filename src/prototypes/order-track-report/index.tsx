@@ -21,6 +21,7 @@ import './style.css';
 import './custom-sales-report.css';
 import CustomSalesReport from './CustomSalesReport';
 import StaticMaterialAnalysis from './StaticMaterialAnalysisEmbedded';
+import StaticMaterialAgeConfig from './StaticMaterialAgeConfig';
 import '../shared/ioc-navigation.css';
 
 type Filters = {
@@ -247,13 +248,15 @@ function DateValue({ value, onChange }: { value: string; onChange: (value: strin
 }
 
 export default function OrderTrackReport() {
-  const [activeReport, setActiveReport] = useState<'order-track' | 'custom-sales' | 'static-material'>(() => {
+  const [activeReport, setActiveReport] = useState<'order-track' | 'custom-sales' | 'static-material' | 'age-config'>(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('view') === 'static-material') return 'static-material';
+    if (params.get('view') === 'age-config') return 'age-config';
     return params.get('report') === 'custom-sales' ? 'custom-sales' : 'order-track';
   });
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
   const [analysisMenuOpen, setAnalysisMenuOpen] = useState(false);
+  const [configMenuOpen, setConfigMenuOpen] = useState(false);
   const [sidebarMenuTop, setSidebarMenuTop] = useState(0);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [submitted, setSubmitted] = useState<Filters>(initialFilters);
@@ -283,6 +286,8 @@ export default function OrderTrackReport() {
     setToast('导出成功，请在导出列表中查看');
     window.setTimeout(() => setToast(''), 3000);
   };
+
+  if (activeReport === 'age-config') return <StaticMaterialAgeConfig onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} />;
 
   if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} onOpenStatic={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setActiveReport('static-material'); }} />;
 
