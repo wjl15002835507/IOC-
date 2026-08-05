@@ -254,6 +254,7 @@ export default function OrderTrackReport() {
   });
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
   const [analysisMenuOpen, setAnalysisMenuOpen] = useState(false);
+  const [sidebarMenuTop, setSidebarMenuTop] = useState(0);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [submitted, setSubmitted] = useState<Filters>(initialFilters);
   const [collapsed, setCollapsed] = useState(false);
@@ -301,13 +302,13 @@ export default function OrderTrackReport() {
       <aside className="sidebar" aria-label="IOC 导航" onMouseLeave={() => { setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>
         <div className="platform-title">IOC运营平台</div>
         <nav data-hover-navigation>
-          {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onMouseEnter={() => { if (label === '分析看板') { setAnalysisMenuOpen(true); setReportMenuOpen(false); } else if (label === '报表中心') { setReportMenuOpen(true); setAnalysisMenuOpen(false); } else { setAnalysisMenuOpen(false); setReportMenuOpen(false); } }} key={label} aria-label={label}>
+          {menuItems.map(({ label, icon: Icon }) => <button type="button" className={`nav-item ${(label === '报表中心' && (reportMenuOpen || activeReport === 'order-track')) || (label === '分析看板' && analysisMenuOpen) ? 'menu-active' : ''}`} onMouseEnter={(event) => { const sidebarTop = event.currentTarget.closest('.sidebar')?.getBoundingClientRect().top || 0; setSidebarMenuTop(event.currentTarget.getBoundingClientRect().top - sidebarTop); if (label === '分析看板') { setAnalysisMenuOpen(true); setReportMenuOpen(false); } else if (label === '报表中心') { setReportMenuOpen(true); setAnalysisMenuOpen(false); } else { setAnalysisMenuOpen(false); setReportMenuOpen(false); } }} key={label} aria-label={label}>
             <Icon size={17} strokeWidth={2} />
             <span>{label}</span>
           </button>)}
         </nav>
-        {analysisMenuOpen && <div className='ioc-sidebar-menu'><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'static-material' ? 'selected' : ''} onClick={() => { setActiveReport('static-material'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>静态材料处理跟踪分析</button></div></div>}
-        {reportMenuOpen && <div className='ioc-sidebar-menu'><h3>定制</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); window.history.replaceState(null, '', '/prototypes/order-track-report'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button></div></div>}      </aside>
+        {analysisMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'static-material' ? 'selected' : ''} onClick={() => { setActiveReport('static-material'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>静态材料处理跟踪分析</button></div></div>}
+        {reportMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>定制</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); window.history.replaceState(null, '', '/prototypes/order-track-report'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button></div></div>}      </aside>
 
       <main className="main-area">
         <div className="tabbar">

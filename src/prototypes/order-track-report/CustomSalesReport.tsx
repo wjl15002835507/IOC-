@@ -23,6 +23,7 @@ export default function CustomSalesReport({ onBack, onOpenStatic }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
   const [analysisMenuOpen, setAnalysisMenuOpen] = useState(false);
+  const [sidebarMenuTop, setSidebarMenuTop] = useState(0);
   const [toast, setToast] = useState('');
 
   const action = (message: string) => {
@@ -45,16 +46,16 @@ export default function CustomSalesReport({ onBack, onOpenStatic }: Props) {
           <div className="platform-title">IOC运营平台</div>
           <nav>
             <button type="button" className="nav-item"><Grid2X2 size={17} />我的应用</button>
-            <button type="button" className={'nav-item ' + (analysisMenuOpen ? 'menu-active' : '')} onMouseEnter={() => { setAnalysisMenuOpen(true); setReportMenuOpen(false); }}><BarChart3 size={17} />分析看板</button>
-            <button type="button" className={'nav-item ' + (reportMenuOpen ? 'menu-active' : '')} onMouseEnter={() => { setReportMenuOpen(true); setAnalysisMenuOpen(false); }}><FileText size={17} />报表中心</button>
+            <button type="button" className={'nav-item ' + (analysisMenuOpen ? 'menu-active' : '')} onMouseEnter={(event) => { const sidebarTop = event.currentTarget.closest('.sidebar')?.getBoundingClientRect().top || 0; setSidebarMenuTop(event.currentTarget.getBoundingClientRect().top - sidebarTop); setAnalysisMenuOpen(true); setReportMenuOpen(false); }}><BarChart3 size={17} />分析看板</button>
+            <button type="button" className={'nav-item ' + (reportMenuOpen ? 'menu-active' : '')} onMouseEnter={(event) => { const sidebarTop = event.currentTarget.closest('.sidebar')?.getBoundingClientRect().top || 0; setSidebarMenuTop(event.currentTarget.getBoundingClientRect().top - sidebarTop); setReportMenuOpen(true); setAnalysisMenuOpen(false); }}><FileText size={17} />报表中心</button>
             <button type="button" className="nav-item"><PieChart size={17} />电商运营</button>
             <button type="button" className="nav-item"><Settings size={17} />配置中心</button>
             <button type="button" className="nav-item"><Printer size={17} />导入导出</button>
             <button type="button" className="nav-item"><FolderPlus size={17} />导入</button>
             <button type="button" className="nav-item"><SlidersHorizontal size={17} />自定义报表配置</button>
           </nav>
-          {analysisMenuOpen && <div className="ioc-sidebar-menu"><h3>分析看板</h3><div className="ioc-sidebar-menu-list"><button type="button" onClick={onOpenStatic}>静态材料处理跟踪分析</button></div></div>}
-          {reportMenuOpen && <div className="ioc-sidebar-menu"><h3>报表中心</h3><div className="ioc-sidebar-menu-list"><button type="button" onClick={onBack}>订单跟踪报表</button><button type="button" className="selected" onClick={() => setReportMenuOpen(false)}>定制接单打款销售统计报表</button></div></div>}
+          {analysisMenuOpen && <div className="ioc-sidebar-menu" style={{ top: sidebarMenuTop }}><h3>分析看板</h3><div className="ioc-sidebar-menu-list"><button type="button" onClick={onOpenStatic}>静态材料处理跟踪分析</button></div></div>}
+          {reportMenuOpen && <div className="ioc-sidebar-menu" style={{ top: sidebarMenuTop }}><h3>报表中心</h3><div className="ioc-sidebar-menu-list"><button type="button" onClick={onBack}>订单跟踪报表</button><button type="button" className="selected" onClick={() => setReportMenuOpen(false)}>定制接单打款销售统计报表</button></div></div>}
         </aside>
         <main className="main-area">
           <div className="tabbar"><div className="tab-close"><X size={18} /></div><div className="active-tab"><Circle size={8} fill="currentColor" />定制接单打款销售统计报表<X size={13} /></div></div>
