@@ -177,6 +177,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState('');
   const [hoveredSegment, setHoveredSegment] = useState<{ name: string; level: number; value: number; total: number } | null>(null);
+  const [chartAlertLevel, setChartAlertLevel] = useState<number | ''>('');
   const [tooltipPosition, setTooltipPosition] = useState({ left: 0, top: 0 });
   const [trendMode, setTrendMode] = useState<'unprocessed' | 'submitted' | 'completed'>('unprocessed');
   const [analysisMode, setAnalysisMode] = useState<'alert' | 'plan'>('alert');
@@ -233,6 +234,11 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   });
   const filteredTotal = chartRows.reduce((sum, row) => sum + row.total, 0);
   const chartMax = Math.max(...chartRows.map((row) => row.total), 1);
+  // The legend filters only this chart's rendered bars; global metrics keep their existing scope.
+  const chartVisibleAlertDescriptors = visibleAlertDescriptors.filter((item) => chartAlertLevel === '' || item.level === chartAlertLevel);
+  const chartDisplayRows = chartRows.map((row) => { const alerts = row.alerts.map((value, index) => chartVisibleAlertDescriptors.some((item) => item.level === alertStats[index].level) ? value : 0); return { ...row, alerts, total: alerts.reduce((sum, value) => sum + value, 0) }; });
+  const chartDisplayTotal = chartDisplayRows.reduce((sum, row) => sum + row.total, 0);
+  const chartDisplayMax = Math.max(...chartDisplayRows.map((row) => row.total), 1);
   const activeAlert = alertStats.find((item) => String(item.level) === applied.alert) || alertStats[0];
   const activeAlertIndex = alertStats.findIndex((item) => item.level === activeAlert.level);
   const alertMetricTotal = chartRows.reduce((sum, row) => sum + row.alerts[activeAlertIndex], 0);
@@ -261,11 +267,11 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
       : { title: '每月处理完成数量趋势', description: '当月将现库存数量处理为 0 的材料项数，当前为模拟数据', legend: '当月处理完成数量（模拟）' };
   const aggregateMatrix = (matrices: Record<DevType, Matrix>): Matrix => ({ rows: retentionRows, columns: ageColumns, values: retentionRows.map((_, rowIndex) => ageColumns.map((_, columnIndex) => devStats.reduce((sum, item) => sum + matrices[item.name].values[rowIndex][columnIndex], 0))) });
   const matrixDevScope = ((applied.dev as DevType) || matrixDev) as DevType | '全部';
-  const matrixDevOptions = [{ name: '全部', value: 2111 }, ...devStats] as const;  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false): Matrix => {
+  const projectMatrix = (matrix: Matrix, dev: DevType | '全部', afterSales = false, alertFilter = applied.alert, planFilter = applied.plan): Matrix => {
     const planData = planAlertByDev[dev];
-    const planRow = applied.plan ? planData.rows.find((row) => row.name === applied.plan) : null;
-    const planRatio = afterSales ? (applied.plan && applied.plan !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : applied.plan ? 0 : 1);
-    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
+    const planRow = planFilter ? planData.rows.find((row) => row.name === planFilter) : null;
+    const planRatio = afterSales ? (planFilter && planFilter !== '留用/售后' ? 0 : 1) : (planRow ? planRow.total / planData.total : planFilter ? 0 : 1);
+    const alertIndex = alertStats.findIndex((item) => String(item.level) === alertFilter);
     const alertRatio = alertIndex >= 0 ? planData.rows.reduce((sum, row) => sum + row.alerts[alertIndex], 0) / planData.total : 1;
     const scale = planRatio * alertRatio * (applied.month !== '2026-06' ? .86 : 1) * (applied.keyword.trim() ? .58 : 1);
     return { ...matrix, values: matrix.values.map((row, rowIndex) => row.map((value, columnIndex) => {
@@ -276,16 +282,22 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
   };
   const linkedAlertMatrix = projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope);
   const linkedAfterMatrix = projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(afterMatrices) : afterMatrices[matrixDevScope], matrixDevScope, true);
+  const matrixDevOptions: Array<{ name: DevType | '全部'; value: number }> = [
+    { name: '全部', value: projectMatrix(aggregateMatrix(alertMatrices), '全部').values.flat().reduce((sum, value) => sum + value, 0) },
+    ...devStats.map((item) => ({ name: item.name, value: projectMatrix(alertMatrices[item.name], item.name).values.flat().reduce((sum, value) => sum + value, 0) })),
+  ];
   const linkedAlertMatrixTotal = linkedAlertMatrix.values.flat().reduce((sum, value) => sum + value, 0);
   const linkedAfterMatrixTotal = linkedAfterMatrix.values.flat().reduce((sum, value) => sum + value, 0);
   const linkedAlertTotals = alertStats.map((_, index) => chartRows.reduce((sum, row) => sum + row.alerts[index], 0));
   const linkedAfterSalesTotal = chartRows.find((row) => row.name === '留用/售后')?.total || 0;
   const linkedAfterSalesByDev = devStats.map((item) => ({ name: item.name, value: projectMatrix(afterMatrices[item.name], item.name, true).values.flat().reduce((sum, value) => sum + value, 0) }));
-  const analysisAlertOptions = alertStats.map((item, index) => ({ ...item, value: Math.round(overviewData.rows.filter((row) => !applied.plan || row.name === applied.plan).reduce((sum, row) => sum + row.alerts[index], 0) * secondaryRatio) }));
+  const analysisAlertOptions = alertStats.map((item) => {
+    const value = applied.alert && applied.alert !== String(item.level) ? 0 : projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope, false, String(item.level)).values.flat().reduce((sum, matrixValue) => sum + matrixValue, 0);
+    return { ...item, value };
+  });
   const analysisPlanOptions = overviewData.rows.map((row) => {
-    const alertIndex = alertStats.findIndex((item) => String(item.level) === applied.alert);
-    const base = alertIndex >= 0 ? row.alerts[alertIndex] : row.total;
-    return { name: row.name, value: Math.round(base * secondaryRatio), color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
+    const value = applied.plan && applied.plan !== row.name ? 0 : projectMatrix(matrixDevScope === '全部' ? aggregateMatrix(alertMatrices) : alertMatrices[matrixDevScope], matrixDevScope, false, applied.alert, row.name).values.flat().reduce((sum, matrixValue) => sum + matrixValue, 0);
+    return { name: row.name, value, color: planStats.find((item) => item.name === row.name)?.color || '#168b72' };
   });
   const applyAnalysisFilter = (key: 'alert' | 'plan', value: string) => {
     const filters = { ...applied, [key]: value };
@@ -337,18 +349,18 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
               </section>
               <div className="overview-panels">
                 <section className="panel plan-alert-panel">
-                  <header><div><h2>处理方案与警报等级结构</h2><p>柱高表示对应处理方案材料项数，颜色表示警报等级构成</p></div><div className="alert-legend"><button type="button" className="alert-legend-all" onClick={() => { const filters = { ...applied, alert: "" }; setDraft(filters); setApplied(filters); setPage(1); }}>全部</button>{visibleAlertDescriptors.map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); const total = chartRows.reduce((sum, row) => sum + row.alerts[index], 0); return <button type="button" key={item.level} onClick={() => drillDown({ dev:applied.dev, alert:String(item.level) })}><i style={{background:item.color}}/><span>{item.level}级{item.name}</span><strong>{number.format(total)}</strong></button>; })}</div></header>
+                  <header><div><h2>处理方案与警报等级结构</h2><p>柱高表示对应处理方案材料项数，颜色表示警报等级构成</p></div><div className="alert-legend"><button type="button" className={`alert-legend-all ${chartAlertLevel === '' ? 'selected' : ''}`} onClick={() => setChartAlertLevel('')}><i/><span>全部</span><strong>{number.format(filteredTotal)}</strong></button>{alertStats.map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); const total = chartRows.reduce((sum, row) => sum + row.alerts[index], 0); return <button type="button" key={item.level} className={chartAlertLevel === item.level ? 'selected' : ''} onClick={() => setChartAlertLevel(item.level)}><i style={{background:item.color}}/><span>{item.level}级{item.name}</span><strong>{number.format(total)}</strong></button>; })}</div></header>
                   <div className="plan-column-chart">
                     <div className="chart-guide-lines" aria-hidden="true"><i/><i/><i/><i/></div>
-                    <div className="plan-columns">{chartRows.map((row) => {
-                      const share = filteredTotal ? (row.total / filteredTotal) * 100 : 0;
-                      const height = (row.total / chartMax) * 100;
+                    <div className="plan-columns">{chartDisplayRows.map((row) => {
+                      const share = chartDisplayTotal ? (row.total / chartDisplayTotal) * 100 : 0;
+                      const height = (row.total / chartDisplayMax) * 100;
                       return <div className="plan-column" key={row.name}>
                         <div className="plan-column-stage" style={{ zIndex: hoveredSegment?.name === row.name ? 100 : 1 }}>
-                          <div className="plan-column-topline" style={{ bottom: `min(${height}%, calc(100% - 20px))` }}><button type="button" className="plan-column-total" onClick={() => drillDown({ dev:applied.dev, plan:row.name })}>{number.format(row.total)}</button><span className="plan-column-share">{share.toFixed(1)}%</span></div>
-                          <div className="plan-column-bar" style={{ height: `${height}%` }} onMouseLeave={() => setHoveredSegment(null)}>{visibleAlertDescriptors.map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); const value = row.alerts[index]; return value > 0 && <button type="button" key={item.level} style={{ height: `${row.total ? (value / row.total) * 100 : 0}%`, background: item.color }} onClick={() => drillDown({dev:applied.dev,plan:row.name,alert:String(item.level)})} onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredSegment({ name: row.name, level: item.level, value, total: row.total }); setTooltipPosition({ left: Math.min(rect.right + 10, window.innerWidth - 190), top: Math.max(8, rect.top + rect.height / 2 - 44) }); }}><span className="plan-segment-tooltip" role="tooltip" style={{ display: "none" }}><strong>{row.name} · {item.level}级</strong><span>数量：{number.format(value)} 项</span><span>占方案：{((value / row.total) * 100).toFixed(1)}%</span><span>占全部：{(filteredTotal ? (value / filteredTotal) * 100 : 0).toFixed(1)}%</span></span></button>; })}</div>
+                          <div className="plan-column-topline" style={{ bottom: `min(${height}%, calc(100% - 20px))` }}><button type="button" className="plan-column-total" onClick={() => undefined}>{number.format(row.total)}</button><span className="plan-column-share">{share.toFixed(1)}%</span></div>
+                          <div className="plan-column-bar" style={{ height: `${height}%` }} onMouseLeave={() => setHoveredSegment(null)}>{chartVisibleAlertDescriptors.map((item) => { const index = alertStats.findIndex((stat) => stat.level === item.level); const value = row.alerts[index]; return value > 0 && <button type="button" key={item.level} style={{ height: `${row.total ? (value / row.total) * 100 : 0}%`, background: item.color }} onClick={() => undefined} onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredSegment({ name: row.name, level: item.level, value, total: row.total }); setTooltipPosition({ left: Math.min(rect.right + 10, window.innerWidth - 190), top: Math.max(8, rect.top + rect.height / 2 - 44) }); }}><span className="plan-segment-tooltip" role="tooltip" style={{ display: "none" }}><strong>{row.name} · {item.level}级</strong><span>数量：{number.format(value)} 项</span><span>占方案：{((value / row.total) * 100).toFixed(1)}%</span><span>占全部：{(chartDisplayTotal ? (value / chartDisplayTotal) * 100 : 0).toFixed(1)}%</span></span></button>; })}</div>
                         </div>
-                        <button type="button" className="plan-column-label" onClick={() => drillDown({ dev:applied.dev, plan:row.name })}><strong>{row.name}</strong></button>
+                        <button type="button" className="plan-column-label" onClick={() => undefined}><strong>{row.name}</strong></button>
                       </div>;
                     })}</div>
                     {hoveredSegment && <div className="plan-hover-tooltip" style={{ left: tooltipPosition.left, top: tooltipPosition.top }}><strong>{hoveredSegment.name} · {hoveredSegment.level}级</strong><span>数量：{number.format(hoveredSegment.value)} 项</span><span>占方案：{((hoveredSegment.value / hoveredSegment.total) * 100).toFixed(1)}%</span><span>占全部：{(filteredTotal ? (hoveredSegment.value / filteredTotal) * 100 : 0).toFixed(1)}%</span></div>}
@@ -378,7 +390,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
                 <aside className="analysis-selector-panel">
                   <header><div><h3>{analysisMode === 'alert' ? '警报级别' : '处理方案'}</h3><p>点击切换矩阵数据</p></div><strong>{number.format(linkedAlertMatrixTotal)} 项</strong></header>
                   <div className="analysis-option-list">
-                    <button type="button" className={analysisMode === 'alert' ? (!applied.alert ? 'active' : '') : (!applied.plan ? 'active' : '')} onClick={() => applyAnalysisFilter(analysisMode, '')}><i className="option-all"/><span>全部</span><strong>{number.format(analysisMode === 'alert' ? analysisAlertOptions.reduce((sum,item) => sum + item.value,0) : analysisPlanOptions.reduce((sum,item) => sum + item.value,0))}</strong></button>
+                    <button type="button" className={analysisMode === 'alert' ? (!applied.alert ? 'active' : '') : (!applied.plan ? 'active' : '')} onClick={() => applyAnalysisFilter(analysisMode, '')}><i className="option-all"/><span>全部</span><strong>{number.format(linkedAlertMatrixTotal)}</strong></button>
                     {analysisMode === 'alert' ? analysisAlertOptions.map((item) => <button type="button" className={applied.alert === String(item.level) ? 'active' : ''} key={item.level} onClick={() => applyAnalysisFilter('alert', String(item.level))}><i style={{background:item.color}}/><span>{item.level}级{item.name}</span><strong>{number.format(item.value)}</strong></button>) : analysisPlanOptions.map((item) => <button type="button" className={applied.plan === item.name ? 'active' : ''} key={item.name} onClick={() => applyAnalysisFilter('plan', item.name)}><i style={{background:item.color}}/><span>{item.name}</span><strong>{number.format(item.value)}</strong></button>)}
                   </div>
                   {analysisMode === 'alert' && <section className="alert-standard-compact"><h4>警报标准</h4><div><table><thead><tr><th>留存率</th><th>级别</th></tr></thead><tbody>{retentionRows.map((item,index) => { const level = index < 3 ? 6 : index < 5 ? 3 : index === 5 ? 2 : 1; return <tr key={item}><td>{item}</td><td><AlertBadge level={level}/></td></tr>; })}</tbody></table><table><thead><tr><th>库龄</th><th>级别</th></tr></thead><tbody>{ageColumns.map((item,index) => <tr key={item}><td>{item}</td><td><AlertBadge level={[6,3,2,1,1][index]}/></td></tr>)}</tbody></table></div><p>最终警报等级取留存率与库龄判定中的较高风险等级。</p></section>}

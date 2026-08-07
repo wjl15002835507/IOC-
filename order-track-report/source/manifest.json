@@ -17,7 +17,15 @@
       "kind": "entry"
     },
     {
+      "path": "static-material-age-config.css",
+      "kind": "source"
+    },
+    {
       "path": "static-material-analysis.css",
+      "kind": "source"
+    },
+    {
+      "path": "StaticMaterialAgeConfig.tsx",
       "kind": "source"
     },
     {
