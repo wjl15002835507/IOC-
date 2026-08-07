@@ -5,7 +5,7 @@
   "templateUrl": "https://gitee.com/axhub/Axhub-Make/releases/download/make-client-template-v0.1.13/axhub-make-client-template.zip",
   "templateVersion": "0.1.13",
   "project": {
-    "id": "ioc",
+    "id": "ioc-2",
     "name": "IOC原型"
   }
 }

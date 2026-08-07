@@ -42,5 +42,7 @@
 .config-table-panel footer { height:42px; padding:0 12px; }/* Final alignment */
 .config-filter { justify-content:flex-start; }
 .config-filter .text-button { margin-left:auto; }
+.config-filter .config-query-button { height:28px; padding:0 15px; border-radius:3px; font-size:12px; }
+.config-filter .config-query-button + .text-button { margin-left:0; }
 .config-table-panel { overflow:hidden; }
 .config-table-panel .config-table-toolbar { border-bottom:1px solid #e4ecea; }
