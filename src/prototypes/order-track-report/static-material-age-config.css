@@ -41,7 +41,8 @@
 .config-table-panel td { height:28px; padding:0 10px; }
 .config-table-panel footer { height:42px; padding:0 12px; }/* Final alignment */
 .config-filter { justify-content:flex-start; }
-.config-filter .text-button { margin-left:auto; }
+.config-filter-actions { display:flex; align-items:center; gap:12px; margin-left:auto; }
+.config-filter .text-button { margin-left:0; }
 .config-filter .config-query-button { height:28px; padding:0 15px; border-radius:3px; font-size:12px; }
 .config-filter .config-query-button + .text-button { margin-left:0; }
 .config-table-panel { overflow:hidden; }
