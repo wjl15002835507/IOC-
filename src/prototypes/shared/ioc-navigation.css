@@ -9,4 +9,7 @@
 .ioc-sidebar-menu button { min-width: 0; height: 30px; padding: 0 9px; border: 1px solid transparent; border-radius: 2px; color: #415057; background: transparent; font-family: inherit; font-size: 13px; text-align: left; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: pointer; }
 .ioc-sidebar-menu button:hover, .ioc-sidebar-menu button:focus-visible { color: #078f72; background: #edf8f5; outline: 0; }
 .ioc-sidebar-menu button.selected { border-color: #e3e9e7; color: #008f72; background: #f2f4f4; font-weight: 600; }
+.ioc-report-center-menu { width: min(440px,calc(100vw - 150px)); gap: 5px; }
+.ioc-report-center-menu section + section { padding-top: 4px; border-top: 1px solid #e7eeec; }
+.ioc-report-center-menu h4 { height: 25px; margin: 0; padding: 0 9px; color: #079d7d; font-size: 12px; font-weight: 700; line-height: 25px; }
 @media (max-width: 720px) { .ioc-sidebar-menu { width: min(330px,calc(100vw - 122px)); } .ioc-sidebar-menu-list { grid-template-columns: 1fr; } }

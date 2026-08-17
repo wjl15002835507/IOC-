@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { BarChart3, Circle, FileText, FolderPlus, Grid2X2, Menu, PieChart, Printer, Settings, SlidersHorizontal, UserRound, X } from 'lucide-react';
+import { staticReportMenu, type StaticReportId } from './StaticMaterialReports';
 
-type Props = { onBack: () => void; onOpenStatic: () => void };
+type Props = { onBack: () => void; onOpenStatic: () => void; onOpenStaticReport: (reportId: StaticReportId) => void };
 type Tab = 'summary' | 'detail';
 
 const summaryRows = [
@@ -18,7 +19,7 @@ const detailRows = Array.from({ length: 27 }, (_, index) => {
   return [code, code + String(index % 7 + 1).padStart(2, '0'), index < 11 ? '1015' : '1020', index < 11 ? '贵州区域' : '河南区域', 'S' + (101000 + index), '轻居定制区域经销商', '2026-07-28 09:' + String(32 + index).padStart(2, '0') + ':31', index % 3 === 0 ? '2026-07-28 10:20:00' : '-'];
 });
 
-export default function CustomSalesReport({ onBack, onOpenStatic }: Props) {
+export default function CustomSalesReport({ onBack, onOpenStatic, onOpenStaticReport }: Props) {
   const [tab, setTab] = useState<Tab>('summary');
   const [expanded, setExpanded] = useState(false);
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
@@ -55,7 +56,7 @@ export default function CustomSalesReport({ onBack, onOpenStatic }: Props) {
             <button type="button" className="nav-item"><SlidersHorizontal size={17} />自定义报表配置</button>
           </nav>
           {analysisMenuOpen && <div className="ioc-sidebar-menu" style={{ top: sidebarMenuTop }}><h3>分析看板</h3><div className="ioc-sidebar-menu-list"><button type="button" onClick={onOpenStatic}>静态材料处理跟踪分析</button></div></div>}
-          {reportMenuOpen && <div className="ioc-sidebar-menu" style={{ top: sidebarMenuTop }}><h3>报表中心</h3><div className="ioc-sidebar-menu-list"><button type="button" onClick={onBack}>订单跟踪报表</button><button type="button" className="selected" onClick={() => setReportMenuOpen(false)}>定制接单打款销售统计报表</button></div></div>}
+          {reportMenuOpen && <div className="ioc-sidebar-menu ioc-report-center-menu" style={{ top: sidebarMenuTop }}><section><h4>定制</h4><div className="ioc-sidebar-menu-list"><button type="button" onClick={onBack}>订单跟踪报表</button><button type="button" className="selected" onClick={() => setReportMenuOpen(false)}>定制接单打款销售统计报表</button></div></section><section><h4>静态材料分析</h4><div className="ioc-sidebar-menu-list">{staticReportMenu.map(item => <button type="button" key={item.id} onClick={() => onOpenStaticReport(item.id)}>{item.title}</button>)}</div></section></div>}
         </aside>
         <main className="main-area">
           <div className="tabbar"><div className="tab-close"><X size={18} /></div><div className="active-tab"><Circle size={8} fill="currentColor" />定制接单打款销售统计报表<X size={13} /></div></div>
