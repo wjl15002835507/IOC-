@@ -37,6 +37,8 @@ type MaterialRow = {
   code: string; name: string; dev: DevType; category: string; warehouse: string; reported: number; stock: number;
   plan: string; unit: string; ageMonths: number; age: string; retention: string; alert: number; reason: string;
   suggestion: string; staleDate: string; productionDate: string; expectedSampleDate?: string;
+  factoryName?: string; solutionDepartment?: string; retainedQuantity?: number; retainedDate?: string;
+  totalOutbound?: number; outboundRatio?: string;
 };
 
 type Matrix = { rows: string[]; columns: string[]; values: number[][] };
@@ -168,7 +170,7 @@ const materials: MaterialRow[] = [
 ];
 
 const columns = [
-  ['code','物料编码'],['name','物料名称'],['dev','开发类型'],['category','材料类别'],['warehouse','库存地点'],['reported','提报呆滞时数据'],['stock','现库存数量'],['plan','处理方案'],['unit','单位'],['ageMonths','静态月数'],['retention','留存率'],['alert','警报级别'],['reason','静态原因'],['suggestion','处理意见'],['staleDate','呆滞提出时间'],
+  ['factoryName','工厂'],['category','材料类别'],['warehouse','库存地点'],['code','物料编码'],['name','物料名称'],['dev','对应开发'],['reported','应消耗总量'],['stock','现可用库存'],['unit','单位'],['reason','静态原因'],['plan','处理方案类型'],['solutionDepartment','方案制定部门'],['retainedQuantity','留用数量'],['retainedDate','留用时间'],['suggestion','处理意见'],['totalOutbound','总出库量'],['outboundRatio','出库比例'],['retention','留存率'],['alert','警报级别'],['staleDate','呆滞提出时间'],['ageMonths','静态月数'],
 ] as const;
 
 const menuItems = [
@@ -230,7 +232,23 @@ const calculateAlertLevel = (row: MaterialRow) => {
 
 const normalizedMaterials = materials.map((row) => {
   const months = effectiveStaticMonths(row);
-  return { ...row, ageMonths: months, age: staticMonthBand(months), alert: calculateAlertLevel(row) };
+  const totalOutbound = Math.max(0, row.reported - row.stock);
+  const retained = row.plan === '生产留用' || row.plan === '售后留用';
+  const solutionDepartment = row.plan === '售后留用' ? '售后服务部'
+    : row.plan === '生产留用' ? '生产管理部'
+      : row.plan === '开发新品' || row.plan === '开发特款' ? '产品研发部' : '供应链管理部';
+  return {
+    ...row,
+    ageMonths: months,
+    age: staticMonthBand(months),
+    alert: calculateAlertLevel(row),
+    factoryName: materialFactory(row),
+    solutionDepartment,
+    retainedQuantity: retained ? row.stock : 0,
+    retainedDate: retained ? row.staleDate : '-',
+    totalOutbound,
+    outboundRatio: row.reported ? ((totalOutbound / row.reported) * 100).toFixed(2) + '%' : '-',
+  };
 });
 
 function MatrixView({ matrix, onSelect, colorByAlert = false }: { matrix: Matrix; onSelect: (retention: string, age: string, alertLevel: number) => void; colorByAlert?: boolean }) {
@@ -533,7 +551,55 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
               <div className="analysis-grid-layout"><div className="analysis-matrix-grid">{(view === 'alerts' ? analysisMatrixGroups : planMatrixGroups).map((group) => <section className="panel analysis-matrix-card" key={group.key}><header><strong>{group.label}</strong><span>合计 {number.format(group.total)}</span></header><MatrixView matrix={group.matrix} colorByAlert onSelect={(retention, age, alertLevel) => openOverviewDetails(group.dev, { retention: [retention], age, alert: String(alertLevel), plan: view === 'plans' ? analysisPlan : '' })}/></section>)}</div><AlertStandard/></div>
             </div>}
 
-            {view === 'details' && <div className="details-view"><section className="detail-toolbar"><div><strong>材料明细</strong><span>共 {number.format(estimatedTotal)} 项</span><em>当前表格展示 Excel 代表性脱敏数据</em></div><div className="toolbar-actions"><div className="column-control"><button type="button" className="ghost-button" onClick={() => setColumnMenu(!columnMenu)}><Columns3 size={14}/>列设置</button>{columnMenu && <div className="column-popover"><header><strong>显示字段</strong><button type="button" onClick={() => setColumnMenu(false)}><X size={14}/></button></header>{columns.map(([key,label]) => <label key={key}><input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)}/><span>{label}</span></label>)}</div>}</div><button type="button" className="primary-button" onClick={() => showToast('已生成当前筛选条件的导出任务')}><Download size={14}/>导出</button></div></section><section className="detail-table-panel"><div className="detail-table-scroll"><table><thead><tr><th className="sticky-action">操作</th>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key}>{label}</th>)}</tr></thead><tbody>{pageRows.length ? pageRows.map((row) => <tr key={row.code}><td className="sticky-action"><button type="button" onClick={() => setDrawerRow(row)}>查看</button></td>{columns.filter(([key]) => visibleColumns.has(key)).map(([key]) => { const raw = row[key as keyof MaterialRow]; const value = key === 'retention' ? formatRetention(row.stock, row.reported) : typeof raw === 'number' && !['alert','ageMonths'].includes(key) ? number.format(raw) : raw; return <td key={key} title={String(value)}>{key === 'alert' ? <AlertBadge level={Number(raw)}/> : value}</td>; })}</tr>) : <tr><td colSpan={visibleColumns.size + 1} className="empty-state"><FileSearch size={32}/><strong>未找到匹配材料</strong><p>请调整筛选条件后重新查询</p><button type="button" onClick={reset}>重置筛选</button></td></tr>}</tbody></table></div><footer className="pagination"><span>第 {page} / {pageCount} 项</span><button type="button" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1,value-1))}><ChevronLeft size={15}/></button>{Array.from({length:pageCount},(_,index) => index+1).map((item) => <button type="button" className={page === item ? 'current' : ''} key={item} onClick={() => setPage(item)}>{item}</button>)}<button type="button" disabled={page >= pageCount} onClick={() => setPage((value) => Math.min(pageCount,value+1))}><ChevronRight size={15}/></button></footer></section></div>}
+            {view === 'details' && (
+              <div className="details-view">
+                <section className="detail-toolbar">
+                  <div>
+                    <strong>材料明细</strong>
+                    <span>共 {number.format(estimatedTotal)} 项</span>
+                    <em>当前表格展示 Excel 代表性脱敏数据</em>
+                  </div>
+                  <div className="toolbar-actions">
+                    <div className="column-control">
+                      <button type="button" className="ghost-button" onClick={() => setColumnMenu(!columnMenu)}>
+                        <Columns3 size={14}/>列设置
+                      </button>
+                      {columnMenu && <div className="column-popover">
+                        <header><strong>显示字段</strong><button type="button" onClick={() => setColumnMenu(false)}><X size={14}/></button></header>
+                        {columns.map(([key,label]) => <label key={key}><input type="checkbox" checked={visibleColumns.has(key)} onChange={() => toggleColumn(key)}/><span>{label}</span></label>)}
+                      </div>}
+                    </div>
+                    <button type="button" className="primary-button" onClick={() => showToast('已生成当前筛选条件的导出任务')}><Download size={14}/>导出</button>
+                  </div>
+                </section>
+                <section className="detail-table-panel">
+                  <div className="detail-table-scroll">
+                    <table>
+                      <thead><tr>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key}>{label}</th>)}</tr></thead>
+                      <tbody>
+                        {pageRows.length ? pageRows.map((row) => (
+                          <tr key={row.code} onDoubleClick={() => setDrawerRow(row)}>
+                            {columns.filter(([key]) => visibleColumns.has(key)).map(([key]) => {
+                              const raw = row[key as keyof MaterialRow];
+                              const value = key === 'retention' ? formatRetention(row.stock, row.reported) : typeof raw === 'number' && !['alert','ageMonths'].includes(key) ? number.format(raw) : raw;
+                              return <td key={key} title={String(value)}>{key === 'alert' ? <AlertBadge level={Number(raw)}/> : value}</td>;
+                            })}
+                          </tr>
+                        )) : (
+                          <tr><td colSpan={visibleColumns.size} className="empty-state"><FileSearch size={32}/><strong>未找到匹配材料</strong><p>请调整筛选条件后重新查询</p><button type="button" onClick={reset}>重置筛选</button></td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                  <footer className="pagination">
+                    <span>第 {page} / {pageCount} 项</span>
+                    <button type="button" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1,value-1))}><ChevronLeft size={15}/></button>
+                    {Array.from({length:pageCount},(_,index) => index+1).map((item) => <button type="button" className={page === item ? 'current' : ''} key={item} onClick={() => setPage(item)}>{item}</button>)}
+                    <button type="button" disabled={page >= pageCount} onClick={() => setPage((value) => Math.min(pageCount,value+1))}><ChevronRight size={15}/></button>
+                  </footer>
+                </section>
+              </div>
+            )}
           </div>
         </div>
       </main>
