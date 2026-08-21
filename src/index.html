@@ -121,6 +121,16 @@
         return pathname === '/' || pathname === '/index.html';
       }
 
+      // Keep the legacy Make link working when the management service is unavailable.
+      function redirectLegacyPrototypeLink() {
+        var params = new URLSearchParams(window.location.search);
+        if (shouldRedirectToAdmin() && params.get('projectId') === 'ioc-2' && params.get('p') === 'order-track-report') {
+          window.location.replace('/prototypes/order-track-report/');
+          return true;
+        }
+        return false;
+      }
+
       function showStartButton() {
         if (startButton) {
           startButton.hidden = false;
@@ -177,6 +187,9 @@
 
       if (startButton) {
         startButton.addEventListener('click', startServer);
+      }
+      if (redirectLegacyPrototypeLink()) {
+        return;
       }
       if (!shouldRedirectToAdmin()) {
         setStatus('当前路径不是管理入口。');

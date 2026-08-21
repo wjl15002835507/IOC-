@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import './static-material-analysis.css';
 import '../shared/ioc-navigation.css';
+import { formatAlertCondition, readAlertLevelConfig, type AlertCondition } from './static-material-config-data';
 
 type ViewId = 'overview' | 'alerts' | 'plans' | 'details';
 type DevType = '软体' | '板木' | '定制';
@@ -64,6 +65,7 @@ const planStats = [
   { name: '生产留用', value: 1295, percent: 61.3, color: '#168b72' },
   { name: '售后留用', value: 206, percent: 9.8, color: '#45a77e' },
   { name: '材料替换', value: 253, percent: 12.0, color: '#3b82c4' },
+  { name: '暂时留存', value: 0, percent: 0, color: '#2aa7a1' },
   { name: '采购处理', value: 140, percent: 6.6, color: '#d69a2d' },
   { name: '报废/变卖', value: 104, percent: 4.9, color: '#c85c54' },
   { name: '开发新品', value: 61, percent: 2.9, color: '#7767b4' },
@@ -74,6 +76,7 @@ const planAlertByDev = {
     { name:'生产留用', total:1295, alerts:[1214,24,23,34] },
     { name:'售后留用', total:206, alerts:[183,6,4,13] },
     { name:'材料替换', total:253, alerts:[158,6,18,71] },
+    { name:'暂时留存', total:0, alerts:[0,0,0,0] },
     { name:'采购处理', total:140, alerts:[122,6,5,7] },
     { name:'报废/变卖', total:104, alerts:[103,1,0,0] },
     { name:'开发新品', total:61, alerts:[60,0,0,1] },
@@ -83,6 +86,7 @@ const planAlertByDev = {
     { name:'生产留用', total:260, alerts:[230,2,5,23] },
     { name:'售后留用', total:45, alerts:[34,1,1,9] },
     { name:'材料替换', total:54, alerts:[44,4,1,5] },
+    { name:'暂时留存', total:0, alerts:[0,0,0,0] },
     { name:'采购处理', total:4, alerts:[3,1,0,0] },
     { name:'报废/变卖', total:15, alerts:[15,0,0,0] },
     { name:'开发新品', total:56, alerts:[55,0,0,1] },
@@ -92,6 +96,7 @@ const planAlertByDev = {
     { name:'生产留用', total:90, alerts:[84,2,1,3] },
     { name:'售后留用', total:27, alerts:[24,1,0,2] },
     { name:'材料替换', total:121, alerts:[54,0,5,62] },
+    { name:'暂时留存', total:0, alerts:[0,0,0,0] },
     { name:'采购处理', total:26, alerts:[15,4,1,6] },
     { name:'报废/变卖', total:2, alerts:[2,0,0,0] },
     { name:'开发新品', total:1, alerts:[1,0,0,0] },
@@ -101,6 +106,7 @@ const planAlertByDev = {
     { name:'生产留用', total:945, alerts:[900,20,17,8] },
     { name:'售后留用', total:134, alerts:[125,4,3,2] },
     { name:'材料替换', total:78, alerts:[60,2,12,4] },
+    { name:'暂时留存', total:0, alerts:[0,0,0,0] },
     { name:'采购处理', total:110, alerts:[104,1,4,1] },
     { name:'报废/变卖', total:87, alerts:[86,1,0,0] },
     { name:'开发新品', total:4, alerts:[4,0,0,0] },
@@ -116,16 +122,38 @@ const overviewTableGroups = [
 ] as const;
 
 const overviewAlertLevels = [1, 2, 3, 6] as const;
+const configuredAlertLevels = readAlertLevelConfig();
 
 const alertStats = [
-  { level: 1, name: '高危', value: 1917, color: '#c84d49' },
-  { level: 2, name: '警报', value: 55, color: '#e37a2f' },
-  { level: 3, name: '预警', value: 66, color: '#d5a51f' },
-  { level: 6, name: '正常', value: 73, color: '#ffffff' },
+  { level: 1, name: configuredAlertLevels[3].severity, value: 1917, color: '#c84d49' },
+  { level: 2, name: configuredAlertLevels[2].severity, value: 55, color: '#e37a2f' },
+  { level: 3, name: configuredAlertLevels[1].severity, value: 66, color: '#d5a51f' },
+  { level: 6, name: configuredAlertLevels[0].severity, value: 73, color: '#ffffff' },
 ] as const;
 
-const ageColumns = ['≤3个月', '4-6个月', '7-9个月', '10个月以上'];
-const retentionRows = ['<30%', '30-50%', '50-60%', '≥60%'];
+const ageColumns = configuredAlertLevels.map(item => formatAlertCondition(item.staticMonths, '个月'));
+const retentionRows = configuredAlertLevels.map(item => formatAlertCondition(item.retention, '%'));
+const configuredAlertByNumericLevel: Record<number, typeof configuredAlertLevels[number]> = {
+  6: configuredAlertLevels[0],
+  3: configuredAlertLevels[1],
+  2: configuredAlertLevels[2],
+  1: configuredAlertLevels[3],
+};
+const ageUpperBounds = configuredAlertLevels.map(item => item.staticMonths.max);
+const alertConditionMatches = (value: number, condition: AlertCondition) => {
+  if (!Number.isFinite(value) || !Number.isFinite(condition.min) || !Number.isFinite(condition.max)) return false;
+  const lowerMatches = condition.minBoundary === 'closed' ? value >= condition.min : value > condition.min;
+  const upperMatches = condition.maxBoundary === 'closed' ? value <= condition.max : value < condition.max;
+  return lowerMatches && upperMatches;
+};
+
+const highestRiskConfiguredIndex = (value: number, key: 'retention' | 'staticMonths') => {
+  const matches = configuredAlertLevels.reduce<number[]>((result, item, index) => {
+    if (alertConditionMatches(value, item[key])) result.push(index);
+    return result;
+  }, []);
+  return matches.reduce((selected, candidate) => selected < 0 || latestAlertLevels[candidate] < latestAlertLevels[selected] ? candidate : selected, -1);
+};
 
 const aggregateLatestMatrix = (values: number[][]): Matrix => ({
   rows: retentionRows,
@@ -185,7 +213,7 @@ function AlertBadge({ level }: { level: number }) {
 }
 
 const latestAlertLevels = [6, 3, 2, 1] as const;
-const alertLevelLabel = (level: number) => level === 6 ? '-' : String(level) + String.fromCharCode(0x7ea7);
+const alertLevelLabel = (level: number) => configuredAlertByNumericLevel[level]?.level || (level === 6 ? '-' : String(level) + String.fromCharCode(0x7ea7));
 const alertLevelForCell = (retentionIndex: number, ageIndex: number) => Math.min(latestAlertLevels[retentionIndex], latestAlertLevels[ageIndex]);
 const ANALYSIS_AS_OF = Date.UTC(2026, 5, 30);
 
@@ -214,18 +242,30 @@ const effectiveStaticMonths = (row: MaterialRow) => {
   return Math.max(0, row.ageMonths || 0);
 };
 
-const staticMonthBand = (months: number) => months <= 3 ? ageColumns[0] : months <= 6 ? ageColumns[1] : months <= 9 ? ageColumns[2] : ageColumns[3];
+const staticMonthBandIndex = (months: number) => {
+  const configuredIndex = highestRiskConfiguredIndex(months, 'staticMonths');
+  if (configuredIndex >= 0) return configuredIndex;
+  const index = ageUpperBounds.findIndex(upperBound => months <= upperBound);
+  return index < 0 ? ageColumns.length - 1 : index;
+};
+
+const staticMonthBand = (months: number) => {
+  return ageColumns[staticMonthBandIndex(months)];
+};
 
 const retentionBandIndex = (row: MaterialRow) => {
   const retention = row.reported ? (row.stock / row.reported) * 100 : Number.NaN;
-  if (Number.isFinite(retention)) return retention < 30 ? 0 : retention < 50 ? 1 : retention < 60 ? 2 : 3;
+  if (Number.isFinite(retention)) {
+    const configuredIndex = highestRiskConfiguredIndex(retention, 'retention');
+    if (configuredIndex >= 0) return configuredIndex;
+  }
   return retentionRows.findIndex((item) => item === row.retention);
 };
 
 const calculateAlertLevel = (row: MaterialRow) => {
   const months = effectiveStaticMonths(row);
   if (months <= 2) return 6;
-  const ageIndex = ageColumns.indexOf(staticMonthBand(months));
+  const ageIndex = staticMonthBandIndex(months);
   const retentionIndex = Math.max(0, retentionBandIndex(row));
   return alertLevelForCell(retentionIndex, ageIndex);
 };
@@ -270,8 +310,7 @@ function MatrixView({ matrix, onSelect, colorByAlert = false }: { matrix: Matrix
 }
 
 function AlertStandard() {
-  const labels = ['正常', '预警', '警报', '高危'];
-  return <aside className="analysis-standard-panel"><h3>警报标准</h3><table className="latest-standard-table"><thead><tr><th>留存率</th><th>静态月数</th><th>警报级别</th><th>风险度</th></tr></thead><tbody>{retentionRows.map((retention, index) => <tr key={retention} className={`standard-level-${latestAlertLevels[index]}`}><td>{retention}</td><td>{ageColumns[index]}</td><td>{alertLevelLabel(latestAlertLevels[index])}</td><td>{labels[index]}</td></tr>)}</tbody></table><p className="analysis-standard-note">新增静态物料前2个月为缓冲期，从第3个月开始计算；开发新品、开发特款从预计打样完成时间后开始计算静态月数。留存率与静态月数跨区间时按风险较高的警报级别展示。</p></aside>;
+  return <aside className="analysis-standard-panel"><h3>警报标准</h3><table className="latest-standard-table"><thead><tr><th>留存率</th><th>静态月数</th><th>警报级别</th><th>风险度</th></tr></thead><tbody>{retentionRows.map((retention, index) => <tr key={retention} className={`standard-level-${latestAlertLevels[index]}`}><td>{retention}</td><td>{ageColumns[index]}</td><td>{alertLevelLabel(latestAlertLevels[index])}</td><td>{configuredAlertLevels[index].severity}</td></tr>)}</tbody></table><p className="analysis-standard-note">新增静态物料前2个月为缓冲期，从第3个月开始计算；开发新品、开发特款从预计打样完成时间后开始计算静态月数。留存率与静态月数跨区间时按风险较高的警报级别展示。</p></aside>;
 }
 
 type StaticMaterialProps = { embedded?: boolean };

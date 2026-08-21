@@ -1,8 +1,8 @@
 {
   "server": {
     "host": "localhost",
-    "lanHost": "192.168.75.77",
-    "skipLanPreviewAuth": false,
+    "lanHost": "192.168.108.72",
+    "skipLanPreviewAuth": true,
     "enableCommandAPI": false
   },
   "projectDefaults": {

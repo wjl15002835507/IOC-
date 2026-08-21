@@ -15,7 +15,7 @@ type NewStaticTabConfig = Omit<ReportConfig, 'title'> & { label: string; templat
 type ImportMode = 'solution' | 'responsible-unit';
 
 const baseRows: Row[] = [
-  { material:'101013732', materialGroup:'RA011316', materialGroupName:'原材料/板材/木皮板/多层/3木皮板', materialDescription:'3多层板单面贴水曲柳直纹木皮板2440*1220TT', productionType:'定量', development:'板木', category:'板材', factorySet:'6199', factoryName:'板木公司供应工厂', warehouseSet:'D001', warehouseName:'工业园板材三胺板呆滞库', unit:'ZHA', unitName:'张', reportedStock:28, availableStock:18, plannedDemand:6, supplierUnreceived:0, totalRequired:22, currentStock:18, received:'是', receivedQuantity:4, lastYearInbound:42, lastYearOutbound:24, responsibleUnit:'板木采购部', solutionDepartment:'板木产品部', staticReason:'采购大于需求', solution:'生产留用', opinion:'调贴皮车间砂光后转作在用木皮板', retainedQuantity:12, retainedDate:'2026-08-31', totalOutbound:4, outboundRatio:'18.18%', retention:'81.82%', staticDate:'2026-08-01', staticMonths:0, expectedDate:'2026-10-31', expectedSampleDate:'', changeHistory:[{solution:'材料替换',opinion:'评估同类板件替换使用',updatedBy:'李伟',updatedAt:'2026-08-07 16:42'},{solution:'生产留用',opinion:'调贴皮车间砂光后转作在用木皮板',updatedBy:'王俊杰',updatedAt:'2026-08-11 09:30'}] },
+  { material:'101013732', materialGroup:'RA011316', materialGroupName:'原材料/板材/木皮板/多层/3木皮板', materialDescription:'3多层板单面贴水曲柳直纹木皮板2440*1220TT', productionType:'定量', development:'板木', category:'板材', factorySet:'6199', factoryName:'板木公司供应工厂', warehouseSet:'D001', warehouseName:'工业园板材三胺板呆滞库', unit:'ZHA', unitName:'张', reportedStock:28, availableStock:18, plannedDemand:6, supplierUnreceived:0, totalRequired:22, currentStock:18, received:'是', receivedQuantity:4, lastYearInbound:42, lastYearOutbound:24, responsibleUnit:'板木采购部', solutionDepartment:'板木产品部', staticReason:'采购大于需求', solution:'生产留用', opinion:'调贴皮车间砂光后转作在用木皮板', retainedQuantity:12, retainedDate:'2026-08-31', totalOutbound:4, outboundRatio:'18.18%', retention:'81.82%', staticDate:'2026-08-01', staticMonths:0, expectedDate:'2026-10-31', expectedSampleDate:'', changeHistory:[{solution:'材料替换',opinion:'评估同类板件替换使用',updatedBy:'李伟',updatedAt:'2026-08-07 16:42'},{solution:'生产留用',opinion:'调贴皮车间砂光后转作在用木皮板',updatedBy:'王俊励',updatedAt:'2026-08-11 09:30'}] },
   { material:'104009061', materialGroup:'RF050100', materialGroupName:'定制衣柜原材料/封边带', materialDescription:'H214#墨韵细木纹PVC浮雕封边带哑光1.2*28mm', productionType:'定性', development:'板木', category:'封边带', factorySet:'6199', factoryName:'板木公司供应工厂', warehouseSet:'D004', warehouseName:'定制呆滞库', unit:'M', unitName:'米', reportedStock:680, availableStock:570, plannedDemand:90, supplierUnreceived:20, totalRequired:610, currentStock:570, received:'否', receivedQuantity:0, lastYearInbound:1260, lastYearOutbound:690, responsibleUnit:'板木采购部', staticReason:'物料替换', solution:'材料替换', opinion:'替换相近颜色衣柜隔板封边带，优先用于隐藏部位', retainedQuantity:'', retainedDate:'', totalOutbound:40, outboundRatio:'6.56%', retention:'93.44%', staticDate:'2026-08-01', staticMonths:0, expectedDate:'2027-03-31', expectedSampleDate:'', changeHistory:[{solution:'方案待定',opinion:'',updatedBy:'赵敏',updatedAt:'2026-08-05 09:26'}] },
   { material:'104009061', materialGroup:'RF050100', materialGroupName:'定制衣柜原材料/封边带', materialDescription:'H214#墨韵细木纹PVC浮雕封边带哑光1.2*28mm', productionType:'定性', development:'定制', category:'封边带', factorySet:'8599', factoryName:'定制公司供应工厂', warehouseSet:'RC8Z', warehouseName:'定制呆滞库', unit:'M', unitName:'米', reportedStock:663, availableStock:558, plannedDemand:90, supplierUnreceived:40, totalRequired:613, currentStock:558, received:'否', receivedQuantity:0, lastYearInbound:1180, lastYearOutbound:622, responsibleUnit:'定制采购部', staticReason:'物料替换', solution:'材料替换', opinion:'替换相近颜色衣柜隔板封边带，优先用于隐藏部位', retainedQuantity:'', retainedDate:'', totalOutbound:55, outboundRatio:'8.97%', retention:'91.03%', staticDate:'2026-08-01', staticMonths:0, expectedDate:'2027-03-31', expectedSampleDate:'', changeHistory:[{solution:'方案待定',opinion:'',updatedBy:'赵敏',updatedAt:'2026-08-05 09:26'}] },
   { material:'301000214', materialGroup:'RM010101', materialGroupName:'机电材料/照明/灯带电源', materialDescription:'嵌入式灯带电源 24V', productionType:'定量', development:'配套', category:'电器', factorySet:'8599', factoryName:'定制公司供应工厂', warehouseSet:'D021', warehouseName:'成都一厂机电呆滞库', unit:'EA', unitName:'个', reportedStock:60, availableStock:54, plannedDemand:0, supplierUnreceived:0, totalRequired:60, currentStock:54, received:'是', receivedQuantity:6, lastYearInbound:96, lastYearOutbound:42, responsibleUnit:'机电部', staticReason:'业务调整', solution:'生产留用', opinion:'在新品样柜中优先配置消耗', retainedQuantity:54, retainedDate:'2026-12-31', totalOutbound:6, outboundRatio:'10.00%', retention:'90.00%', staticDate:'2026-08-01', staticMonths:0, expectedDate:'2026-12-31', expectedSampleDate:'' },
@@ -38,7 +38,8 @@ const calculatedDevelopmentType = (row: Row, rows: Row[] = baseRows): string => 
   return '';
 };
 const recordKey = (row: Row) => `${String(row.factorySet ?? '').trim()}|${String(row.material ?? '').trim()}`;
-const importFieldKey: Record<string, string> = { '工厂编码':'factorySet', '工厂描述':'factoryName', '物料编码':'material', '物料描述':'materialDescription', '开发类型':'development', '责任单位':'responsibleUnit', '处理方案类型':'solution', '处理意见':'opinion', '方案制定部门':'solutionDepartment', '留用数量':'retainedQuantity', '留用时间':'retainedDate', '预计消耗完成时间':'expectedDate', '预计打样完成时间':'expectedSampleDate', '静态原因':'staticReason' };
+const newStaticImportKey = (row: Row) => `${String(row.material ?? '').trim()}|${String(row.factorySet ?? '').trim()}|${String(row.staticDate ?? '').trim()}`;
+const importFieldKey: Record<string, string> = { '工厂编码':'factorySet', '工厂描述':'factoryName', '物料编码':'material', '物料描述':'materialDescription', '开发类型':'development', '责任单位':'responsibleUnit', '静态提出日期':'staticDate', '处理方案类型':'solution', '处理意见':'opinion', '方案制定部门':'solutionDepartment', '留用数量':'retainedQuantity', '留用时间':'retainedDate', '预计消耗完成时间':'expectedDate', '预计打样完成时间':'expectedSampleDate', '静态原因':'staticReason' };
 
 type BaselineSnapshot = { included: boolean; value?: string };
 // Each uninterrupted strategic/special membership period freezes the first SAP baseline value.
@@ -63,6 +64,7 @@ const strategicRows: Row[] = [
   { category:'封边带', materialCode:'104009061', materialDescription:'H214#墨韵细木纹PVC浮雕封边带', baselineAverageConsumption:frozenBaselineConsumption([{included:true,value:'16.25'}]), preparationDays:'60天', currentStock:'1,128.00', averageConsumption:'14.70', supplyDays:'76.7', overstockQuantity:'245.00' },
 ];
 const specialRows: Row[] = strategicRows.map((row, index) => ({ ...row, category:['刀具','电器','五金'][index], materialCode: ['205009815','301002596','198008694'][index], materialDescription: ['专项刀具MX-203眉线立铣金刚石刀','智能灯控模块 A3 专项备料','M079-128珍珠铬锌合金拉手'][index], preparationDays: ['20天','35天','50天'][index] }));
+const strategicDataUpdatedAt = { strategic:'2026-08-19 08:00:00', special:'2026-08-19 08:00:00' };
 
 const strategicColumns: Column[] = [
   {key:'category',label:'材料类别'}, {key:'materialCode',label:'物料编码'}, {key:'materialDescription',label:'物料描述',width:280},
@@ -131,14 +133,14 @@ const newStaticElectromechanicalColumns: Column[] = [
 const newStaticBaseFilters: Filter[] = [{key:'staticDate',label:'静态提出日期',type:'month'},{key:'factoryName',label:'工厂描述',options:['板木公司供应工厂','定制公司供应工厂','清丰分公司供应工厂']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'}];
 const maintenanceFilters = (materialType: StaticMaterialType): Filter[] => [{key:'solution',label:'处理方案类型',options:configOptions(materialType, 'solution', true)},{key:'opinion',label:'处理意见',placeholder:'请输入处理意见'},{key:'responsibleUnit',label:'责任单位',placeholder:'请输入责任单位'},{key:'staticReason',label:'静态原因',options:configOptions(materialType, 'reason')}];
 const newStaticTabs: Record<NewStaticTab, NewStaticTabConfig> = {
-  static: { label:'静态材料', total:137, filters:[newStaticBaseFilters[0],newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:baseRows.filter(row=>row.category !== '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
-  electromechanical: { label:'机电材料', total:28, filters:[...newStaticBaseFilters,...maintenanceFilters('electromechanical')], columns:newStaticElectromechanicalColumns, rows:baseRows.filter(row=>row.category === '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','处理方案类型','处理意见','方案制定部门','留用数量','留用时间','静态原因'] },
+  static: { label:'静态材料', total:137, filters:[newStaticBaseFilters[0],newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:baseRows.filter(row=>row.category !== '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
+  electromechanical: { label:'机电材料', total:28, filters:[...newStaticBaseFilters,...maintenanceFilters('electromechanical')], columns:newStaticElectromechanicalColumns, rows:baseRows.filter(row=>row.category === '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','留用数量','留用时间','静态原因'] },
 };
 const electromechanicalConsumptionColumns: Column[] = [
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},{key:'factoryName',label:'工厂描述',width:180},
   {key:'development',label:'对应开发'},{key:'category',label:'材料类别'},{key:'unitName',label:'单位名称'},
   {key:'reportedStock',label:'提报时总应消耗量',width:140},{key:'availableStock',label:'现可用库存',width:120},{key:'totalRequired',label:'当前应消耗总量'},
-  {key:'staticDate',label:'静态提出日期',width:112},{key:'currentStock',label:'现库存量'},{key:'received',label:'是否入库'},
+  {key:'staticDate',label:'静态提出日期',width:112},{key:'received',label:'是否入库'},
   {key:'receivedQuantity',label:'入库数量'},{key:'responsibleUnit',label:'责任单位',width:130},{key:'staticReason',label:'静态原因',width:130},
   {key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'retainedQuantity',label:'留用数量'},
   {key:'retainedDate',label:'留用时间',width:112},{key:'totalOutbound',label:'总出库量'},{key:'outboundRatio',label:'总出库比例'},
@@ -148,7 +150,7 @@ const staticConsumptionColumns: Column[] = [
   {key:'development',label:'开发类型'},{key:'category',label:'材料类别'},{key:'unit',label:'单位'},
   {key:'reportedStock',label:'提报时总应消耗量',width:140},{key:'availableStock',label:'现可用库存',width:120},{key:'supplierUnreceived',label:'当前供应商未交量',width:120},
   {key:'plannedDemand',label:'当前计划需求量'},{key:'totalRequired',label:'当前应消耗总量'},{key:'staticDate',label:'静态提出日期',width:112},
-  {key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'staticMonths',label:'静态月数'},
+  {key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'responsibleUnit',label:'责任单位',width:130},{key:'staticReason',label:'静态原因',width:130},{key:'staticMonths',label:'静态月数'},
   {key:'receivedQuantity',label:'入库数量'},{key:'totalOutbound',label:'总出库量'},{key:'outboundRatio',label:'总出库比例'},
   {key:'retainedQuantity',label:'留用数量'},{key:'retainedDate',label:'留用时间',width:112},{key:'expectedSampleDate',label:'预计打样完成时间',width:140},
   {key:'expectedDate',label:'预计消耗完成时间',width:140},
@@ -199,6 +201,8 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
   const [developmentOverrides, setDevelopmentOverrides] = useState<Record<string, string>>({});
   const [pendingDevelopments, setPendingDevelopments] = useState<Record<string, string>>({});
   const [editingDevelopments, setEditingDevelopments] = useState<Record<string, boolean>>({});
+  const [pendingResponsibleUnits, setPendingResponsibleUnits] = useState<Record<string, string>>({});
+  const [editingResponsibleUnits, setEditingResponsibleUnits] = useState<Record<string, boolean>>({});
   const [historyDialog, setHistoryDialog] = useState<{ material: string; records: ChangeRecord[] } | null>(null);
   const [versionDrawerOpen, setVersionDrawerOpen] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState('V20260813-003');
@@ -249,20 +253,36 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
     { id:'V20260812-001', time:'2026-08-12 08:16:03', count:'12,804', status:'传输成功' },
   ];
   const downloadPendingImportData = () => {
+    if (reportId === 'new-static' && importMode === 'solution' && newStaticTab === 'static') {
+      const missingMaterials = Array.from(new Set(reportRows
+        .filter(row => !String(row.development ?? '').trim() || !String(row.responsibleUnit ?? '').trim())
+        .map(row => String(row.material ?? '').trim())
+        .filter(Boolean)));
+      if (missingMaterials.length) {
+        setImportError(`${missingMaterials.join('，')}（物料编码）当前还未维护责任单位或者开发类型，请维护后重新下载！`);
+        return;
+      }
+    }
+    setImportError('');
     const fields = importMode === 'responsible-unit'
-      ? ['工厂编码','工厂描述','物料编码','物料描述','责任单位']
+      ? newStaticTab === 'electromechanical' ? ['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期'] : ['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期']
       : reportId === 'new-static' ? newStaticTabs[newStaticTab].templateFields : [];
     const pendingRows = reportRows.filter(row => importMode === 'responsible-unit'
-      ? !String(row.responsibleUnit ?? '').trim()
+      ? !String(row.responsibleUnit ?? '').trim() || (newStaticTab !== 'electromechanical' && !String(row.development ?? '').trim())
       : !String(row.solution ?? '').trim());
     const dataRows = pendingRows.map(row => Object.fromEntries(fields.map(field => [field, row[importFieldKey[field]] ?? ''])));
     const materialType: StaticMaterialType = newStaticTab === 'electromechanical' ? 'electromechanical' : 'static';
-    const validations = importMode === 'solution'
-      ? [
-          { field:'处理方案类型', values:configOptions(materialType, 'solution'), errorTitle:'处理方案无效', errorMessage:`请选择配置中心启用的${newStaticTabs[newStaticTab].label}处理方案` },
-          { field:'静态原因', values:configOptions(materialType, 'reason'), errorTitle:'静态原因无效', errorMessage:`请选择配置中心启用的${newStaticTabs[newStaticTab].label}静态原因` },
-        ] : [];
-    const url = URL.createObjectURL(createXlsxTemplate(fields, dataRows[0] ?? {}, validations, dataRows));
+    const validations = importMode === 'responsible-unit' && newStaticTab !== 'electromechanical'
+      ? [{ field:'开发类型', values:DEVELOPMENT_OPTIONS, errorTitle:'开发类型无效', errorMessage:'请选择板木、软体或定制，且不能为空' }]
+      : importMode === 'solution'
+        ? [
+            { field:'处理方案类型', values:configOptions(materialType, 'solution'), errorTitle:'处理方案无效', errorMessage:`请选择配置中心启用的${newStaticTabs[newStaticTab].label}处理方案` },
+            { field:'静态原因', values:configOptions(materialType, 'reason'), errorTitle:'静态原因无效', errorMessage:`请选择配置中心启用的${newStaticTabs[newStaticTab].label}静态原因` },
+          ] : [];
+    const editableFields = importMode === 'responsible-unit'
+      ? newStaticTab === 'electromechanical' ? ['责任单位'] : ['开发类型','责任单位']
+      : fields.filter(field => !['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期'].includes(field));
+    const url = URL.createObjectURL(createXlsxTemplate(fields, dataRows[0] ?? {}, validations, dataRows, editableFields));
     const link = document.createElement('a');
     link.href = url;
     link.download = `新增${reportId === 'new-static' ? newStaticTabs[newStaticTab].label : ''}${importMode === 'responsible-unit' ? '责任单位待导入数据' : '处理方案待导入数据'}.xlsx`;
@@ -278,18 +298,39 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
     if (importFile.name.toLowerCase().endsWith('.csv')) {
       const lines = (await importFile.text()).replace(/^\uFEFF/, '').split(/\r?\n/).filter(Boolean);
       const headers = lines[0]?.split(',').map(value=>value.trim()) || [];
+      const expectedFields = importMode === 'responsible-unit'
+        ? newStaticTab === 'electromechanical' ? ['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期'] : ['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期']
+        : newStaticTabs[newStaticTab].templateFields;
+      if (headers.length !== expectedFields.length || headers.some((header,index)=>header !== expectedFields[index])) {
+        setImportError(`导入文件列名或列顺序已变更，请保持模板固定顺序：${expectedFields.join('、')}。`);
+        return;
+      }
       const materialIndex = headers.indexOf('物料编码');
       const factoryIndex = headers.indexOf('工厂编码');
+      const staticDateIndex = headers.indexOf('静态提出日期');
+      const importKeys = new Set<string>();
+      for (const line of lines.slice(1)) {
+        const values = line.split(',').map(value=>value.trim());
+        const key = `${values[materialIndex]}|${values[factoryIndex]}|${values[staticDateIndex]}`;
+        if (!values[materialIndex] || !values[factoryIndex] || !values[staticDateIndex]) { setImportError('物料编码、分厂编码（工厂编码）和静态提出日期不能为空。'); return; }
+        if (importKeys.has(key)) { setImportError(`物料编码 ${values[materialIndex]}、分厂编码 ${values[factoryIndex]}、静态提出日期 ${values[staticDateIndex]} 存在重复数据。`); return; }
+        importKeys.add(key);
+      }
       if (importMode === 'responsible-unit') {
+        const developmentIndex = headers.indexOf('开发类型');
         const responsibleUnitIndex = headers.indexOf('责任单位');
-        if (factoryIndex < 0 || materialIndex < 0 || responsibleUnitIndex < 0) { setImportError('责任单位导入文件必须包含“工厂编码”“物料编码”和“责任单位”。'); return; }
+        if (factoryIndex < 0 || materialIndex < 0 || responsibleUnitIndex < 0 || (newStaticTab !== 'electromechanical' && developmentIndex < 0)) { setImportError(newStaticTab === 'electromechanical' ? '责任单位导入文件必须包含“工厂编码”“物料编码”和“责任单位”。' : '责任单位导入文件必须包含“工厂编码”“物料编码”“开发类型”和“责任单位”。'); return; }
         const nextUpdates = { ...rowUpdates };
         for (const line of lines.slice(1)) {
           const values = line.split(',').map(value=>value.trim());
           const material = values[materialIndex];
+          const development = developmentIndex >= 0 ? values[developmentIndex] : '';
           const responsibleUnit = values[responsibleUnitIndex];
-          const row = reportRows.find(item=>String(item.material ?? '') === material && (factoryIndex < 0 || String(item.factorySet ?? '') === values[factoryIndex]));
-          if (row && responsibleUnit) nextUpdates[recordKey(row)] = { ...nextUpdates[recordKey(row)], responsibleUnit };
+          const row = reportRows.find(item=>newStaticImportKey(item) === `${material}|${values[factoryIndex]}|${values[staticDateIndex]}`);
+          if (!row) continue;
+          if (!responsibleUnit || (newStaticTab !== 'electromechanical' && !development)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的${newStaticTab === 'electromechanical' ? '责任单位' : '开发类型和责任单位'}不能为空，请补充后重新导入。`); return; }
+          if (newStaticTab !== 'electromechanical' && !DEVELOPMENT_OPTIONS.includes(development)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的开发类型“${development}”无效，请选择板木、软体或定制。`); return; }
+          nextUpdates[recordKey(row)] = { ...nextUpdates[recordKey(row)], ...(newStaticTab === 'electromechanical' ? {} : { development }), responsibleUnit };
         }
         setRowUpdates(nextUpdates);
         setImportOpen(false);
@@ -305,7 +346,7 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
       for (const line of lines.slice(1)) {
         const values = line.split(',').map(value=>value.trim());
         const material = values[materialIndex];
-        const row = reportRows.find(item=>String(item.material ?? '') === material && (factoryIndex < 0 || String(item.factorySet ?? '') === values[factoryIndex]));
+        const row = reportRows.find(item=>newStaticImportKey(item) === `${material}|${values[factoryIndex]}|${values[staticDateIndex]}`);
         if (!row) continue;
         const key = recordKey(row);
         const readField = (label: string, fallback: unknown) => { const index=headers.indexOf(label); return index >= 0 ? values[index] : fallback; };
@@ -314,17 +355,16 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
         const solution = solutionIndex >= 0 ? (values[solutionIndex] || currentSolution) : currentSolution;
         const opinion = opinionIndex >= 0 ? (values[opinionIndex] || currentOpinion) : currentOpinion;
         const staticReason = String(readField('静态原因', row.staticReason) ?? '').trim();
-        if (newStaticTab === 'electromechanical') {
-          const allowedSolutions = configOptions('electromechanical', 'solution');
-          const allowedReasons = configOptions('electromechanical', 'reason');
-          if (solutionIndex >= 0 && values[solutionIndex] && !allowedSolutions.includes(solution)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的处理方案类型“${solution}”不在机电材料配置启用项中。`); return; }
-          if (staticReason && !allowedReasons.includes(staticReason)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的静态原因“${staticReason}”不在机电材料配置启用项中。`); return; }
-        }
+        const importMaterialType: StaticMaterialType = newStaticTab === 'electromechanical' ? 'electromechanical' : 'static';
+        const allowedSolutions = configOptions(importMaterialType, 'solution');
+        const allowedReasons = configOptions(importMaterialType, 'reason');
+        if (solutionIndex >= 0 && values[solutionIndex] && !allowedSolutions.includes(solution)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的处理方案类型“${solution}”不在${newStaticTabs[newStaticTab].label}配置启用项中。`); return; }
+        if (staticReason && !allowedReasons.includes(staticReason)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的静态原因“${staticReason}”不在${newStaticTabs[newStaticTab].label}配置启用项中。`); return; }
         const changedSolution = solution !== currentSolution || opinion !== currentOpinion;
         if (changedSolution) {
           const records = nextHistory[key] ?? row.changeHistory ?? [];
           if (records.length >= 2) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的处理方案类型已累计变更 2 次，不能继续导入更新。`); return; }
-          nextHistory[key] = [...records, { solution, opinion, updatedBy:'王俊杰', updatedAt:new Date().toLocaleString('zh-CN', { hour12:false }).replace(/\//g,'-') }];
+          nextHistory[key] = [...records, { solution, opinion, updatedBy:'王俊励', updatedAt:new Date().toLocaleString('zh-CN', { hour12:false }).replace(/\//g,'-') }];
         }
         const usesSampleDate = solution === '开发新品' || solution === '开发特款';
         const usesRetention = solution === '生产留用' || solution === '售后留用';
@@ -346,6 +386,17 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
     setImportOpen(false);
     flash(`${importFile.name} 已提交处理方案导入`);
   };
+  const downloadReportExport = () => {
+    const fields = activeConfig.columns.map(column => column.label);
+    const dataRows = rows.map(row => Object.fromEntries(activeConfig.columns.map(column => [column.label, column.key === 'solution' ? (String(row[column.key] ?? '').trim() || DEFAULT_SOLUTION) : row[column.key] ?? ''])));
+    const url = URL.createObjectURL(createXlsxTemplate(fields, dataRows[0] ?? {}, [], dataRows, []));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${config.title}${reportId === 'new-static' ? `-${newStaticTabs[newStaticTab].label}` : ''}查询结果.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+    flash(`已导出 ${rows.length} 条查询结果，数据列已锁定`);
+  };
 
   return <section className="static-report-page" aria-label={config.title}>
     {reportId === 'new-static' && <nav className="static-report-tabs" aria-label="新增静态物料分类">{(Object.entries(newStaticTabs) as [NewStaticTab, NewStaticTabConfig][]).map(([id, tab])=><button key={id} type="button" className={newStaticTab === id ? 'active' : ''} onClick={()=>setNewStaticTab(id)}>{tab.label}</button>)}</nav>}
@@ -354,11 +405,11 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
       <div className="static-report-actions"><button type="button" className="query" onClick={()=>{setApplied(draft);setPage(1);flash('查询完成');}}><Search size={14}/>查询</button><button type="button" className="reset" onClick={()=>{const next=emptyFilters(activeConfig);setDraft(next);setApplied(next);setPage(1);}}><RotateCcw size={14}/>重置</button></div>
     </section>
     <section className="static-report-table-panel">
-      <div className="static-report-toolbar"><div className="static-report-toolbar-context">{reportId === 'strategic-special-base' && <><span>当前版本</span><b>{selectedVersion}</b><i>全量快照</i></>}</div><div className="static-report-toolbar-actions">{reportId === 'strategic-special-base' && <button type="button" className="static-report-version-button" onClick={()=>setVersionDrawerOpen(true)}><History size={14}/>版本记录</button>}{reportId === 'new-static' && <><button type="button" className="static-report-import-button" onClick={()=>{setImportMode('solution');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入处理方案</button><button type="button" className="static-report-import-button secondary" onClick={()=>{setImportMode('responsible-unit');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入责任单位</button></>}<button type="button" onClick={()=>flash('导出任务已创建，请在导出列表中查看')}><Download size={14}/>导出</button></div></div>
-      <div className="static-report-table-scroll"><table><thead><tr><th className="row-number">序号</th>{activeConfig.columns.map(column=><th key={column.key} style={{width:column.width,minWidth:column.width}}>{column.label}</th>)}</tr></thead><tbody>{rows.map((row,index)=><tr key={`${recordKey(row)}-${index}`}><td className="row-number">{index+1}</td>{activeConfig.columns.map(column=>{ const key = recordKey(row); const cellValue = column.key === 'solution' ? (String(row.solution ?? '').trim() || DEFAULT_SOLUTION) : row[column.key]; const history = row.changeHistory ?? []; const isChangeCell = ['new-static','electromechanical','static-consumption'].includes(reportId) && history.length > 0 && (column.key === 'solution' || column.key === 'opinion'); const isDevelopmentCell = reportId === 'new-static' && column.key === 'development'; const pending = pendingDevelopments[key]; const currentDevelopment = String(row.development ?? ''); const isEditing = editingDevelopments[key] === true || pending !== undefined; const showEditor = isDevelopmentCell && isEditing; const saveDevelopment = () => { if (!pending) return; setDevelopmentOverrides(current=>({...current,[key]:pending})); setPendingDevelopments(current=>{const next={...current};delete next[key];return next;}); setEditingDevelopments(current=>{const next={...current};delete next[key];return next;}); flash('开发类型已保存'); }; const cancelDevelopment = () => { setPendingDevelopments(current=>{const next={...current};delete next[key];return next;}); setEditingDevelopments(current=>{const next={...current};delete next[key];return next;}); }; return <td key={column.key} style={{width:column.width,minWidth:column.width}} className={`${column.key === 'warningLevel' ? `warning-${row[column.key]}` : ''} ${isChangeCell ? 'static-report-changed-cell' : ''}`}>{isChangeCell ? <button type="button" onClick={()=>setHistoryDialog({ material:`${row.factorySet} / ${row.material}`, records:history })}>{String(cellValue ?? '')}</button> : showEditor ? <div className="static-report-development-editor"><select className="static-report-development-select" aria-label={`维护物料 ${row.factorySet} ${row.material} 开发类型`} value={pending ?? currentDevelopment} onChange={event=>setPendingDevelopments(current=>({...current,[key]:event.target.value}))}>{!currentDevelopment && <option value="" disabled>请选择</option>}{DEVELOPMENT_OPTIONS.map(option=><option key={option}>{option}</option>)}</select><span><button type="button" className="save" disabled={!pending} onClick={saveDevelopment}>保存</button><button type="button" className="cancel" onClick={cancelDevelopment}>取消</button></span></div> : isDevelopmentCell ? <div className="static-report-development-display"><span className={!currentDevelopment ? 'unmaintained' : ''}>{currentDevelopment || '未维护'}</span><button type="button" title="维护开发类型" aria-label={`维护物料 ${row.factorySet} ${row.material} 开发类型`} onClick={()=>setEditingDevelopments(current=>({...current,[key]:true}))}><Pencil size={12}/></button></div> : cellValue ?? '-'}</td>; })}</tr>)}{!rows.length&&<tr><td className="static-report-empty" colSpan={activeConfig.columns.length+1}>暂无匹配记录</td></tr>}</tbody></table></div>
+      <div className="static-report-toolbar"><div className="static-report-toolbar-context">{reportId === 'strategic-special-base' && <><span>当前版本</span><b>{selectedVersion}</b><i>全量快照</i></>}</div><div className="static-report-toolbar-actions">{(reportId === 'strategic' || reportId === 'special') && <span className="static-report-data-updated-at"><span>数据更新时间：</span><b>{strategicDataUpdatedAt[reportId]}</b></span>}{reportId === 'strategic-special-base' && <button type="button" className="static-report-version-button" onClick={()=>setVersionDrawerOpen(true)}><History size={14}/>版本记录</button>}{reportId === 'new-static' && <><button type="button" className="static-report-import-button" onClick={()=>{setImportMode('solution');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入处理方案</button><button type="button" className="static-report-import-button secondary" onClick={()=>{setImportMode('responsible-unit');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入责任单位</button></>}<button type="button" onClick={downloadReportExport}><Download size={14}/>导出</button></div></div>
+      <div className="static-report-table-scroll"><table><thead><tr><th className="row-number">序号</th>{activeConfig.columns.map(column=><th key={column.key} style={{width:column.width,minWidth:column.width}}>{column.label}</th>)}</tr></thead><tbody>{rows.map((row,index)=><tr key={`${recordKey(row)}-${index}`}><td className="row-number">{index+1}</td>{activeConfig.columns.map(column=>{ const key = recordKey(row); const cellValue = column.key === 'solution' ? (String(row.solution ?? '').trim() || DEFAULT_SOLUTION) : row[column.key]; const history = row.changeHistory ?? []; const isChangeCell = ['new-static','electromechanical','static-consumption'].includes(reportId) && history.length > 0 && (column.key === 'solution' || column.key === 'opinion'); const isDevelopmentCell = reportId === 'new-static' && column.key === 'development'; const isResponsibleUnitCell = reportId === 'new-static' && column.key === 'responsibleUnit'; const pendingResponsibleUnit = pendingResponsibleUnits[key]; const currentResponsibleUnit = String(row.responsibleUnit ?? ''); const isResponsibleUnitEditing = editingResponsibleUnits[key] === true || pendingResponsibleUnit !== undefined; const pending = pendingDevelopments[key]; const currentDevelopment = String(row.development ?? ''); const isEditing = editingDevelopments[key] === true || pending !== undefined; const showEditor = isDevelopmentCell && isEditing; const saveDevelopment = () => { if (!pending) return; setDevelopmentOverrides(current=>({...current,[key]:pending})); setPendingDevelopments(current=>{const next={...current};delete next[key];return next;}); setEditingDevelopments(current=>{const next={...current};delete next[key];return next;}); flash('开发类型已保存'); }; const cancelDevelopment = () => { setPendingDevelopments(current=>{const next={...current};delete next[key];return next;}); setEditingDevelopments(current=>{const next={...current};delete next[key];return next;}); }; return <td key={column.key} style={{width:column.width,minWidth:column.width}} className={`${column.key === 'warningLevel' ? `warning-${row[column.key]}` : ''} ${isChangeCell ? 'static-report-changed-cell' : ''}`}>{isChangeCell ? <button type="button" onClick={()=>setHistoryDialog({ material:`${row.factorySet} / ${row.material}`, records:history })}>{String(cellValue ?? '')}</button> : showEditor ? <div className="static-report-development-editor"><select className="static-report-development-select" aria-label={`维护物料 ${row.factorySet} ${row.material} 开发类型`} value={pending ?? currentDevelopment} onChange={event=>setPendingDevelopments(current=>({...current,[key]:event.target.value}))}>{!currentDevelopment && <option value="" disabled>请选择</option>}{DEVELOPMENT_OPTIONS.map(option=><option key={option}>{option}</option>)}</select><span><button type="button" className="save" disabled={!pending} onClick={saveDevelopment}>保存</button><button type="button" className="cancel" onClick={cancelDevelopment}>取消</button></span></div> : isResponsibleUnitCell && isResponsibleUnitEditing ? <div className="static-report-responsible-editor"><input value={pendingResponsibleUnit ?? currentResponsibleUnit} onChange={event=>setPendingResponsibleUnits(current=>({...current,[key]:event.target.value}))}/><span><button type="button" className="save" disabled={!String(pendingResponsibleUnit ?? '').trim()} onClick={()=>{const value=String(pendingResponsibleUnit ?? '').trim();if(!value)return;setRowUpdates(current=>({...current,[key]:{...current[key],responsibleUnit:value}}));setPendingResponsibleUnits(current=>{const next={...current};delete next[key];return next;});setEditingResponsibleUnits(current=>{const next={...current};delete next[key];return next;});flash('责任单位已保存');}}>保存</button><button type="button" className="cancel" onClick={()=>{setPendingResponsibleUnits(current=>{const next={...current};delete next[key];return next;});setEditingResponsibleUnits(current=>{const next={...current};delete next[key];return next;});}}>取消</button></span></div> : isResponsibleUnitCell ? <div className="static-report-development-display"><span className={!currentResponsibleUnit ? 'unmaintained' : ''}>{currentResponsibleUnit || '未维护'}</span><button type="button" title="维护责任单位" onClick={()=>setEditingResponsibleUnits(current=>({...current,[key]:true}))}><Pencil size={12}/></button></div> : isDevelopmentCell ? <div className="static-report-development-display"><span className={!currentDevelopment ? 'unmaintained' : ''}>{currentDevelopment || '未维护'}</span><button type="button" title="维护开发类型" aria-label={`维护物料 ${row.factorySet} ${row.material} 开发类型`} onClick={()=>setEditingDevelopments(current=>({...current,[key]:true}))}><Pencil size={12}/></button></div> : cellValue ?? '-'}</td>; })}</tr>)}{!rows.length&&<tr><td className="static-report-empty" colSpan={activeConfig.columns.length+1}>暂无匹配记录</td></tr>}</tbody></table></div>
       <footer className="static-report-pagination"><span>共 {total} 条记录</span><div><select value={pageSize} onChange={event=>{setPageSize(Number(event.target.value));setPage(1);}}><option value="20">20 条/页</option><option value="50">50 条/页</option><option value="100">100 条/页</option></select><button type="button" aria-label="上一页" disabled={page===1} onClick={()=>setPage(value=>Math.max(1,value-1))}><ChevronLeft size={14}/></button>{Array.from({length:Math.min(pageCount,5)},(_,index)=>index+1).map(value=><button type="button" key={value} className={page===value?'current':''} onClick={()=>setPage(value)}>{value}</button>)}{pageCount>5&&<><span>...</span><button type="button" className={page===pageCount?'current':''} onClick={()=>setPage(pageCount)}>{pageCount}</button></>}<button type="button" aria-label="下一页" disabled={page===pageCount} onClick={()=>setPage(value=>Math.min(pageCount,value+1))}><ChevronRight size={14}/></button><span>第 {page} / {pageCount} 页</span></div></footer>
     </section>
-    {importOpen && <div className="static-report-import-backdrop" onMouseDown={event=>event.target === event.currentTarget && setImportOpen(false)}><section className="static-report-import-dialog" role="dialog" aria-modal="true" aria-labelledby="static-import-title"><header><strong id="static-import-title">{importMode === 'responsible-unit' ? '导入责任单位' : '导入处理方案'}</strong><button type="button" aria-label="关闭导入弹窗" onClick={()=>setImportOpen(false)}><X size={18}/></button></header><div className="static-report-import-body"><div className="static-report-import-file-row"><span>待导入数据</span><div><button type="button" className="static-report-template-link" onClick={downloadPendingImportData}><Download size={14}/>下载当前待导入数据</button><strong className={pendingDataDownloaded ? 'selected' : ''}>{pendingDataDownloaded ? '已下载，可上传处理后的文件' : '请先下载并维护当前待导入数据'}</strong></div></div><div className="static-report-import-file-row"><span>导入文件</span><div><label className="static-report-file-picker"><input type="file" disabled={!pendingDataDownloaded} accept=".xlsx,.xls,.csv" onChange={event=>{setImportFile(event.target.files?.[0] || null);setImportError('')}}/><Upload size={14}/><b>选择文件</b></label><strong className={importFile ? 'selected' : ''}>{importFile ? importFile.name : '支持 .xlsx、.xls、.csv 格式'}</strong></div></div><p>{importMode === 'responsible-unit' ? '下载责任单位为空的当前数据后填写责任单位。系统按工厂编码 + 物料编码更新，工厂描述与物料描述用于核对。' : `下载处理方案类型为空的当前数据后，填写处理方案类型、处理意见和方案制定部门。模板还包含：${reportId === 'new-static' && newStaticTabs[newStaticTab].templateFields.join('、')}。处理方案类型和静态原因仅可选择配置中心对应${newStaticTabs[newStaticTab].label}页面的启用项；处理方案类型或处理意见累计变更不得超过 2 次。`}</p>{importError && <div className="static-report-import-error" role="alert">{importError}</div>}</div><footer><button type="button" className="static-report-cancel-button" onClick={()=>setImportOpen(false)}>取消</button><button type="button" className="static-report-confirm-import" onClick={confirmImport}>确认导入</button></footer></section></div>}
+    {importOpen && <div className="static-report-import-backdrop" onMouseDown={event=>event.target === event.currentTarget && setImportOpen(false)}><section className="static-report-import-dialog" role="dialog" aria-modal="true" aria-labelledby="static-import-title"><header><strong id="static-import-title">{importMode === 'responsible-unit' ? '导入责任单位' : '导入处理方案'}</strong><button type="button" aria-label="关闭导入弹窗" onClick={()=>setImportOpen(false)}><X size={18}/></button></header><div className="static-report-import-body"><div className="static-report-import-file-row"><span>待导入数据</span><div><button type="button" className="static-report-template-link" onClick={downloadPendingImportData}><Download size={14}/>下载当前待导入数据</button><strong className={pendingDataDownloaded ? 'selected' : ''}>{pendingDataDownloaded ? '已下载，可上传处理后的文件' : '请先下载并维护当前待导入数据'}</strong></div></div><div className="static-report-import-file-row"><span>导入文件</span><div><label className="static-report-file-picker"><input type="file" disabled={!pendingDataDownloaded} accept=".xlsx,.xls,.csv" onChange={event=>{setImportFile(event.target.files?.[0] || null);setImportError('')}}/><Upload size={14}/><b>选择文件</b></label><strong className={importFile ? 'selected' : ''}>{importFile ? importFile.name : '支持 .xlsx、.xls、.csv 格式'}</strong></div></div><p>{importMode === 'responsible-unit' ? '下载责任单位或开发类型为空的当前数据后，必须同时填写开发类型和责任单位。系统按物料编码 + 分厂编码 + 静态提出日期更新，工厂描述与物料描述用于核对。' : `下载处理方案类型为空的当前数据后，填写处理方案类型、处理意见和方案制定部门。模板还包含：${reportId === 'new-static' && newStaticTabs[newStaticTab].templateFields.join('、')}。处理方案类型和静态原因仅可选择配置中心对应${newStaticTabs[newStaticTab].label}页面的启用项；处理方案类型或处理意见累计变更不得超过 2 次。`}</p>{importError && <div className="static-report-import-error" role="alert">{importError}</div>}</div><footer><button type="button" className="static-report-cancel-button" onClick={()=>setImportOpen(false)}>取消</button><button type="button" className="static-report-confirm-import" onClick={confirmImport}>确认导入</button></footer></section></div>}
     {historyDialog && <div className="static-report-history-backdrop" onMouseDown={event=>event.target === event.currentTarget && setHistoryDialog(null)}><section className="static-report-history-dialog" role="dialog" aria-modal="true" aria-labelledby="history-title"><header><div><strong id="history-title">处理方案变更记录</strong><span>物料编码：{historyDialog.material}</span></div><button type="button" aria-label="关闭变更记录" onClick={()=>setHistoryDialog(null)}><X size={18}/></button></header><div><table><thead><tr><th>处理方案类型</th><th>处理意见</th><th>更新人</th><th>更新时间</th></tr></thead><tbody>{historyDialog.records.map((record,index)=><tr key={`${record.updatedAt}-${index}`}><td>{record.solution}</td><td>{record.opinion || '-'}</td><td>{record.updatedBy}</td><td>{record.updatedAt}</td></tr>)}</tbody></table></div><footer><button type="button" className="static-report-confirm-import" onClick={()=>setHistoryDialog(null)}>关闭</button></footer></section></div>}
     {versionDrawerOpen && <div className="static-report-version-backdrop" onMouseDown={event=>event.target === event.currentTarget && setVersionDrawerOpen(false)}><aside className="static-report-version-drawer" aria-label="传输版本记录"><header><div><strong>传输版本记录</strong><span>外围系统每次全量传输均生成独立版本</span></div><button type="button" aria-label="关闭版本记录" onClick={()=>setVersionDrawerOpen(false)}><X size={18}/></button></header><div className="static-report-version-list">{versions.map(version=><button type="button" key={version.id} className={selectedVersion === version.id ? 'active' : ''} onClick={()=>{setSelectedVersion(version.id); setDraft(current=>({...current,version:version.id})); setApplied(current=>({...current,version:version.id})); setVersionDrawerOpen(false); flash(`已切换至 ${version.id}`);}}><span className="static-report-version-dot"/><div><strong>{version.id}{version.latest && <em>当前</em>}</strong><span>{version.time}</span></div><small>{version.count} 条</small><b>{version.status}</b></button>)}</div><footer><span>保留所有成功传输的全量快照</span></footer></aside></div>}
     {toast&&<div className="static-report-toast" role="status">{toast}</div>}
