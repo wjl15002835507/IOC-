@@ -1,4 +1,5 @@
-type TemplateValidation = { field: string; values: string[]; errorTitle: string; errorMessage: string };
+type TemplateValidation = { field: string; values: string[]; errorTitle: string; errorMessage: string; prompt?: string };
+type TemplateOptions = { freezeHeader?: boolean; protectSheet?: boolean };
 
 const encoder = new TextEncoder();
 const escapeXml = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, character => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&apos;' }[character] || character));
@@ -60,7 +61,7 @@ const zipFiles = (files: { name: string; content: string }[]) => {
   return joinBytes([...localParts, central, end]);
 };
 
-export const createXlsxTemplateBytes = (fields: string[], sample: Record<string, unknown>, validations: TemplateValidation[], dataRows: Record<string, unknown>[] = [], editableFields: string[] = []) => {
+export const createXlsxTemplateBytes = (fields: string[], sample: Record<string, unknown>, validations: TemplateValidation[], dataRows: Record<string, unknown>[] = [], editableFields: string[] = [], options: TemplateOptions = {}) => {
   const rowData = dataRows.length ? dataRows : [sample];
   const editable = new Set(editableFields);
   const rows = [
@@ -72,11 +73,13 @@ export const createXlsxTemplateBytes = (fields: string[], sample: Record<string,
     if (fieldIndex < 0 || !validation.values.length) return '';
     const column = columnName(fieldIndex);
     const configColumn = columnName(validationIndex);
-    return `<dataValidation type="list" allowBlank="1" showErrorMessage="1" showInputMessage="1" errorStyle="stop" sqref="${column}2:${column}500" errorTitle="${escapeXml(validation.errorTitle)}" error="${escapeXml(validation.errorMessage)}" promptTitle="请选择配置值" prompt="选项来自对应材料配置页面"><formula1>&apos;配置项&apos;!$${configColumn}$2:$${configColumn}$${validation.values.length + 1}</formula1></dataValidation>`;
+    return `<dataValidation type="list" allowBlank="1" showErrorMessage="1" showInputMessage="1" errorStyle="stop" sqref="${column}2:${column}500" errorTitle="${escapeXml(validation.errorTitle)}" error="${escapeXml(validation.errorMessage)}" promptTitle="请选择配置值" prompt="${escapeXml(validation.prompt || '选项来自对应材料配置页面')}"><formula1>&apos;配置项&apos;!$${configColumn}$2:$${configColumn}$${validation.values.length + 1}</formula1></dataValidation>`;
   }).filter(Boolean);
   const validationsXml = validationEntries.length ? `<dataValidations count="${validationEntries.length}">${validationEntries.join('')}</dataValidations>` : '';
   const widths = fields.map((field, index) => `<col min="${index + 1}" max="${index + 1}" width="${Math.min(32, Math.max(14, field.length * 2 + 4))}" customWidth="1"/>`).join('');
-  const sheet1 = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>${widths}</cols><sheetData>${rows}</sheetData><sheetProtection sheet="1" objects="1" scenarios="1" selectLockedCells="1" selectUnlockedCells="0"/><autoFilter ref="A1:${columnName(fields.length - 1)}${rowData.length + 1}"/>${validationsXml}</worksheet>`;
+  const sheetViews = options.freezeHeader === false ? '' : '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>';
+  const protection = options.protectSheet === false ? '' : '<sheetProtection sheet="1" objects="1" scenarios="1" selectLockedCells="1" selectUnlockedCells="0"/>';
+  const sheet1 = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${sheetViews}<cols>${widths}</cols><sheetData>${rows}</sheetData>${protection}<autoFilter ref="A1:${columnName(fields.length - 1)}${rowData.length + 1}"/>${validationsXml}</worksheet>`;
   const configRows = Array.from({ length: Math.max(1, ...validations.map(validation => validation.values.length)) + 1 }, (_, rowIndex) => {
     const cells = validations.map((validation, columnIndex) => inlineCell(`${columnName(columnIndex)}${rowIndex + 1}`, rowIndex === 0 ? validation.field : validation.values[rowIndex - 1] ?? '')).join('');
     return `<row r="${rowIndex + 1}">${cells}</row>`;
@@ -94,8 +97,8 @@ export const createXlsxTemplateBytes = (fields: string[], sample: Record<string,
   return zipFiles(files);
 };
 
-export const createXlsxTemplate = (fields: string[], sample: Record<string, unknown>, validations: TemplateValidation[], dataRows: Record<string, unknown>[] = [], editableFields: string[] = []) => {
-  const bytes = createXlsxTemplateBytes(fields, sample, validations, dataRows, editableFields);
+export const createXlsxTemplate = (fields: string[], sample: Record<string, unknown>, validations: TemplateValidation[], dataRows: Record<string, unknown>[] = [], editableFields: string[] = [], options: TemplateOptions = {}) => {
+  const bytes = createXlsxTemplateBytes(fields, sample, validations, dataRows, editableFields, options);
   const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
   return new Blob([buffer], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 };

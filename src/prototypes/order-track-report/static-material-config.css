@@ -11,6 +11,7 @@
 .material-page-tabs button:hover { border-color: #0daa82; color: #078668; }
 .material-page-tabs button.active { border-color: #0daa82; color: #fff; background: #0daa82; font-weight: 600; }
 .static-config-filters { min-width: 0; flex: 1; min-height: 62px; margin: 0; border: 0; border-radius: 0; background: transparent; }
+.responsibility-config-filter-row .static-config-filters { width: 100%; }
 .static-config-table { margin-top: 0; border: 0; border-radius: 0; }
 .static-config-toolbar { height: 42px; padding: 6px 12px; }
 .static-config-table table { table-layout: fixed; }
@@ -52,3 +53,5 @@
 .severity-3 { color: #c79a19; }
 .severity-2 { color: #d27630; }
 .severity-1 { color: #c84d49; }
+.static-config-dialog .responsibility-dialog-status { margin-top: 12px; }
+.static-config-dialog .responsibility-dialog-status select { height: 32px; padding: 0 9px; border: 1px solid #d5e1df; border-radius: 3px; color: #44545a; background: #fff; }

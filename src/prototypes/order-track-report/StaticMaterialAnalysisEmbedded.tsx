@@ -200,6 +200,13 @@ const materials: MaterialRow[] = [
 const columns = [
   ['factoryName','工厂'],['category','材料类别'],['warehouse','库存地点'],['code','物料编码'],['name','物料名称'],['dev','对应开发'],['reported','应消耗总量'],['stock','现可用库存'],['unit','单位'],['reason','静态原因'],['plan','处理方案类型'],['solutionDepartment','方案制定部门'],['retainedQuantity','留用数量'],['retainedDate','留用时间'],['suggestion','处理意见'],['totalOutbound','总出库量'],['outboundRatio','出库比例'],['retention','留存率'],['alert','警报级别'],['staleDate','呆滞提出时间'],['ageMonths','静态月数'],
 ] as const;
+const detailColumnFormulas: Record<string, string> = {
+  reported: '提报时总应消耗量=提出时可用库存+供应商未交量-计划需求量，新增为静态物料时计算，静态展示',
+  stock: '现可用库存=冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)',
+  outboundRatio: '出库比例 = 总出库量 ÷ 提报时总应消耗量 × 100%',
+  retention: '留存率 = 现可用库存 ÷ 提报时总应消耗量 × 100%',
+  ageMonths: '静态月数 = 按静态提出日期计算已完成的完整自然月',
+};
 
 const menuItems = [
   { label:'我的应用', icon:Grid2X2 }, { label:'分析看板', icon:BarChart3 }, { label:'报表中心', icon:FileText },
@@ -614,7 +621,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
                 <section className="detail-table-panel">
                   <div className="detail-table-scroll">
                     <table>
-                      <thead><tr>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key}>{label}</th>)}</tr></thead>
+                      <thead><tr>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key} className={detailColumnFormulas[key] ? 'formula-column' : undefined}><span className="static-analysis-formula-header"><span>{label}</span>{detailColumnFormulas[key] && <span className="static-analysis-formula-help" tabIndex={0} aria-label={`${label}计算公式`}>?<span className="static-analysis-formula-tooltip" role="tooltip">{detailColumnFormulas[key]}</span></span>}</span></th>)}</tr></thead>
                       <tbody>
                         {pageRows.length ? pageRows.map((row) => (
                           <tr key={row.code} onDoubleClick={() => setDrawerRow(row)}>
