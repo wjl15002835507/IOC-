@@ -19,8 +19,10 @@ import {
 } from 'lucide-react';
 import './style.css';
 import './custom-sales-report.css';
+import './board-utilization-report.css';
 import './static-material-reports.css';
 import CustomSalesReport from './CustomSalesReport';
+import BoardUtilizationReport from './BoardUtilizationReport';
 import StaticMaterialAnalysis from './StaticMaterialAnalysisEmbedded';
 import StaticMaterialAgeConfig from './StaticMaterialAgeConfig';
 import StaticMaterialConfig from './StaticMaterialConfig';
@@ -51,7 +53,7 @@ type Filters = {
 };
 
 type TableRow = Record<string, string>;
-type ActiveReport = 'order-track' | 'custom-sales' | 'static-material' | 'age-config' | 'static-config' | `static-report:${StaticReportId}`;
+type ActiveReport = 'order-track' | 'custom-sales' | 'board-utilization' | 'static-material' | 'age-config' | 'static-config' | `static-report:${StaticReportId}`;
 
 const initialFilters: Filters = {
   orderNo: '',
@@ -263,6 +265,7 @@ export default function OrderTrackReport() {
     if (params.get('view') === 'age-config') return 'age-config';
     if (params.get('view') === 'static-config') return 'static-config';
     if (params.get('report') === 'custom-sales') return 'custom-sales';
+    if (params.get('report') === 'board-utilization') return 'board-utilization';
     return 'order-track';
   });
   const [reportMenuOpen, setReportMenuOpen] = useState(false);
@@ -316,7 +319,8 @@ export default function OrderTrackReport() {
 
   if (activeReport === 'static-config') return <StaticMaterialConfig />;
 
-  if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} onOpenStatic={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setActiveReport('static-material'); }} onOpenStaticReport={openStaticReport} />;
+  if (activeReport === 'custom-sales') return <CustomSalesReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} onOpenBoard={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?report=board-utilization'); setActiveReport('board-utilization'); }} onOpenStatic={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setActiveReport('static-material'); }} onOpenStaticReport={openStaticReport} />;
+  if (activeReport === 'board-utilization') return <BoardUtilizationReport onBack={() => { window.history.replaceState(null, '', '/prototypes/order-track-report'); setActiveReport('order-track'); }} onOpenCustom={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setActiveReport('custom-sales'); }} onOpenStatic={() => { window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setActiveReport('static-material'); }} onOpenStaticReport={openStaticReport} />;
 
   const staticReportId = activeReport.startsWith('static-report:') ? activeReport.slice('static-report:'.length) as StaticReportId : null;
   const activeReportTitle = staticReportId ? staticReportMenu.find(item => item.id === staticReportId)?.title || '静态材料分析' : activeReport === 'static-material' ? '静态材料跟踪处理分析' : '订单跟踪报表';
@@ -341,7 +345,7 @@ export default function OrderTrackReport() {
           </button>)}
         </nav>
         {analysisMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>分析看板</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'static-material' ? 'selected' : ''} onClick={() => { setActiveReport('static-material'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-material'); setAnalysisMenuOpen(false); setReportMenuOpen(false); }}>静态材料处理跟踪分析</button></div></div>}
-        {reportMenuOpen && <div className='ioc-sidebar-menu ioc-report-center-menu' style={{ top: sidebarMenuTop }}><section><h4>定制</h4><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); window.history.replaceState(null, '', '/prototypes/order-track-report'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button></div></section><section><h4>静态材料分析</h4><div className='ioc-sidebar-menu-list'>{staticReportMenu.map(item => <button type='button' key={item.id} className={staticReportId === item.id ? 'selected' : ''} onClick={() => openStaticReport(item.id)}>{item.title}</button>)}</div></section></div>}
+        {reportMenuOpen && <div className='ioc-sidebar-menu ioc-report-center-menu' style={{ top: sidebarMenuTop }}><section><h4>定制</h4><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'order-track' ? 'selected' : ''} onClick={() => { setActiveReport('order-track'); window.history.replaceState(null, '', '/prototypes/order-track-report'); setReportMenuOpen(false); }}>订单跟踪报表</button><button type='button' className={activeReport === 'custom-sales' ? 'selected' : ''} onClick={() => { setActiveReport('custom-sales'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=custom-sales'); setReportMenuOpen(false); }}>定制接单打款销售统计报表</button><button type='button' className={activeReport === 'board-utilization' ? 'selected' : ''} onClick={() => { setActiveReport('board-utilization'); window.history.replaceState(null, '', '/prototypes/order-track-report?report=board-utilization'); setReportMenuOpen(false); }}>板材利用率统计报表</button></div></section><section><h4>静态材料分析</h4><div className='ioc-sidebar-menu-list'>{staticReportMenu.map(item => <button type='button' key={item.id} className={staticReportId === item.id ? 'selected' : ''} onClick={() => openStaticReport(item.id)}>{item.title}</button>)}</div></section></div>}
         {configMenuOpen && <div className='ioc-sidebar-menu' style={{ top: sidebarMenuTop }}><h3>配置中心</h3><div className='ioc-sidebar-menu-list'><button type='button' className={activeReport === 'static-config' ? 'selected' : ''} onClick={() => { setActiveReport('static-config'); window.history.replaceState(null, '', '/prototypes/order-track-report?view=static-config'); setConfigMenuOpen(false); }}>静态材料配置</button></div></div>}
       </aside>
 

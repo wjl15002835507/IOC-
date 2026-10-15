@@ -1,8 +1,13 @@
 $ErrorActionPreference = 'Stop'
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
-$npmCommand = 'C:\Program Files\nodejs\npm.cmd'
-$logDirectory = Join-Path $projectRoot '.axhub\make\logs'
+$env:AXHUB_MAKE_HOME_DIR = 'C:\temp\axhub-make'
+$nodeCommand = (Get-Command node.exe -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source)
+if (-not $nodeCommand) {
+    $nodeCommand = 'C:\Users\wangjunli5\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+}
+$viteEntry = Join-Path $projectRoot 'node_modules\vite\bin\vite.js'
+$logDirectory = Join-Path ([IO.Path]::GetTempPath()) 'Axhub-IOC'
 $clientOutput = Join-Path $logDirectory 'vite-autostart.out.log'
 $clientError = Join-Path $logDirectory 'vite-autostart.err.log'
 $monitorLog = Join-Path $logDirectory 'ioc-autostart-monitor.log'
@@ -25,7 +30,7 @@ function Test-HttpPort([string] $HostName, [int] $Port) {
 
 Set-Location -LiteralPath $projectRoot
 
-$lanHost = '192.168.108.72'
+$lanHost = '127.0.0.1'
 $configPath = Join-Path $projectRoot '.axhub\make\axhub.config.json'
 if (Test-Path -LiteralPath $configPath) {
     try {
@@ -40,15 +45,13 @@ function Start-AdminServer {
         Move-Item -LiteralPath $adminState -Destination "$adminState.stale-$([DateTime]::Now.ToString('yyyyMMddHHmmss'))" -Force -ErrorAction SilentlyContinue
     }
     if (Test-Path -LiteralPath $cachedMakeCli) {
-        Start-Process -FilePath 'C:\Program Files\nodejs\node.exe' -ArgumentList @(
-            $cachedMakeCli, 'serve', '--port', '53817', '--host', '0.0.0.0',
-            '--runtime-origin', 'http://localhost:51720', '--no-open',
+        Start-Process -FilePath $nodeCommand -ArgumentList @(
+            $cachedMakeCli, '--port', '53817', '--host', '0.0.0.0',
+            '--runtime-origin', 'http://localhost:51720', '--no-open', '--background',
             '--log-file', (Join-Path $logDirectory 'admin-server.log')
         ) -WorkingDirectory $projectRoot -WindowStyle Hidden
     } elseif (Test-Path -LiteralPath $adminScript) {
-        Start-Process -FilePath 'powershell.exe' -ArgumentList @(
-            '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $adminScript
-        ) -WorkingDirectory $projectRoot -WindowStyle Hidden
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $adminScript
     }
 }
 
@@ -56,10 +59,12 @@ function Start-ClientServer {
     Get-NetTCPConnection -LocalPort 51720 -State Listen -ErrorAction SilentlyContinue |
         Select-Object -ExpandProperty OwningProcess -Unique |
         ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }
-    Start-Process -FilePath $npmCommand -ArgumentList @(
-        'run', 'dev', '--', '--host', '0.0.0.0', '--port', '51720'
-    ) -WorkingDirectory $projectRoot -WindowStyle Hidden `
-        -RedirectStandardOutput $clientOutput -RedirectStandardError $clientError
+    if (-not (Test-Path -LiteralPath $nodeCommand)) { throw "Node was not found: $nodeCommand" }
+    if (-not (Test-Path -LiteralPath $viteEntry)) { throw "Vite entry was not found: $viteEntry" }
+    $env:AXHUB_MAKE_SKIP_AUTO_START_SERVER = '1'
+    Start-Process -FilePath $nodeCommand -ArgumentList @(
+        $viteEntry, '--host', '0.0.0.0', '--port', '51720', '--strictPort'
+    ) -WorkingDirectory $projectRoot -WindowStyle Hidden
 }
 
 while ($true) {
@@ -68,8 +73,8 @@ while ($true) {
             Add-Content -LiteralPath $monitorLog -Value "$(Get-Date -Format o) restarting admin on 53817"
             Start-AdminServer
         }
-        if (-not (Test-HttpPort $lanHost 51720)) {
-            Add-Content -LiteralPath $monitorLog -Value "$(Get-Date -Format o) restarting client on 51720 (LAN $lanHost)"
+        if (-not (Test-HttpPort '127.0.0.1' 51720)) {
+            Add-Content -LiteralPath $monitorLog -Value "$(Get-Date -Format o) restarting client on 51720"
             Start-ClientServer
         }
     } catch {

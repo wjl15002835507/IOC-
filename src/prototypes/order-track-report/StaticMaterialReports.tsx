@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, Download, FileSpreadsheet, History, Pencil, RotateCcw, Search, Upload, X } from 'lucide-react';
 import { getEnabledConfigValues, getEnabledResponsibilityValues, type StaticMaterialType } from './static-material-config-data';
 import { createXlsxTemplate } from './xlsx-template';
+import StaticMaterialTrackingReport from './StaticMaterialTrackingReport';
 
 export type StaticReportId = 'strategic' | 'special' | 'strategic-special-base' | 'new-static' | 'electromechanical' | 'static-consumption' | 'warning';
 
@@ -213,7 +214,7 @@ const emptyFilters = (config: ReportConfig) => Object.fromEntries(config.filters
 
 export const staticReportMenu = (Object.entries(reports) as [StaticReportId, ReportConfig][]).map(([id, config]) => ({ id, title: config.title }));
 
-export default function StaticMaterialReports({ reportId }: { reportId: StaticReportId }) {
+function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId }) {
   const config = reports[reportId];
   const [newStaticTab, setNewStaticTab] = useState<NewStaticTab>('static');
   const activeConfig = reportId === 'new-static' ? newStaticTabs[newStaticTab] : config;
@@ -450,4 +451,10 @@ export default function StaticMaterialReports({ reportId }: { reportId: StaticRe
     {versionDrawerOpen && <div className="static-report-version-backdrop" onMouseDown={event=>event.target === event.currentTarget && setVersionDrawerOpen(false)}><aside className="static-report-version-drawer" aria-label="传输版本记录"><header><div><strong>传输版本记录</strong><span>外围系统每次全量传输均生成独立版本</span></div><button type="button" aria-label="关闭版本记录" onClick={()=>setVersionDrawerOpen(false)}><X size={18}/></button></header><div className="static-report-version-list">{versions.map(version=><button type="button" key={version.id} className={selectedVersion === version.id ? 'active' : ''} onClick={()=>{setSelectedVersion(version.id); setDraft(current=>({...current,version:version.id})); setApplied(current=>({...current,version:version.id})); setVersionDrawerOpen(false); flash(`已切换至 ${version.id}`);}}><span className="static-report-version-dot"/><div><strong>{version.id}{version.latest && <em>当前</em>}</strong><span>{version.time}</span></div><small>{version.count} 条</small><b>{version.status}</b></button>)}</div><footer><span>保留所有成功传输的全量快照</span></footer></aside></div>}
     {toast&&<div className="static-report-toast" role="status">{toast}</div>}
   </section>;
+}
+
+export default function StaticMaterialReports({ reportId }: { reportId: StaticReportId }) {
+  return reportId === 'static-consumption'
+    ? <StaticMaterialTrackingReport currentView={<StandardStaticMaterialReports reportId="static-consumption" />} />
+    : <StandardStaticMaterialReports reportId={reportId} />;
 }

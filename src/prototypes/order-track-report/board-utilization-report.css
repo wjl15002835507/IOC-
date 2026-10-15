@@ -1,0 +1,36 @@
+.board-utilization .board-body{display:flex;height:calc(100% - 34px);min-height:0;flex-direction:column;gap:6px;padding:6px 3px 0;background:#edf4f2}
+.board-utilization .board-filter{display:flex;min-height:52px;flex:0 0 52px;align-items:center;gap:16px;padding:8px 12px;border:1px solid #d7e5e1;background:#fff}
+.board-utilization .period-mode{display:flex;height:30px;border:1px solid #d5e0e2;border-radius:3px;overflow:hidden}
+.board-utilization .period-mode button{min-width:58px;border:0;border-right:1px solid #d5e0e2;color:#59666c;background:#fff;font-size:13px;cursor:pointer}
+.board-utilization .period-mode button:last-child{border-right:0}
+.board-utilization .period-mode button.active{color:#078d70;background:#e8f7f2;font-weight:600}
+.board-utilization .period-input{display:flex;align-items:center;gap:8px;color:#3f4d52;font-size:13px}
+.board-utilization .period-input input{width:156px;height:30px;padding:0 8px;border:1px solid #d7dfe3;border-radius:2px;color:#59666c;background:#fff;font-size:13px}
+.board-utilization .period-input input[type=number]{width:100px}
+.board-utilization .board-actions{display:flex;gap:9px;margin-left:2px}
+.board-utilization .board-actions button,.board-utilization .export-button{display:inline-flex;height:29px;align-items:center;justify-content:center;gap:5px;padding:0 15px;border:1px solid #0aae84;border-radius:3px;color:#fff;background:#0aae84;font-size:13px;cursor:pointer}
+.board-utilization .board-actions .secondary{border-color:#d7dfe3;color:#59666c;background:#fff}
+.board-utilization .board-table-panel{display:flex;min-height:0;flex:1;flex-direction:column;overflow:hidden;border:1px solid #dce6e8;background:#fff}
+.board-utilization .board-toolbar{display:flex;min-height:48px;flex:0 0 48px;align-items:center;justify-content:space-between;gap:20px;padding:0 12px;border-bottom:1px solid #e1e9e8;color:#323f43;background:#fff;font-size:12px}
+.board-utilization .board-toolbar p{margin:0;white-space:nowrap}
+.board-utilization .board-toolbar strong{font-weight:600}
+.board-utilization .board-toolbar span{flex:0 0 auto;color:#303a3e}
+.board-utilization .board-toolbar b{color:#d14343;font-weight:600}
+.board-utilization .board-table-scroll{min-height:0;flex:1;overflow:auto;scrollbar-color:#adb4b5 #eceeef}
+.board-utilization .board-table-scroll table{width:max-content;min-width:100%;border-collapse:collapse;color:#4d5b61;font-size:11px}
+.board-utilization .board-table-scroll th,.board-utilization .board-table-scroll td{min-width:74px;height:31px;padding:3px 7px;border:1px solid #dfe7ea;text-align:center;white-space:nowrap}
+.board-utilization .board-table-scroll th[rowspan="2"]{min-width:100px}
+.board-utilization .board-table-scroll th{position:sticky;top:0;z-index:3;height:34px;color:#58666b;background:#e8f0f0;font-weight:600}
+.board-utilization .board-table-scroll thead tr:nth-child(2) th{top:34px;z-index:2;height:42px;background:#f2f6f6;font-size:10px;line-height:1.35}
+.board-utilization .board-table-scroll thead th:first-child,.board-utilization .board-table-scroll tbody td:first-child,.board-utilization .board-table-scroll tfoot th:first-child{position:sticky;left:0;z-index:4;background:#f6f9f8}
+.board-utilization .board-table-scroll tbody tr:hover td{background:#f6fbfa}
+.board-utilization .board-table-scroll tbody td.rate,.board-utilization .board-table-scroll tfoot td.rate{color:#078d70;font-weight:700}
+.board-utilization .board-table-scroll tfoot th,.board-utilization .board-table-scroll tfoot td{position:sticky;bottom:0;z-index:3;color:#334d4b;background:#eaf6f2;font-weight:700}
+.board-utilization .board-pagination{display:flex;min-height:44px;flex:0 0 44px;align-items:center;justify-content:flex-end;gap:11px;padding:0 12px;border-top:1px solid #e1e9e8;color:#657278;background:#fff;font-size:12px}
+.board-utilization .board-pagination>span:first-child{margin-right:auto}
+.board-utilization .board-pagination label{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.board-utilization .board-pagination select{height:27px;padding:0 19px 0 7px;border:1px solid #d8dfe2;border-radius:2px;color:#59666c;background:#fff;font-size:12px}
+.board-utilization .board-pagination button{height:27px;padding:0 8px;border:1px solid #d8dfe2;border-radius:2px;color:#59666c;background:#fff;font-size:12px;cursor:pointer}
+.board-utilization .board-pagination button:disabled{color:#abb4b7;background:#f6f8f8;cursor:default}
+.board-utilization .board-pagination .export-button{height:27px;padding:0 12px;border-color:#0aae84;color:#fff;background:#0aae84}
+@media(max-width:900px){.board-utilization .board-toolbar{align-items:flex-start;flex-direction:column;justify-content:center;gap:3px}.board-utilization .board-toolbar p{max-width:100%;overflow:hidden;text-overflow:ellipsis}.board-utilization .board-pagination{gap:6px}.board-utilization .board-pagination>span:first-child{display:none}}
