@@ -12,7 +12,7 @@
 .board-utilization .board-actions .secondary{border-color:#d7dfe3;color:#59666c;background:#fff}
 .board-utilization .board-table-panel{display:flex;min-height:0;flex:1;flex-direction:column;overflow:hidden;border:1px solid #dce6e8;background:#fff}
 .board-utilization .board-toolbar{display:flex;min-height:48px;flex:0 0 48px;align-items:center;justify-content:space-between;gap:20px;padding:0 12px;border-bottom:1px solid #e1e9e8;color:#323f43;background:#fff;font-size:12px}
-.board-utilization .board-toolbar p{margin:0;white-space:nowrap}
+.board-utilization .board-toolbar p{margin:0;padding:8px 10px;white-space:nowrap;background:#eaf6f2}
 .board-utilization .board-toolbar strong{font-weight:600}
 .board-utilization .board-toolbar span{flex:0 0 auto;color:#303a3e}
 .board-utilization .board-toolbar b{color:#d14343;font-weight:600}
