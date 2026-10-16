@@ -19,3 +19,73 @@
 .static-report-data-updated-at{font-size:12px;font-weight:600}.static-report-data-updated-at>span{color:#1f2d32}.static-report-data-updated-at>b{color:#d14343}
 .static-report-responsible-editor{display:flex;min-width:0;align-items:center;gap:4px}.static-report-responsible-editor select{width:100%;height:26px;min-width:72px;padding:0 5px;border:1px solid #c9ddd8;border-radius:3px;color:#53666c;background:#f7fbfa;outline:0}.static-report-responsible-editor select:focus{border-color:#0aae84;box-shadow:0 0 0 2px rgb(10 174 132 / 12%)}.static-report-responsible-editor>span{display:flex;gap:3px}.static-report-responsible-editor button{height:22px;padding:0 6px;border-radius:3px;font-size:11px;cursor:pointer}.static-report-responsible-editor .save{border:1px solid #08a982;color:#fff;background:#08a982}.static-report-responsible-editor .save:disabled{border-color:#b7d7ce;color:#fff;background:#a9cfc4;cursor:not-allowed}.static-report-responsible-editor .cancel{border:1px solid #cbdad7;color:#637277;background:#fff}
 .static-report-responsible-editor .responsibility-search-select{flex:1;min-width:110px}.static-report-responsible-editor .responsibility-search-input input{height:26px;padding:0 28px 0 5px;border:1px solid #c9ddd8;border-radius:3px;color:#53666c;background:#f7fbfa;outline:0}.static-report-responsible-editor .responsibility-search-input input:focus{border-color:#0aae84;box-shadow:0 0 0 2px rgb(10 174 132 / 12%)}
+
+.ioc-shell:has(.static-tracking-shell) { min-height:0; }
+.ioc-shell:has(.static-tracking-shell) .workspace { min-height:0; }
+.static-consumption-page .static-report-filters {
+  flex-shrink:0;
+  grid-template-columns:minmax(280px,1.3fr) repeat(4,minmax(160px,1fr));
+  gap:8px 12px;
+  padding:6px 244px 6px 8px;
+  border-radius:0;
+}
+.static-consumption-page .static-report-filters label { grid-template-columns:78px minmax(0,1fr); }
+.static-consumption-page .static-report-filters .static-filter-factoryName { grid-template-columns:40px minmax(0,1fr); }
+.static-consumption-page .static-report-filters .static-filter-solutionDepartment { grid-template-columns:88px minmax(0,1fr); }
+.static-consumption-page .static-report-filters .static-filter-material { grid-template-columns:40px minmax(0,1fr); }
+.static-consumption-page .static-report-filters input,
+.static-consumption-page .static-report-filters select { height:28px; }
+.static-consumption-page .static-report-actions { top:6px; right:8px; gap:8px; }
+.static-consumption-page .static-report-actions button { height:28px; padding:0 10px; }
+.static-consumption-page .static-report-actions .static-tracking-expand {
+  gap:2px;
+  padding:0 4px;
+  border:0;
+  color:#00af91;
+  background:transparent;
+}
+.static-consumption-page .static-tracking-expand[aria-expanded="true"] svg { transform:rotate(180deg); }
+.static-consumption-page .static-report-table-panel { border-radius:0; }
+.static-consumption-page .static-report-toolbar { height:38px; flex-basis:38px; padding:0 8px; font-weight:400; }
+.static-consumption-page .static-tracking-update { color:#697889; font-weight:400; }
+.static-consumption-page .static-tracking-update b { margin-left:4px; color:#ff4949; font-weight:500; }
+.static-consumption-page .static-report-toolbar button { height:26px; border-color:#00b48f; color:#fff; background:#00b48f; }
+.static-consumption-page .static-report-table-scroll th,
+.static-consumption-page .static-report-table-scroll td {
+  box-sizing:border-box;
+  height:26px;
+  padding:3px 8px;
+  border-color:#ebeef5;
+  color:#3e5c7d;
+  font-size:12px;
+  text-align:center;
+  vertical-align:middle;
+}
+.static-consumption-page .static-report-table-scroll th { height:30px; color:#909399; background:#f5f7fa; font-weight:500; }
+.static-consumption-page .static-report-formula-header { width:100%; justify-content:center; gap:3px; }
+.static-consumption-page .static-report-formula-help { width:12px; height:12px; flex-basis:12px; border:0; color:#fff; background:#909eaf; font-size:9px; }
+.static-consumption-page .static-report-table-scroll tbody tr:nth-child(even) td { background:#fff; }
+.static-consumption-page .static-report-table-scroll tbody tr:hover td { background:#f1faf6; }
+.static-consumption-page .static-report-table-scroll td[rowspan] { background:#fff; }
+.static-consumption-page .static-report-table-scroll td[data-column="materialDescription"],
+.static-consumption-page .static-report-table-scroll td[data-column="responsibleUnit"],
+.static-consumption-page .static-report-table-scroll td[data-column="staticReason"],
+.static-consumption-page .static-report-table-scroll td[data-column="opinion"] { text-align:left; }
+.static-consumption-page .static-report-changed-cell button { height:25px; font-size:12px; }
+.static-consumption-page .static-report-table-scroll .row-number { width:48px; min-width:48px; }
+@media(max-width:1500px) {
+  .static-consumption-page .static-report-filters { grid-template-columns:minmax(280px,1.2fr) repeat(2,minmax(200px,1fr)); }
+}
+@media(max-width:1100px) {
+  .static-consumption-page .static-report-filters { grid-template-columns:repeat(2,minmax(240px,1fr)); padding:8px 8px 44px; }
+  .static-consumption-page .static-report-actions { top:auto; bottom:8px; }
+}
+@media(max-width:720px) {
+  .static-consumption-page .static-report-filters { grid-template-columns:minmax(0,1fr); }
+  .static-consumption-page .static-report-filters label,
+  .static-consumption-page .static-report-filters .static-filter-factoryName,
+  .static-consumption-page .static-report-filters .static-filter-material { grid-template-columns:88px minmax(0,1fr); }
+}
+@media(max-height:700px) {
+  .static-consumption-page .static-report-filters { max-height:240px; overflow-y:auto; }
+}
