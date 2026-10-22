@@ -182,6 +182,9 @@ button { cursor: pointer; }
 .static-analysis-formula-help { position: relative; display: inline-flex; width: 14px; height: 14px; flex: 0 0 14px; align-items: center; justify-content: center; border: 1px solid #9aaeb0; border-radius: 50%; color: #718487; background: #fff; font-size: 9px; font-weight: 700; line-height: 1; cursor: help; }
 .static-analysis-formula-help:hover, .static-analysis-formula-help:focus-visible { border-color: var(--green); color: var(--green-dark); outline: 0; }
 .static-analysis-formula-tooltip { position: absolute; z-index: 20; top: calc(100% + 7px); left: 50%; display: none; width: max-content; max-width: 260px; padding: 7px 9px; border: 1px solid #c8ded8; border-radius: 3px; color: #52656a; background: #fff; box-shadow: 0 7px 18px rgb(32 65 58 / 16%); font-size: 10px; font-weight: 400; line-height: 1.5; text-align: left; white-space: normal; transform: translateX(-50%); }
+.static-analysis-formula-tooltip.formula-tooltip-portal { max-width: min(260px, calc(100vw - 16px)); }
+.formula-tooltip-portal { position: fixed !important; z-index: 2147483647 !important; top: auto; left: auto; display: block !important; pointer-events: none; transform: none !important; }
+.formula-tooltip-portal.is-above::before { top: auto; bottom: -5px; border-top: 0; border-left: 0; border-right: 1px solid #c8ded8; border-bottom: 1px solid #c8ded8; }
 .static-analysis-formula-tooltip::before { position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; border-top: 1px solid #c8ded8; border-left: 1px solid #c8ded8; background: #fff; content: ''; transform: translateX(-50%) rotate(45deg); }
 .static-analysis-formula-help:hover .static-analysis-formula-tooltip, .static-analysis-formula-help:focus-visible .static-analysis-formula-tooltip { display: block; }
 .detail-table-scroll tbody tr:hover td { background: #f5faf8; }

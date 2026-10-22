@@ -3,6 +3,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, Download, FileSpreadsheet, Hist
 import { getEnabledConfigValues, getEnabledResponsibilityValues, type StaticMaterialType } from './static-material-config-data';
 import { createXlsxTemplate } from './xlsx-template';
 import StaticMaterialTrackingReport from './StaticMaterialTrackingReport';
+import FormulaHelp from './FormulaHelp';
 
 export type StaticReportId = 'strategic' | 'special' | 'strategic-special-base' | 'new-static' | 'electromechanical' | 'static-consumption' | 'warning';
 
@@ -480,7 +481,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     <section className="static-report-table-panel">
       <div className="static-report-toolbar"><div className="static-report-toolbar-context">{isTrackingReport && <span className="static-tracking-update">数据最后更新时间：<b>2026-10-16 07:00:00</b></span>}{reportId === 'strategic-special-base' && <><span>当前版本</span><b>{selectedVersion}</b><i>全量快照</i></>}</div><div className="static-report-toolbar-actions">{(reportId === 'strategic' || reportId === 'special') && <span className="static-report-data-updated-at"><span>数据更新时间：</span><b>{strategicDataUpdatedAt[reportId]}</b></span>}{reportId === 'strategic-special-base' && <button type="button" className="static-report-version-button" onClick={()=>setVersionDrawerOpen(true)}><History size={14}/>版本记录</button>}{reportId === 'new-static' && <><button type="button" className="static-report-import-button" onClick={()=>{setImportMode('solution');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入处理方案</button><button type="button" className="static-report-import-button secondary" onClick={()=>{setImportMode('responsible-unit');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入责任单位</button></>}<button type="button" onClick={downloadReportExport}><Download size={14}/>导出</button></div></div>
       <div className="static-report-table-scroll"><table>
-        <thead><tr>{activeConfig.columns.map(column => <th key={column.key} data-column={column.key} className={column.formula ? 'formula-column' : undefined} style={{ width:column.width, minWidth:column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.formula && <span className="static-report-formula-help" tabIndex={0} aria-label={column.label + '计算公式'}>?<span className="static-report-formula-tooltip" role="tooltip">{column.formula}</span></span>}</span></th>)}</tr></thead>
+        <thead><tr>{activeConfig.columns.map(column => <th key={column.key} data-column={column.key} className={column.formula ? 'formula-column' : undefined} style={{ width:column.width, minWidth:column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead>
         <tbody>{visibleRows.map((row, index) => <tr key={`${recordKey(row)}-${index}`}>
           {activeConfig.columns.map(column => {
             if (shouldMergeFactoryCell(row, index, column.key)) return null;

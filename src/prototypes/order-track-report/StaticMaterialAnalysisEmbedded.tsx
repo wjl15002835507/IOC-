@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import './static-material-analysis.css';
+import FormulaHelp from './FormulaHelp';
 import '../shared/ioc-navigation.css';
 import { formatAlertCondition, readAlertLevelConfig, type AlertCondition } from './static-material-config-data';
 
@@ -621,7 +622,7 @@ export default function StaticMaterialTrackingAnalysis({ embedded = false }: Sta
                 <section className="detail-table-panel">
                   <div className="detail-table-scroll">
                     <table>
-                      <thead><tr>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key} className={detailColumnFormulas[key] ? 'formula-column' : undefined}><span className="static-analysis-formula-header"><span>{label}</span>{detailColumnFormulas[key] && <span className="static-analysis-formula-help" tabIndex={0} aria-label={`${label}计算公式`}>?<span className="static-analysis-formula-tooltip" role="tooltip">{detailColumnFormulas[key]}</span></span>}</span></th>)}</tr></thead>
+                      <thead><tr>{columns.filter(([key]) => visibleColumns.has(key)).map(([key,label]) => <th key={key} className={detailColumnFormulas[key] ? 'formula-column' : undefined}><span className="static-analysis-formula-header"><span>{label}</span>{detailColumnFormulas[key] && <FormulaHelp label={label} formula={detailColumnFormulas[key]} variant="analysis"/>}</span></th>)}</tr></thead>
                       <tbody>
                         {pageRows.length ? pageRows.map((row) => (
                           <tr key={row.code} onDoubleClick={() => setDrawerRow(row)}>
