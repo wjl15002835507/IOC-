@@ -12,7 +12,7 @@ type Filter = { key: string; label: string; type?: 'select' | 'date' | 'month'; 
 type ChangeRecord = { solution: string; opinion: string; updatedBy: string; updatedAt: string };
 type Row = Record<string, string | number | ChangeRecord[] | undefined> & { changeHistory?: ChangeRecord[] };
 type ReportConfig = { title: string; total: number; columns: Column[]; filters: Filter[]; rows: Row[] };
-type NewStaticTab = 'static' | 'electromechanical';
+type NewStaticTab = 'static' | 'electromechanical' | 'low-consumption';
 type NewStaticTabConfig = Omit<ReportConfig, 'title'> & { label: string; templateFields: string[] };
 type ImportMode = 'solution' | 'responsible-unit';
 
@@ -164,11 +164,54 @@ const newStaticElectromechanicalColumns: Column[] = [
   {key:'staticReason',label:'静态原因',width:130},{key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'solutionDepartment',label:'方案制定部门',width:130},
   {key:'retainedQuantity',label:'留用数量'},{key:'retainedDate',label:'留用时间',width:112},
 ];
+const newStaticLowConsumptionColumns: Column[] = [
+  {key:'material',label:'物料编码'},
+  {key:'materialDescription',label:'物料描述',width:300},
+  {key:'unitName',label:'单位'},
+  {key:'productionType',label:'产生类型'},
+  {key:'category',label:'材料类别'},
+  {key:'materialGroup',label:'物料组'},
+  {key:'materialGroupName',label:'物料组描述',width:220},
+  {key:'factorySet',label:'工厂编码'},
+  {key:'factoryName',label:'工厂描述',width:180},
+  {key:'minimumOrderQuantity',label:'最小起订量'},
+  {key:'safetyStock',label:'安全库存'},
+  {key:'staticDate',label:'形成静态时间',width:112},
+  {key:'availableStock',label:'形成时可用库存'},
+  {key:'supplierUnreceived',label:'形成供应商未交量'},
+  {key:'supplierUnreceivedApproved',label:'核定供应商未交量'},
+  {key:'plannedDemand',label:'形成计划需求量'},
+  {key:'plannedDemandApproved',label:'核定计划需求量'},
+  {key:'totalRequiredApproved',label:'核定后总应消耗量'},
+  {key:'lastYearInbound',label:'近一年入库量'},
+  {key:'lastYearOutbound',label:'近一年出库量'},
+  {key:'responsibleUnit',label:'静态责任单位',width:140},
+  {key:'staticReason',label:'静态原因',width:130},
+  {key:'solutionDepartment',label:'方案制定部门',width:130},
+  {key:'executionDepartment',label:'方案执行部门',width:130},
+  {key:'solution',label:'处理方案类型',width:130},
+  {key:'opinion',label:'处理意见',width:280},
+  {key:'solutionReportDate',label:'方案提报日期',width:112},
+  {key:'retainedDate',label:'留用时间',width:112},
+  {key:'expectedDate',label:'预计消耗完成时间',width:140},
+];
 const newStaticBaseFilters: Filter[] = [{key:'staticDate',label:'静态提出日期',type:'month'},{key:'factoryName',label:'工厂描述',options:['板木公司供应工厂','定制公司供应工厂','清丰分公司供应工厂']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'}];
 const maintenanceFilters = (materialType: StaticMaterialType): Filter[] => [{key:'solution',label:'处理方案类型',options:configOptions(materialType, 'solution', true)},{key:'opinion',label:'处理意见',placeholder:'请输入处理意见'},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'staticReason',label:'静态原因',options:configOptions(materialType, 'reason')}];
 const newStaticTabs: Record<NewStaticTab, NewStaticTabConfig> = {
   static: { label:'静态材料', total:137, filters:[newStaticBaseFilters[0],newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:baseRows.filter(row=>row.category !== '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
   electromechanical: { label:'机电材料', total:28, filters:[...newStaticBaseFilters,...maintenanceFilters('electromechanical')], columns:newStaticElectromechanicalColumns, rows:baseRows.filter(row=>row.category === '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','留用数量','留用时间','静态原因'] },
+  'low-consumption': { label:'低耗材料', total:32, filters:[...newStaticBaseFilters,...maintenanceFilters('static')], columns:newStaticLowConsumptionColumns, rows:baseRows.map((row, index) => ({
+    ...row,
+    unitName: row.unitName ?? row.unit,
+    minimumOrderQuantity: [10, 50, 20, 5, 10, 8][index] ?? 10,
+    safetyStock: [12, 100, 30, 8, 12, 10][index] ?? 12,
+    availableStock: row.availableStock ?? row.currentStock,
+    supplierUnreceivedApproved: row.supplierUnreceived ?? 0,
+    plannedDemandApproved: row.plannedDemand ?? 0,
+    totalRequiredApproved: row.totalRequired ?? 0,
+    solutionReportDate: row.staticDate,
+    executionDepartment: row.solutionDepartment,
+  })), templateFields:['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','方案执行部门','方案提报日期','留用时间','预计消耗完成时间','静态原因'] },
 };
 const electromechanicalConsumptionColumns: Column[] = [
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},{key:'factoryName',label:'工厂描述',width:180},
