@@ -55,6 +55,19 @@ const baseRows: Row[] = [
   { material:'105099902', materialGroup:'RF070801', materialGroupName:'辅料/装饰件', materialDescription:'清丰分厂专用装饰件（替代款）', productionType:'定性', category:'五金', factorySet:'8999', factoryName:'清丰分公司供应工厂', warehouseSet:'QF01', warehouseName:'清丰呆滞库', unit:'EA', unitName:'个', reportedStock:24, availableStock:24, plannedDemand:0, supplierUnreceived:0, totalRequired:24, currentStock:24, received:'否', receivedQuantity:0, lastYearInbound:24, lastYearOutbound:0, responsibleUnit:'采购一部', solutionDepartment:'定制', staticReason:'采购大于需求', solution:'生产留用', opinion:'分公司库房流程申请生产留用', retainedQuantity:24, retainedDate:'2026-12-23', totalOutbound:0, outboundRatio:'0.00%', retention:'0.00%', staticDate:'2026-10-01', staticMonths:2, expectedDate:'2026-12-23', expectedSampleDate:'' },
 ];
 
+const makePaginatedDemoRows = (rows: Row[], total: number): Row[] => Array.from({ length: total }, (_, index) => {
+  const row = rows[index % rows.length];
+  if (index < rows.length) return row;
+  const suffix = String(index + 1).padStart(3, '0');
+  return {
+    ...row,
+    material: `${row.material}-${suffix}`,
+    materialDescription: `${row.materialDescription}（示例${suffix}）`,
+    availableStock: Number(row.availableStock ?? 0) + index,
+    currentStock: Number(row.currentStock ?? 0) + index,
+  };
+});
+
 const DEVELOPMENT_OPTIONS = ['板木', '软体', '定制'];
 const branchCodes = (value: unknown) => String(value ?? '').split('/').map(code => code.trim()).filter(Boolean);
 const calculatedDevelopmentType = (row: Row, rows: Row[] = baseRows): string => {
@@ -205,8 +218,8 @@ const newStaticLowConsumptionColumns: Column[] = [
 const newStaticBaseFilters: Filter[] = [{key:'staticDate',label:'静态提出日期',type:'month'},{key:'factoryName',label:'工厂描述',options:['板木公司供应工厂','定制公司供应工厂','清丰分公司供应工厂']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'}];
 const maintenanceFilters = (materialType: StaticMaterialType): Filter[] => [{key:'solution',label:'处理方案类型',options:configOptions(materialType, 'solution', true)},{key:'opinion',label:'处理意见',placeholder:'请输入处理意见'},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'staticReason',label:'静态原因',options:configOptions(materialType, 'reason')}];
 const newStaticTabs: Record<NewStaticTab, NewStaticTabConfig> = {
-  static: { label:'静态材料', total:137, filters:[newStaticBaseFilters[0],newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:baseRows.filter(row=>row.category !== '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
-  electromechanical: { label:'机电材料', total:28, filters:[...newStaticBaseFilters,...maintenanceFilters('electromechanical')], columns:newStaticElectromechanicalColumns, rows:baseRows.filter(row=>row.category === '电器'), templateFields:['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','留用数量','留用时间','静态原因'] },
+  static: { label:'静态材料', total:137, filters:[newStaticBaseFilters[0],newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:makePaginatedDemoRows(baseRows.filter(row=>row.category !== '电器'), 137), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
+  electromechanical: { label:'机电材料', total:28, filters:[...newStaticBaseFilters,...maintenanceFilters('electromechanical')], columns:newStaticElectromechanicalColumns, rows:makePaginatedDemoRows(baseRows.filter(row=>row.category === '电器'), 28), templateFields:['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','留用数量','留用时间','静态原因'] },
   'low-consumption': { label:'低耗材料', total:32, filters:[{...newStaticBaseFilters[0],label:'形成静态时间'},newStaticBaseFilters[1],newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticLowConsumptionColumns, rows:baseRows.filter(row => row.category !== '电器').map((row, index) => ({
     ...row,
     unitName: row.unitName ?? row.unit,
@@ -351,8 +364,9 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     if (filter.type === 'month') return String(row[filter.key] ?? '').startsWith(query);
     return String(row[filter.key] ?? '').includes(query);
   })), [applied, activeConfig, reportRows, reportId]);
-  const total = isTrackingReport ? rows.length : rows.length ? activeConfig.total : 0;
-  const visibleRows = isTrackingReport ? rows.slice((page - 1) * pageSize, page * pageSize) : rows;
+  const paginatedDemoReport = reportId === 'new-static' && newStaticTab !== 'low-consumption';
+  const total = isTrackingReport || paginatedDemoReport ? rows.length : rows.length ? activeConfig.total : 0;
+  const visibleRows = isTrackingReport || paginatedDemoReport ? rows.slice((page - 1) * pageSize, page * pageSize) : rows;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
   const flash = (message: string) => { setToast(message); window.setTimeout(() => setToast(''), 2200); };
   const versions = [
