@@ -5,9 +5,9 @@ import { createXlsxTemplate } from './xlsx-template';
 import StaticMaterialTrackingReport from './StaticMaterialTrackingReport';
 import FormulaHelp from './FormulaHelp';
 
-export type StaticReportId = 'strategic' | 'special' | 'strategic-special-base' | 'new-static' | 'electromechanical' | 'static-consumption' | 'warning';
+export type StaticReportId = 'strategic' | 'special' | 'strategic-special-base' | 'new-static' | 'electromechanical' | 'static-consumption' | 'static-internal-control' | 'warning';
 
-type Column = { key: string; label: string; width?: number; formula?: string };
+type Column = { key: string; label: string; width?: number; formula?: string; isNew?: boolean };
 type Filter = { key: string; label: string; type?: 'select' | 'date' | 'month'; options?: string[]; placeholder?: string };
 type ChangeRecord = { solution: string; opinion: string; updatedBy: string; updatedAt: string };
 type Row = Record<string, string | number | ChangeRecord[] | undefined> & { changeHistory?: ChangeRecord[] };
@@ -89,9 +89,9 @@ const responsibilityImportFields = (tab: NewStaticTab) => tab === 'electromechan
   ? ['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期']
   : tab === 'low-consumption'
     ? ['工厂编码','工厂描述','物料编码','物料描述','静态责任单位','形成静态时间']
-    : ['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期'];
-const responsibilityUnitField = (tab: NewStaticTab) => tab === 'low-consumption' ? '静态责任单位' : '责任单位';
-const importStaticDateField = (tab: NewStaticTab) => tab === 'low-consumption' ? '形成静态时间' : '静态提出日期';
+    : ['工厂编码','工厂描述','物料编码','物料描述','开发类型','静态责任单位','形成静态时间'];
+const responsibilityUnitField = (tab: NewStaticTab) => tab === 'electromechanical' ? '责任单位' : '静态责任单位';
+const importStaticDateField = (tab: NewStaticTab) => tab === 'electromechanical' ? '静态提出日期' : '形成静态时间';
 const importFieldKey: Record<string, string> = { '工厂编码':'factorySet', '工厂描述':'factoryName', '物料编码':'material', '物料描述':'materialDescription', '开发类型':'development', '责任单位':'responsibleUnit', '静态提出日期':'staticDate', '处理方案类型':'solution', '处理意见':'opinion', '方案制定部门':'solutionDepartment', '留用数量':'retainedQuantity', '留用时间':'retainedDate', '预计消耗完成时间':'expectedDate', '预计打样完成时间':'expectedSampleDate', '静态原因':'staticReason', '静态责任单位':'responsibleUnit', '形成静态时间':'staticDate', '方案提报日期':'solutionReportDate', '方案执行部门':'executionDepartment', '最小起订量':'minimumOrderQuantity', '安全库存':'safetyStock', '形成时可用库存':'availableStock', '形成供应商未交量':'supplierUnreceived', '核定供应商未交量':'supplierUnreceivedApproved', '形成计划需求量':'plannedDemand', '核定计划需求量':'plannedDemandApproved', '核定后总应消耗量':'totalRequiredApproved' };
 
 type BaselineSnapshot = { included: boolean; value?: string };
@@ -165,13 +165,21 @@ const configOptions = (materialType: StaticMaterialType, configType: 'solution' 
 };
 const responsibilityOptions = () => getEnabledResponsibilityValues();
 const newStaticStaticColumns: Column[] = [
-  {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},
+  {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'development',label:'开发类型'},{key:'unit',label:'单位'},
+  {key:'productionType',label:'产生类型'},
+  {key:'customOrderMaterial',label:'定制订单制物料',width:142,isNew:true},
   {key:'category',label:'材料类别'},
   {key:'materialGroup',label:'物料组'},{key:'materialGroupName',label:'物料组描述',width:220},{key:'factorySet',label:'工厂编码'},
-  {key:'factoryName',label:'工厂描述',width:180},{key:'development',label:'开发类型'},{key:'unit',label:'单位'},
-  {key:'currentStock',label:'提出时可用库存',formula:'提出时可用库存=冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)，新增为静态物料时计算，静态展示'},{key:'supplierUnreceived',label:'供应商未交量',width:120},{key:'plannedDemand',label:'计划需求量'},
-  {key:'totalRequired',label:'提报时总应消耗量',formula:'提报时总应消耗量=提出时可用库存+供应商未交量-计划需求量，新增为静态物料时计算，静态展示'},{key:'staticDate',label:'静态提出日期',width:112},{key:'lastYearInbound',label:'近一年入库量'},
-  {key:'lastYearOutbound',label:'近一年出库量'},{key:'responsibleUnit',label:'责任单位',width:130},{key:'staticReason',label:'静态原因',width:130},
+  {key:'factoryName',label:'工厂描述',width:180},{key:'minimumOrderQuantity',label:'最小起订量'},{key:'safetyStock',label:'安全库存'},
+  {key:'staticDate',label:'形成静态时间',width:112},
+  {key:'availableStock',label:'形成时可用库存',formula:'提出时可用库存=冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)，新增为静态物料时计算，静态展示'},
+  {key:'supplierUnreceived',label:'形成供应商未交量',width:120},{key:'supplierUnreceivedApproved',label:'核定供应商未交量',width:120},
+  {key:'plannedDemand',label:'形成计划需求量'},{key:'plannedDemandApproved',label:'核定计划需求量'},
+  {key:'totalRequiredApproved',label:'核定后总应消耗量'},
+  {key:'threeMonthAverageConsumption',label:'近3个月月均消耗量',width:158,isNew:true},
+  {key:'lastYearInbound',label:'近一年入库量'},{key:'lastYearOutbound',label:'近一年出库量'},
+  {key:'afterSalesOutbound',label:'其中售后出库量',width:142,isNew:true},
+  {key:'responsibleUnit',label:'静态责任单位',width:140},{key:'staticReason',label:'静态原因',width:130},
   {key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'solutionDepartment',label:'方案制定部门',width:130},{key:'expectedDate',label:'预计消耗完成时间',width:140},
   {key:'retainedQuantity',label:'留用数量'},{key:'retainedDate',label:'留用时间',width:112},{key:'expectedSampleDate',label:'预计打样完成时间',width:140},
 ];
@@ -179,7 +187,7 @@ const newStaticElectromechanicalColumns: Column[] = [
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},
   {key:'materialGroup',label:'物料组'},
   {key:'materialGroupName',label:'物料组描述',width:220},{key:'factorySet',label:'工厂编码'},{key:'factoryName',label:'工厂描述',width:180},
-  {key:'unit',label:'单位'},{key:'totalRequired',label:'提报时总应消耗量',formula:'提报时总应消耗量=提出时可用库存+供应商未交量-计划需求量，新增为静态物料时计算，静态展示'},{key:'staticDate',label:'静态提出日期',width:112},
+  {key:'unit',label:'单位'},{key:'totalRequired',label:'提报时总应消耗量',formula:'提报时总应消耗量 = 库房有效库存量 + 供应商未交量 - 计划需求量 - 安全库存量；新增为静态物料时计算，静态展示'},{key:'staticDate',label:'静态提出日期',width:112},
   {key:'lastYearInbound',label:'近一年入库量'},{key:'lastYearOutbound',label:'近一年出库量'},{key:'responsibleUnit',label:'责任单位',width:130},
   {key:'staticReason',label:'静态原因',width:130},{key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'solutionDepartment',label:'方案制定部门',width:130},
   {key:'retainedQuantity',label:'留用数量'},{key:'retainedDate',label:'留用时间',width:112},
@@ -217,8 +225,26 @@ const newStaticLowConsumptionColumns: Column[] = [
 ];
 const newStaticBaseFilters: Filter[] = [{key:'staticDate',label:'静态提出日期',type:'month'},{key:'factoryName',label:'工厂描述',options:['板木公司供应工厂','定制公司供应工厂','清丰分公司供应工厂']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'}];
 const maintenanceFilters = (materialType: StaticMaterialType): Filter[] => [{key:'solution',label:'处理方案类型',options:configOptions(materialType, 'solution', true)},{key:'opinion',label:'处理意见',placeholder:'请输入处理意见'},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'staticReason',label:'静态原因',options:configOptions(materialType, 'reason')}];
+const sapFieldDemoValues: Record<string, { customOrderMaterial: string; threeMonthAverageConsumption: number; afterSalesOutbound: number }> = {
+  '6199|101013732': { customOrderMaterial:'否', threeMonthAverageConsumption:6, afterSalesOutbound:2 },
+  '6199|104009061': { customOrderMaterial:'否', threeMonthAverageConsumption:58, afterSalesOutbound:16 },
+  '8599|104009061': { customOrderMaterial:'是', threeMonthAverageConsumption:52, afterSalesOutbound:12 },
+  '8999|105099901': { customOrderMaterial:'否', threeMonthAverageConsumption:0, afterSalesOutbound:0 },
+  '8999|105099902': { customOrderMaterial:'否', threeMonthAverageConsumption:0, afterSalesOutbound:0 },
+};
+const sapFieldsForRow = (row: Row) => sapFieldDemoValues[recordKey(row)] ?? { customOrderMaterial:'', threeMonthAverageConsumption:0, afterSalesOutbound:0 };
+const staticMaterialRows = makePaginatedDemoRows(baseRows.filter(row => row.category !== '电器').map((row, index) => ({
+  ...row,
+  ...sapFieldsForRow(row),
+  minimumOrderQuantity: [10, 50, 20, 5, 10][index] ?? 10,
+  safetyStock: [12, 100, 30, 8, 12][index] ?? 12,
+  availableStock: row.availableStock ?? row.currentStock,
+  supplierUnreceivedApproved: row.supplierUnreceived ?? 0,
+  plannedDemandApproved: row.plannedDemand ?? 0,
+  totalRequiredApproved: row.totalRequired ?? 0,
+})), 137);
 const newStaticTabs: Record<NewStaticTab, NewStaticTabConfig> = {
-  static: { label:'静态材料', total:137, filters:[newStaticBaseFilters[0],newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:makePaginatedDemoRows(baseRows.filter(row=>row.category !== '电器'), 137), templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
+  static: { label:'静态材料', total:137, filters:[{...newStaticBaseFilters[0],label:'形成静态时间'},newStaticBaseFilters[1],{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticStaticColumns, rows:staticMaterialRows, templateFields:['工厂编码','工厂描述','物料编码','物料描述','开发类型','静态责任单位','形成静态时间','处理方案类型','处理意见','方案制定部门','预计消耗完成时间','留用数量','留用时间','预计打样完成时间','静态原因'] },
   electromechanical: { label:'机电材料', total:28, filters:[...newStaticBaseFilters,...maintenanceFilters('electromechanical')], columns:newStaticElectromechanicalColumns, rows:makePaginatedDemoRows(baseRows.filter(row=>row.category === '电器'), 28), templateFields:['工厂编码','工厂描述','物料编码','物料描述','责任单位','静态提出日期','处理方案类型','处理意见','方案制定部门','留用数量','留用时间','静态原因'] },
   'low-consumption': { label:'低耗材料', total:32, filters:[{...newStaticBaseFilters[0],label:'形成静态时间'},newStaticBaseFilters[1],newStaticBaseFilters[2],...maintenanceFilters('static')], columns:newStaticLowConsumptionColumns, rows:baseRows.filter(row => row.category !== '电器').map((row, index) => ({
     ...row,
@@ -236,16 +262,16 @@ const newStaticTabs: Record<NewStaticTab, NewStaticTabConfig> = {
 const electromechanicalConsumptionColumns: Column[] = [
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},{key:'factoryName',label:'工厂描述',width:180},
   {key:'development',label:'对应开发'},{key:'category',label:'材料类别'},{key:'unitName',label:'单位名称'},
-  {key:'reportedStock',label:'提报时总应消耗量',width:140,formula:'提报时总应消耗量=提出时可用库存+供应商未交量-计划需求量，新增为静态物料时计算，静态展示'},{key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'totalRequired',label:'当前应消耗总量',formula:'当前应消耗总量 = 现可用库存 + 当前供应商未交量 − 当前计划需求量'},
+  {key:'reportedStock',label:'提报时总应消耗量',width:140,formula:'提报时总应消耗量 = 库房有效库存量 + 供应商未交量 - 计划需求量 - 安全库存量；新增为静态物料时计算，静态展示'},{key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'totalRequired',label:'当前应消耗总量',formula:'当前应消耗总量 = 现可用库存 + 当前供应商未交量 − 当前计划需求量'},
   {key:'staticDate',label:'静态提出日期',width:112},{key:'received',label:'是否入库'},
   {key:'receivedQuantity',label:'入库数量'},{key:'responsibleUnit',label:'责任单位',width:130},{key:'staticReason',label:'静态原因',width:130},
   {key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'retainedQuantity',label:'留用数量'},
   {key:'retainedDate',label:'留用时间',width:112},{key:'totalOutbound',label:'总出库量'},{key:'outboundRatio',label:'总出库比例',formula:'总出库比例 = 总出库量 ÷ 提报时总应消耗量 × 100%'},
 ];
 const staticConsumptionColumns: Column[] = [
-  {key:'material',label:'物料编码',width:112},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型',width:88},{key:'factoryName',label:'工厂描述',width:180},
+  {key:'material',label:'物料编码',width:112},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型',width:88},{key:'customOrderMaterial',label:'定制订单制物料',width:142,isNew:true},{key:'factoryName',label:'工厂描述',width:180},
   {key:'development',label:'开发类型',width:88},{key:'category',label:'材料类别',width:88},{key:'unit',label:'单位',width:64},
-  {key:'reportedStock',label:'提报时总应消耗量',width:140,formula:'提报时总应消耗量=提出时可用库存+供应商未交量-计划需求量，新增为静态物料时计算，静态展示'},{key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'supplierUnreceived',label:'当前供应商未交量',width:120},
+  {key:'reportedStock',label:'提报时总应消耗量',width:140,formula:'提报时总应消耗量 = 库房有效库存量 + 供应商未交量 - 计划需求量 - 安全库存量；新增为静态物料时计算，静态展示'},{key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'supplierUnreceived',label:'当前供应商未交量',width:120},
   {key:'plannedDemand',label:'当前计划需求量',width:120},{key:'staticDate',label:'形成静态时间',width:112},
   {key:'totalRequired',label:'剩余应消耗总量',width:140,formula:'剩余应消耗总量 = 现可用库存 + 当前供应商未交量 − 当前计划需求量'},
   {key:'factorySet',label:'工厂编码',width:80},{key:'responsibleUnit',label:'静态责任单位',width:140},{key:'staticReason',label:'静态原因',width:140},
@@ -257,21 +283,47 @@ const staticConsumptionColumns: Column[] = [
   {key:'receivedQuantity',label:'入库数量',width:80},{key:'totalOutbound',label:'总出库量',width:80},
   {key:'retention',label:'留存率',width:84,formula:'留存率 = 现可用库存 ÷ 提报时总应消耗量 × 100%'},
 ];
+const staticInternalControlColumns: Column[] = [
+  {key:'material',label:'物料编码',width:112},
+  {key:'materialDescription',label:'物料描述',width:280},
+  {key:'totalRequired',label:'剩余应消耗总量',width:130},
+  {key:'factoryName',label:'工厂',width:180},
+  {key:'factorySet',label:'工厂编码',width:100},
+  {key:'opinion',label:'处理意见',width:300},
+  {key:'executionDepartment',label:'方案执行部门',width:130},
+  {key:'solution',label:'处理方案类型',width:130},
+  {key:'plannedDemand',label:'当前计划需求量',width:120},
+  {key:'availableStock',label:'当前库存可用量',width:130},
+  {key:'unit',label:'单位',width:70},
+  {key:'expectedDate',label:'预计消耗完成时间',width:140},
+];
 const staticConsumptionRows: Row[] = baseRows.filter(row => row.category !== '电器').flatMap(row => {
+  const sapFields = sapFieldsForRow(row);
   const departments = { solutionDepartment:row.solutionDepartment || row.development || '定制', executionDepartment:'材料管理部' };
-  if (row.material !== '105099901') return [{ ...row, ...departments }];
+  if (row.material !== '105099901') return [{ ...row, ...sapFields, ...departments }];
   // One material has two handling plans; its inventory metrics are shared by both lines.
   return [
-    { ...row, ...departments, executionDepartment:'内控部', solution:'材料替换', opinion:'库房走流程申请板材替换', retainedQuantity:'', retainedDate:'', expectedDate:'2027-03-23' },
-    { ...row, ...departments, executionDepartment:'材料管理部', solution:'生产留用', opinion:'分公司库房走流程申请生产留用', retainedQuantity:24, retainedDate:'2026-12-23', expectedDate:'2026-12-23' },
+    { ...row, ...sapFields, ...departments, executionDepartment:'内控部', solution:'材料替换', opinion:'库房走流程申请板材替换', retainedQuantity:'', retainedDate:'', expectedDate:'2027-03-23' },
+    { ...row, ...sapFields, ...departments, factorySet:'6199', factoryName:'板木公司供应工厂', responsibleUnit:'板木采购部', solutionDepartment:'板木产品部', executionDepartment:'内控部', solution:'材料替换', opinion:'板木分厂走流程申请材料替换', retainedQuantity:'', retainedDate:'', expectedDate:'2027-03-23' },
+    { ...row, ...sapFields, ...departments, executionDepartment:'材料管理部', solution:'生产留用', opinion:'分公司库房走流程申请生产留用', retainedQuantity:24, retainedDate:'2026-12-23', expectedDate:'2026-12-23' },
   ];
 });
+const staticInternalControlRows = (() => {
+  const groups = new Map<string, Row[]>();
+  staticConsumptionRows
+    .filter(row => String(row.executionDepartment ?? '').includes('内控部'))
+    .forEach(row => {
+      const key = JSON.stringify([row.material ?? '', row.materialDescription ?? '', row.totalRequired ?? '']);
+      groups.set(key, [...(groups.get(key) ?? []), row]);
+    });
+  return [...groups.values()].flat();
+})();
 const trackingDetailColumns = new Set(['factorySet', 'responsibleUnit', 'staticReason', 'solutionDepartment', 'executionDepartment', 'solution', 'opinion', 'retainedQuantity', 'retainedDate', 'expectedSampleDate', 'expectedDate']);
 const trackingPrimaryFilters = new Set(['staticDate', 'factoryName', 'solutionDepartment', 'category', 'material']);
 const warningColumns: Column[] = [
   {key:'factoryName',label:'工厂',width:180},{key:'category',label:'材料类别'},{key:'warehouseName',label:'库存地点',width:220},
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料名称',width:280},{key:'development',label:'对应开发'},
-  {key:'totalRequired',label:'提报时总应消耗量',formula:'提报时总应消耗量=提出时可用库存+供应商未交量-计划需求量，新增为静态物料时计算，静态展示'},{key:'currentStock',label:'现可用库存',formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'unitName',label:'单位'},
+  {key:'totalRequired',label:'提报时总应消耗量',formula:'提报时总应消耗量 = 库房有效库存量 + 供应商未交量 - 计划需求量 - 安全库存量；新增为静态物料时计算，静态展示'},{key:'currentStock',label:'现可用库存',formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'unitName',label:'单位'},
   {key:'staticReason',label:'静态原因',width:130},{key:'solution',label:'处理方案类型',width:130},{key:'solutionDepartment',label:'方案制定部门',width:130},{key:'retainedQuantity',label:'留用数量'},
   {key:'retainedDate',label:'留用时间',width:112},{key:'opinion',label:'处理意见',width:280},{key:'totalOutbound',label:'总出库量'},
   {key:'outboundRatio',label:'出库比例',formula:'出库比例 = 总出库量 ÷ 提报时总应消耗量 × 100%'},{key:'retention',label:'留存率',formula:'留存率 = 现可用库存 ÷ 提报时总应消耗量 × 100%'},{key:'warningLevel',label:'警报级别'},
@@ -284,6 +336,7 @@ const reports: Record<StaticReportId, ReportConfig> = {
   'new-static': { title:'新增静态物料表', ...newStaticTabs.static },
    electromechanical: { title:'机电材料跟踪消耗报表', total:84, filters:[{key:'staticDate',label:'静态提出日期',type:'month'},{key:'factoryName',label:'工厂描述',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'},{key:'development',label:'对应开发',options:['定制','板木','软体','配套']},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',options:configOptions('electromechanical', 'solution', true)}], columns:electromechanicalConsumptionColumns, rows:baseRows.filter(row=>row.category === '电器') },
    'static-consumption': { title:'静态材料跟踪消耗报表', total:126, filters:[{key:'staticDate',label:'形成静态时间',type:'month'},{key:'factoryName',label:'工厂',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'solutionDepartment',label:'方案制定部门',options:['定制','板木','软体','板木产品部']},{key:'category',label:'材料类别',options:['板材','封边带','五金']},{key:'material',label:'物料',placeholder:'物料编码/描述'},{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'responsibleUnit',label:'静态责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',options:commonSolutions}], columns:staticConsumptionColumns, rows:staticConsumptionRows },
+   'static-internal-control': { title:'静态材料-内控', total:staticInternalControlRows.length, filters:[{key:'material',label:'物料编码',placeholder:'请输入物料编码'},{key:'materialDescription',label:'物料描述',placeholder:'请输入物料描述'}], columns:staticInternalControlColumns, rows:staticInternalControlRows },
    warning: { title:'静态物料警报表', total:2117, filters:[{key:'factoryName',label:'工厂',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'development',label:'对应开发',options:['定制','板木','软体','配套']},{key:'category',label:'材料类别',options:['五金','板材','封边带','电器']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',options:commonSolutions},{key:'staticMonths',label:'静态月数区间',options:['0-6个月','7-12个月','13-24个月','24个月以上']},{key:'retention',label:'留存率区间',options:['0-10%','10-30%','30-60%','60-90%','90-100%']},{key:'warningLevel',label:'警报级别',options:['高危','警报','预警','正常']}], columns:warningColumns, rows:baseRows.map((row,index)=>({...row,staticMonths:[78,77,9,8,6][index],retention:['8.74%','93.68%','90.00%','90.00%','100.00%'][index],warningLevel:['高危','高危','预警','预警','正常'][index]})) },
 };
 
@@ -292,6 +345,11 @@ const currentMonth = () => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 };
 const emptyFilters = (config: Pick<ReportConfig, 'filters'>) => Object.fromEntries(config.filters.map(filter => [filter.key, filter.type === 'month' ? currentMonth() : '']));
+const defaultFilters = (config: Pick<ReportConfig, 'filters'>, reportId: StaticReportId) => {
+  const filters = emptyFilters(config);
+  if (reportId === 'new-static') filters.staticDate = '';
+  return filters;
+};
 
 export const staticReportMenu = (Object.entries(reports) as [StaticReportId, ReportConfig][]).map(([id, config]) => ({ id, title: config.title }));
 
@@ -299,8 +357,8 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
   const config = reports[reportId];
   const [newStaticTab, setNewStaticTab] = useState<NewStaticTab>('static');
   const activeConfig = reportId === 'new-static' ? newStaticTabs[newStaticTab] : config;
-  const [draft, setDraft] = useState<Record<string,string>>(() => emptyFilters(activeConfig));
-  const [applied, setApplied] = useState<Record<string,string>>(() => emptyFilters(activeConfig));
+  const [draft, setDraft] = useState<Record<string,string>>(() => defaultFilters(activeConfig, reportId));
+  const [applied, setApplied] = useState<Record<string,string>>(() => defaultFilters(activeConfig, reportId));
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -323,7 +381,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
   const [selectedVersion, setSelectedVersion] = useState('V20260813-003');
 
   React.useEffect(() => { setNewStaticTab('static'); }, [reportId]);
-  React.useEffect(() => { const next=emptyFilters(activeConfig); if (reportId === 'new-static' && newStaticTab === 'low-consumption') next.staticDate = ''; if (reportId === 'strategic-special-base') next.version = selectedVersion; setDraft(next); setApplied(next); setPage(1); setToast(''); setImportOpen(false); setImportFile(null); setImportError(''); setHistoryDialog(null); setVersionDrawerOpen(false); }, [reportId, newStaticTab, activeConfig, selectedVersion]);
+  React.useEffect(() => { const next=defaultFilters(activeConfig, reportId); if (reportId === 'strategic-special-base') next.version = selectedVersion; setDraft(next); setApplied(next); setPage(1); setToast(''); setImportOpen(false); setImportFile(null); setImportError(''); setHistoryDialog(null); setVersionDrawerOpen(false); }, [reportId, newStaticTab, activeConfig, selectedVersion]);
   const reportRows = useMemo<Row[]>(() => {
     if (reportId === 'strategic-special-base') {
       const versionOrder = ['V20260812-001', 'V20260813-002', 'V20260813-003'];
@@ -360,11 +418,11 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     if (filter.key === 'staticMonths') { const value=Number(row.staticMonths); return query === '0-6个月' ? value <= 6 : query === '7-12个月' ? value >= 7 && value <= 12 : query === '13-24个月' ? value >= 13 && value <= 24 : value > 24; }
     if (filter.key === 'retention') { const value=parseFloat(String(row.retention ?? '0')); const [min,max]=query.replace('%','').split('-').map(Number); return value >= min && value <= max; }
     if (filter.key === 'solution') return (String(row.solution ?? '').trim() || DEFAULT_SOLUTION).includes(query);
-    if (reportId === 'static-consumption' && filter.key === 'material') return String(row.material ?? '').includes(query.trim()) || String(row.materialDescription ?? '').toLowerCase().includes(query.trim().toLowerCase());
+    if (['static-consumption','static-internal-control'].includes(reportId) && ['material','materialDescription'].includes(filter.key)) return String(row.material ?? '').includes(query.trim()) || String(row.materialDescription ?? '').toLowerCase().includes(query.trim().toLowerCase());
     if (filter.type === 'month') return String(row[filter.key] ?? '').startsWith(query);
     return String(row[filter.key] ?? '').includes(query);
   })), [applied, activeConfig, reportRows, reportId]);
-  const paginatedDemoReport = reportId === 'new-static' && newStaticTab !== 'low-consumption';
+  const paginatedDemoReport = (reportId === 'new-static' && newStaticTab !== 'low-consumption') || reportId === 'static-internal-control';
   const total = isTrackingReport || paginatedDemoReport ? rows.length : rows.length ? activeConfig.total : 0;
   const visibleRows = isTrackingReport || paginatedDemoReport ? rows.slice((page - 1) * pageSize, page * pageSize) : rows;
   const pageCount = Math.max(1, Math.ceil(total / pageSize));
@@ -393,7 +451,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
       ? !String(row.responsibleUnit ?? '').trim() || (newStaticTab === 'static' && !String(row.development ?? '').trim())
       : !String(row.solution ?? '').trim());
     const dataRows = pendingRows.map(row => Object.fromEntries(fields.map(field => [field, row[importFieldKey[field]] ?? ''])));
-    const materialType: StaticMaterialType = newStaticTab === 'electromechanical' ? 'electromechanical' : 'static';
+    const materialType: StaticMaterialType = newStaticTab === 'electromechanical' ? 'electromechanical' : newStaticTab === 'low-consumption' ? 'low-consumption' : 'static';
     const validations = [
       ...(importMode === 'responsible-unit' && newStaticTab === 'static' ? [{ field:'开发类型', values:DEVELOPMENT_OPTIONS, errorTitle:'开发类型无效', errorMessage:'请选择板木、软体或定制，且不能为空' }] : []),
       ...(fields.includes(responsibilityUnitField(newStaticTab)) ? [{ field:responsibilityUnitField(newStaticTab), values:responsibilityOptions(), errorTitle:'责任单位无效', errorMessage:'请选择配置中心已启用的责任单位，失效责任单位不可导入', prompt:'选项来自配置中心责任单位页签当前已启用项' }] : []),
@@ -480,7 +538,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
         const opinion = opinionIndex >= 0 ? (values[opinionIndex] || currentOpinion) : currentOpinion;
         const staticReason = String(readField('静态原因', row.staticReason) ?? '').trim();
         const responsibleUnit = String(readField(responsibilityUnitField(newStaticTab), row.responsibleUnit) ?? '').trim();
-        const importMaterialType: StaticMaterialType = newStaticTab === 'electromechanical' ? 'electromechanical' : 'static';
+        const importMaterialType: StaticMaterialType = newStaticTab === 'electromechanical' ? 'electromechanical' : newStaticTab === 'low-consumption' ? 'low-consumption' : 'static';
         const allowedSolutions = configOptions(importMaterialType, 'solution');
         const allowedReasons = configOptions(importMaterialType, 'reason');
         if (solutionIndex >= 0 && values[solutionIndex] && !allowedSolutions.includes(solution)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的处理方案类型“${solution}”不在${newStaticTabs[newStaticTab].label}配置启用项中。`); return; }
@@ -530,8 +588,19 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
   const isTrackingSummaryColumn = (key: string) => isTrackingReport && !trackingDetailColumns.has(key);
   const sameTrackingCell = (first: Row, second: Row, key: string) => recordKey(first) === recordKey(second)
     && first.staticDate === second.staticDate && String(first[key] ?? '') === String(second[key] ?? '');
-  const shouldMergeFactoryCell = (row: Row, index: number, key: string) => isTrackingSummaryColumn(key) && index > 0 && sameTrackingCell(visibleRows[index - 1], row, key);
+  const isInternalMaterialColumn = (key: string) => reportId === 'static-internal-control' && ['material', 'materialDescription', 'totalRequired'].includes(key);
+  const sameInternalMaterial = (first: Row, second: Row) => first.material === second.material
+    && first.materialDescription === second.materialDescription && first.totalRequired === second.totalRequired;
+  const shouldMergeFactoryCell = (row: Row, index: number, key: string) => {
+    if (isInternalMaterialColumn(key)) return index > 0 && sameInternalMaterial(visibleRows[index - 1], row);
+    return isTrackingSummaryColumn(key) && index > 0 && sameTrackingCell(visibleRows[index - 1], row, key);
+  };
   const factoryRowSpan = (row: Row, index: number, key: string) => {
+    if (isInternalMaterialColumn(key)) {
+      let span = 1;
+      while (index + span < visibleRows.length && sameInternalMaterial(row, visibleRows[index + span])) span += 1;
+      return span;
+    }
     if (!isTrackingSummaryColumn(key)) return undefined;
     let span = 1;
     while (index + span < visibleRows.length && sameTrackingCell(row, visibleRows[index + span], key)) span += 1;
@@ -542,12 +611,12 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     {reportId === 'new-static' && <nav className="static-report-tabs" aria-label="新增静态物料分类">{(Object.entries(newStaticTabs) as [NewStaticTab, NewStaticTabConfig][]).map(([id, tab])=><button key={id} type="button" className={newStaticTab === id ? 'active' : ''} onClick={()=>setNewStaticTab(id)}>{tab.label}</button>)}</nav>}
     <section className={`static-report-filters${isTrackingReport && filtersExpanded ? ' is-expanded' : ''}`} aria-label="查询条件">
       {activeConfig.filters.filter(filter => !isTrackingReport || filtersExpanded || trackingPrimaryFilters.has(filter.key)).map(filter => <label key={filter.key} className={`static-filter-${filter.key}`}><span>{filter.label}</span>{filter.key === 'responsibleUnit' ? <ResponsibilitySearchSelect value={draft[filter.key]} options={filter.options || responsibilityOptions()} onChange={value => setDraft(current => ({ ...current, [filter.key]: value }))} /> : filter.options ? <select value={draft[filter.key]} onChange={event=>setDraft(current=>({...current,[filter.key]:event.target.value}))}><option value="">全部</option>{filter.options.map(option=><option key={option}>{option}</option>)}</select> : filter.type === 'month' ? <div className="static-report-month-control"><input type="month" value={draft[filter.key]} disabled={!draft[filter.key]} onChange={event=>setDraft(current=>({...current,[filter.key]:event.target.value}))}/><div className="static-report-all-time"><input aria-label="全部时间" type="checkbox" checked={!draft[filter.key]} onChange={event=>setDraft(current=>({...current,[filter.key]:event.target.checked ? '' : currentMonth()}))}/><span>全部时间</span></div></div> : <input type={filter.type === 'date' ? 'date' : 'text'} value={draft[filter.key]} placeholder={filter.placeholder || '请选择'} onChange={event=>setDraft(current=>({...current,[filter.key]:event.target.value}))}/>}</label>)}
-      <div className="static-report-actions">{isTrackingReport && <button type="button" className="static-tracking-expand" aria-expanded={filtersExpanded} onClick={() => setFiltersExpanded(value => !value)}>{filtersExpanded ? '收起' : '展开'}<ChevronDown size={12}/></button>}<button type="button" className="query" onClick={()=>{setApplied(draft);setPage(1);flash('查询完成');}}><Search size={14}/>查询</button><button type="button" className="reset" onClick={()=>{const next=emptyFilters(activeConfig);setDraft(next);setApplied(next);setPage(1);}}><RotateCcw size={14}/>重置</button></div>
+      <div className="static-report-actions">{isTrackingReport && <button type="button" className="static-tracking-expand" aria-expanded={filtersExpanded} onClick={() => setFiltersExpanded(value => !value)}>{filtersExpanded ? '收起' : '展开'}<ChevronDown size={12}/></button>}<button type="button" className="query" onClick={()=>{setApplied(draft);setPage(1);flash('查询完成');}}><Search size={14}/>查询</button><button type="button" className="reset" onClick={()=>{const next=defaultFilters(activeConfig, reportId);setDraft(next);setApplied(next);setPage(1);}}><RotateCcw size={14}/>重置</button></div>
     </section>
     <section className="static-report-table-panel">
       <div className="static-report-toolbar"><div className="static-report-toolbar-context">{isTrackingReport && <span className="static-tracking-update">数据最后更新时间：<b>2026-10-16 07:00:00</b></span>}{reportId === 'strategic-special-base' && <><span>当前版本</span><b>{selectedVersion}</b><i>全量快照</i></>}</div><div className="static-report-toolbar-actions">{(reportId === 'strategic' || reportId === 'special') && <span className="static-report-data-updated-at"><span>数据更新时间：</span><b>{strategicDataUpdatedAt[reportId]}</b></span>}{reportId === 'strategic-special-base' && <button type="button" className="static-report-version-button" onClick={()=>setVersionDrawerOpen(true)}><History size={14}/>版本记录</button>}{reportId === 'new-static' && <><button type="button" className="static-report-import-button" onClick={()=>{setImportMode('solution');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入处理方案</button><button type="button" className="static-report-import-button secondary" onClick={()=>{setImportMode('responsible-unit');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入责任单位</button></>}<button type="button" onClick={downloadReportExport}><Download size={14}/>导出</button></div></div>
       <div className="static-report-table-scroll"><table>
-        <thead><tr>{activeConfig.columns.map(column => <th key={column.key} data-column={column.key} className={column.formula ? 'formula-column' : undefined} style={{ width:column.width, minWidth:column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead>
+        <thead><tr>{activeConfig.columns.map(column => <th key={column.key} data-column={column.key} className={column.formula ? 'formula-column' : undefined} style={{ width:column.width, minWidth:column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.isNew && <span className="static-report-new-badge">新增</span>}{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead>
         <tbody>{visibleRows.map((row, index) => <tr key={`${recordKey(row)}-${index}`}>
           {activeConfig.columns.map(column => {
             if (shouldMergeFactoryCell(row, index, column.key)) return null;

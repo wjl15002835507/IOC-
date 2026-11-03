@@ -1,5 +1,5 @@
 export type StaticConfigType = 'solution' | 'reason';
-export type StaticMaterialType = 'static' | 'electromechanical';
+export type StaticMaterialType = 'static' | 'electromechanical' | 'low-consumption';
 export type StaticConfigItem = { id: number; name: string; enabled: boolean; createdAt: string; createdBy: string };
 export type StaticMaterialConfigData = Record<StaticConfigType, Record<StaticMaterialType, StaticConfigItem[]>> & { responsibility: StaticConfigItem[] };
 export type AlertConditionBoundary = 'open' | 'closed';
@@ -22,10 +22,12 @@ export const defaultStaticMaterialConfig: StaticMaterialConfigData = {
   solution: {
     static: makeItems(['生产留用', '售后留用', '材料替换', '暂时留存', '采购退货', '报废变卖', '开发新品', '开发特款']),
     electromechanical: makeItems(['生产留用']),
+    'low-consumption': [],
   },
   reason: {
     static: makeItems(['采购大于需求', '计划大于需求', '样品采购', '首批采购', '起订量采购', '停单扣款', '报废拆件', '材料退回', '物料替换', '分厂需求', '计划取消', '业务调整', '设备报废', '常规备料', '战略备料', '专项备料']),
     electromechanical: makeItems(['业务调整', '设备报废', '起订量采购', '物料替换', '材料退回']),
+    'low-consumption': [],
   },
   responsibility: makeItems(['采购二部', '采购一部', '板木工艺部', '板木设计部', '订单技术部', '定制工程设计部', '定制设计部', '床垫开发部', '电商开发部', '软体工艺部', '软体开发部', '监察部', '内控部', '八分厂', '备料分厂', '二分厂', '六分厂', '十二分厂', '实木八厂', '实木六厂', '实木七厂', '实木三厂', '实木五厂', '定制八厂', '定制橱柜二厂', '定制九厂', '定制六厂', '定制门板二厂', '定制门板一厂', '定制七厂', '定制十厂', '定制五A厂', '定制五B厂', '潜江定制厂', '潜江沙发厂', '清丰定制厂', '清丰沙发厂', '绷皮厂', '床垫厂', '功能沙发厂', '软床厂', '软床二厂', '沙发八厂', '沙发二厂', '沙发九厂', '沙发六厂', '沙发七厂', '沙发五厂', '沙发一厂', '材料管理部', '机电工程部', '计划管理部', '技改车间', '压贴二厂', '压贴三厂']),
 };
@@ -46,6 +48,8 @@ export const readStaticMaterialConfig = (): StaticMaterialConfigData => {
     if (!stored) return cloneDefaultConfig();
     const parsed = JSON.parse(stored) as StaticMaterialConfigData;
     if (!parsed?.solution?.static || !parsed?.solution?.electromechanical || !parsed?.reason?.static || !parsed?.reason?.electromechanical) return cloneDefaultConfig();
+    parsed.solution['low-consumption'] ??= [];
+    parsed.reason['low-consumption'] ??= [];
     if (!Array.isArray(parsed.responsibility)) parsed.responsibility = defaultStaticMaterialConfig.responsibility.map(item => ({ ...item }));
     // Keep existing browser data while adding newly released system options.
     if (!parsed.solution.static.some(item => item.name === '暂时留存')) {
