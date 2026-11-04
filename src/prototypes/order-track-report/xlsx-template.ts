@@ -102,3 +102,75 @@ export const createXlsxTemplate = (fields: string[], sample: Record<string, unkn
   const buffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
   return new Blob([buffer], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 };
+
+export const readXlsxRows = async (file: File): Promise<Record<string, string>[]> => {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let endOffset = -1;
+  for (let offset = bytes.length - 22; offset >= Math.max(0, bytes.length - 65_557); offset -= 1) {
+    if (view.getUint32(offset, true) === 0x06054b50) { endOffset = offset; break; }
+  }
+  if (endOffset < 0) throw new Error('文件不是有效的 XLSX 工作簿。');
+  const entryCount = view.getUint16(endOffset + 10, true);
+  let directoryOffset = view.getUint32(endOffset + 16, true);
+  const entries = new Map<string, { method: number; compressedSize: number; localOffset: number }>();
+  const decoder = new TextDecoder();
+  for (let index = 0; index < entryCount; index += 1) {
+    if (view.getUint32(directoryOffset, true) !== 0x02014b50) throw new Error('XLSX 文件目录损坏。');
+    const method = view.getUint16(directoryOffset + 10, true);
+    const compressedSize = view.getUint32(directoryOffset + 20, true);
+    const nameLength = view.getUint16(directoryOffset + 28, true);
+    const extraLength = view.getUint16(directoryOffset + 30, true);
+    const commentLength = view.getUint16(directoryOffset + 32, true);
+    const localOffset = view.getUint32(directoryOffset + 42, true);
+    const name = decoder.decode(bytes.subarray(directoryOffset + 46, directoryOffset + 46 + nameLength));
+    entries.set(name, { method, compressedSize, localOffset });
+    directoryOffset += 46 + nameLength + extraLength + commentLength;
+  }
+  const readEntry = async (name: string) => {
+    const entry = entries.get(name);
+    if (!entry) return '';
+    const local = entry.localOffset;
+    if (view.getUint32(local, true) !== 0x04034b50) throw new Error(`XLSX 文件中的 ${name} 数据损坏。`);
+    const nameLength = view.getUint16(local + 26, true);
+    const extraLength = view.getUint16(local + 28, true);
+    const start = local + 30 + nameLength + extraLength;
+    const compressed = bytes.slice(start, start + entry.compressedSize);
+    let content: Uint8Array;
+    if (entry.method === 0) content = compressed;
+    else if (entry.method === 8) {
+      const stream = new Blob([compressed]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+      content = new Uint8Array(await new Response(stream).arrayBuffer());
+    } else throw new Error(`暂不支持 XLSX 压缩格式 ${entry.method}。`);
+    return decoder.decode(content);
+  };
+  const parseXml = (xml: string) => {
+    const document = new DOMParser().parseFromString(xml, 'application/xml');
+    if (document.getElementsByTagName('parsererror').length) throw new Error('XLSX 工作表内容无法解析。');
+    return document;
+  };
+  const sharedXml = await readEntry('xl/sharedStrings.xml');
+  const sharedStrings = sharedXml ? Array.from(parseXml(sharedXml).getElementsByTagName('si')).map(item => Array.from(item.getElementsByTagName('t')).map(text => text.textContent ?? '').join('')) : [];
+  const sheetXml = await readEntry('xl/worksheets/sheet1.xml');
+  if (!sheetXml) throw new Error('XLSX 文件缺少第一个工作表。');
+  const sheet = parseXml(sheetXml);
+  const rows = Array.from(sheet.getElementsByTagName('row')).map(row => {
+    const cells = new Map<number, string>();
+    for (const cell of Array.from(row.getElementsByTagName('c'))) {
+      const reference = cell.getAttribute('r') ?? '';
+      const column = reference.match(/^[A-Z]+/)?.[0];
+      if (!column) continue;
+      const columnIndex = Array.from(column).reduce((value, character) => value * 26 + character.charCodeAt(0) - 64, 0) - 1;
+      const type = cell.getAttribute('t');
+      const value = cell.getElementsByTagName('v')[0]?.textContent ?? '';
+      const inlineValue = Array.from(cell.getElementsByTagName('t')).map(text => text.textContent ?? '').join('');
+      cells.set(columnIndex, type === 's' ? sharedStrings[Number(value)] ?? '' : type === 'inlineStr' ? inlineValue : value);
+    }
+    return cells;
+  });
+  const headerCells = rows[0];
+  if (!headerCells) throw new Error('XLSX 工作表没有标题行。');
+  const maxColumn = Math.max(...headerCells.keys());
+  const headers = Array.from({ length: maxColumn + 1 }, (_, index) => (headerCells.get(index) ?? '').trim());
+  return rows.slice(1).map(row => Object.fromEntries(headers.map((header, index) => [header, row.get(index) ?? '']))).filter(row => Object.values(row).some(value => value.trim()));
+};

@@ -91,3 +91,6 @@
 @media(max-height:700px) {
   .static-consumption-page .static-report-filters { max-height:240px; overflow-y:auto; }
 }
+.static-report-formula-header { min-width:0; }
+.static-report-formula-label { min-width:0; }
+.static-report-new-badge { display:inline-flex; height:14px; flex:0 0 auto; align-items:center; margin-top:-4px; padding:0 3px; border-radius:2px; color:#fff; background:#f05b3a; font-size:10px; font-weight:500; line-height:14px; }
