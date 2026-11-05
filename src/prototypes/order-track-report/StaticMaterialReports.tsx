@@ -11,6 +11,10 @@ type Column = { key: string; label: string; width?: number; formula?: string; is
 type Filter = { key: string; label: string; type?: 'select' | 'date' | 'month'; options?: string[]; placeholder?: string };
 type ChangeRecord = { solution: string; opinion: string; updatedBy: string; updatedAt: string };
 type Row = Record<string, string | number | ChangeRecord[] | undefined> & { changeHistory?: ChangeRecord[] };
+const INITIAL_SOLUTION_FIELDS: (keyof Row)[] = ['solution','opinion','solutionDepartment','executionDepartment','solutionReportDate','expectedDate','retainedQuantity','retainedDate','expectedSampleDate'];
+let sharedRowUpdates: Record<string, Partial<Row>> = {};
+let sharedHistoryOverrides: Record<string, ChangeRecord[]> = {};
+let sharedInitialSolutionSnapshots: Record<string, Partial<Row>> = {};
 type ReportConfig = { title: string; total: number; columns: Column[]; filters: Filter[]; rows: Row[] };
 type NewStaticTab = 'static' | 'electromechanical' | 'low-consumption';
 type NewStaticTabConfig = Omit<ReportConfig, 'title'> & { label: string; templateFields: string[] };
@@ -394,8 +398,9 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importError, setImportError] = useState('');
   const [pendingDataDownloaded, setPendingDataDownloaded] = useState(false);
-  const [historyOverrides, setHistoryOverrides] = useState<Record<string, ChangeRecord[]>>({});
-  const [rowUpdates, setRowUpdates] = useState<Record<string, Partial<Row>>>({});
+  const [historyOverrides, setHistoryOverrides] = useState<Record<string, ChangeRecord[]>>(() => sharedHistoryOverrides);
+  const [rowUpdates, setRowUpdates] = useState<Record<string, Partial<Row>>>(() => sharedRowUpdates);
+  const [initialSolutionSnapshots, setInitialSolutionSnapshots] = useState<Record<string, Partial<Row>>>(() => sharedInitialSolutionSnapshots);
   const [developmentOverrides, setDevelopmentOverrides] = useState<Record<string, string>>({});
   const [pendingDevelopments, setPendingDevelopments] = useState<Record<string, string>>({});
   const [editingDevelopments, setEditingDevelopments] = useState<Record<string, boolean>>({});
@@ -423,6 +428,9 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
       const key = recordKey(row);
       const calculated = calculatedDevelopmentType(row, activeConfig.rows);
       const merged: Row = { ...row, development: developmentOverrides[key] ?? calculated, ...rowUpdates[key] };
+      if (reportId === 'new-static') {
+        for (const field of INITIAL_SOLUTION_FIELDS) merged[field] = initialSolutionSnapshots[newStaticImportKey(row)]?.[field] ?? row[field];
+      }
       if (reportId === 'static-internal-control') {
         merged.totalRequired = Number(merged.availableStock ?? 0) + Number(merged.supplierUnreceived ?? 0) - Number(merged.plannedDemand ?? 0);
       }
@@ -437,7 +445,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
       const retention = reportedTotalRequired > 0 ? `${(Number(merged.availableStock ?? 0) / reportedTotalRequired * 100).toFixed(2)}%` : '0.00%';
       return { ...merged, outboundRatio, ...(reportId === 'static-consumption' ? { staticMonths, retention } : {}), expectedDate:usesSampleDate ? '' : merged.expectedDate, expectedSampleDate:usesSampleDate ? merged.expectedSampleDate : '', changeHistory: historyOverrides[key] ?? row.changeHistory ?? [] };
     });
-  }, [activeConfig, developmentOverrides, historyOverrides, reportId, rowUpdates, selectedVersion]);
+  }, [activeConfig, developmentOverrides, historyOverrides, initialSolutionSnapshots, reportId, rowUpdates, selectedVersion]);
   const rows = useMemo(() => reportRows.filter(row => activeConfig.filters.every(filter => {
     const query = applied[filter.key];
     if (!query) return true;
@@ -476,7 +484,9 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     setImportError('');
     const fields = importMode === 'responsible-unit'
       ? responsibilityImportFields(importTab)
-      : newStaticTabs[importTab].templateFields;
+      : reportId === 'static-consumption'
+        ? activeConfig.columns.map(column => column.label)
+        : newStaticTabs[importTab].templateFields;
     const pendingRows = reportId === 'static-consumption' && importMode === 'solution' ? [] : reportRows.filter(row => importMode === 'responsible-unit'
       ? !String(row.responsibleUnit ?? '').trim() || (newStaticTab === 'static' && !String(row.development ?? '').trim())
       : !String(row.solution ?? '').trim());
@@ -535,7 +545,9 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     }
     const expectedFields = importMode === 'responsible-unit'
       ? responsibilityImportFields(importTab)
-      : newStaticTabs[importTab].templateFields;
+      : reportId === 'static-consumption'
+        ? activeConfig.columns.map(column => column.label)
+        : newStaticTabs[importTab].templateFields;
     if (headers.length !== expectedFields.length || headers.some((header,index)=>header !== expectedFields[index])) {
       setImportError(`导入文件列名或列顺序已变更，请保持模板固定顺序：${expectedFields.join('、')}。`);
       return;
@@ -567,6 +579,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
         if (!responsibilityOptions().includes(responsibleUnit)) { setImportError(`工厂 ${row.factorySet}、物料编码 ${material} 的责任单位“${responsibleUnit}”已失效或不存在，请选择配置中心已启用的责任单位。`); return; }
         nextUpdates[recordKey(row)] = { ...nextUpdates[recordKey(row)], ...(importTab === 'static' ? { development } : {}), responsibleUnit };
       }
+      sharedRowUpdates = nextUpdates;
       setRowUpdates(nextUpdates);
       setImportOpen(false);
       flash(`${importFile.name} 已提交责任单位导入`);
@@ -577,6 +590,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     if (factoryIndex < 0 || materialIndex < 0 || solutionIndex < 0 || solutionDepartmentIndex < 0) { setImportError('处理方案导入文件必须包含“工厂编码”“物料编码”“处理方案类型”和“方案制定部门”。'); return; }
     const nextHistory = { ...historyOverrides };
     const nextUpdates = { ...rowUpdates };
+    const nextInitialSolutionSnapshots = { ...initialSolutionSnapshots };
     for (const values of dataRows) {
       const material = values[materialIndex];
       if (!String(values[solutionIndex] ?? '').trim()) { setImportError(`工厂编码 ${values[factoryIndex]}、物料编码 ${material} 的处理方案类型不能为空。`); return; }
@@ -623,9 +637,16 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
         expectedDate:usesSampleDate ? '' : readField('预计消耗完成时间', row.expectedDate),
         expectedSampleDate:usesSampleDate ? readField('预计打样完成时间', row.expectedSampleDate) : '',
       };
+      if (reportId === 'new-static' && !Object.prototype.hasOwnProperty.call(nextInitialSolutionSnapshots, newStaticImportKey(row))) {
+        nextInitialSolutionSnapshots[newStaticImportKey(row)] = Object.fromEntries(INITIAL_SOLUTION_FIELDS.map(field => [field, nextUpdates[key][field] ?? row[field]]));
+      }
     }
+    sharedHistoryOverrides = nextHistory;
+    sharedRowUpdates = nextUpdates;
+    sharedInitialSolutionSnapshots = nextInitialSolutionSnapshots;
     setHistoryOverrides(nextHistory);
     setRowUpdates(nextUpdates);
+    setInitialSolutionSnapshots(nextInitialSolutionSnapshots);
     setImportOpen(false);
     flash(`${importFile.name} 已提交处理方案导入`);
   };
