@@ -42,8 +42,9 @@ type ResponsibilitySelectProps = { value: string; options: string[]; onChange: (
 function ResponsibilitySearchSelect({ value, options, onChange, allowAll = true }: ResponsibilitySelectProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState(value);
-  React.useEffect(() => { if (!open) setQuery(value); }, [open, value]);
+  const safeValue = value ?? '';
+  const [query, setQuery] = useState(safeValue);
+  React.useEffect(() => { if (!open) setQuery(safeValue); }, [open, safeValue]);
   React.useEffect(() => {
     const handleDocumentMouseDown = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpen(false);
@@ -51,12 +52,12 @@ function ResponsibilitySearchSelect({ value, options, onChange, allowAll = true 
     document.addEventListener('mousedown', handleDocumentMouseDown);
     return () => document.removeEventListener('mousedown', handleDocumentMouseDown);
   }, []);
-  const keyword = query.trim().toLowerCase();
-  const filteredOptions = options.filter(option => option.toLowerCase().includes(keyword));
+  const keyword = (query ?? '').trim().toLowerCase();
+  const filteredOptions = (options ?? []).filter(option => option.toLowerCase().includes(keyword));
   const selectOption = (nextValue: string) => { onChange(nextValue); setQuery(nextValue); setOpen(false); };
   return <div ref={containerRef} className="responsibility-search-select">
     <div className={`responsibility-search-input ${open ? 'is-open' : ''}`}>
-      <input aria-label="责任单位模糊搜索" value={open ? query : value} placeholder="请输入责任单位" onFocus={() => { setOpen(true); setQuery(''); }} onChange={event => { setOpen(true); setQuery(event.target.value); }} />
+      <input aria-label="责任单位模糊搜索" value={open ? query : safeValue} placeholder="请输入责任单位" onFocus={() => { setOpen(true); setQuery(''); }} onChange={event => { setOpen(true); setQuery(event.target.value); }} />
       <ChevronDown size={14} aria-hidden="true" />
     </div>
     {open && <div className="responsibility-search-options" role="listbox">
@@ -348,7 +349,7 @@ const staticInternalControlRows = (() => {
   return [...groups.values()].flat();
 })();
 const trackingDetailColumns = new Set(['factorySet', 'responsibleUnit', 'staticReason', 'solutionDepartment', 'executionDepartment', 'solution', 'opinion', 'retainedQuantity', 'retainedDate', 'expectedSampleDate', 'expectedDate']);
-const trackingPrimaryFilters = new Set(['staticDate', 'factoryName', 'solutionDepartment', 'category', 'material']);
+const trackingPrimaryFilters = new Set(['staticDate', 'factoryName', 'solutionDepartment', 'category', 'material', 'solution', 'executionDepartment']);
 const warningColumns: Column[] = [
   {key:'factoryName',label:'工厂',width:180},{key:'category',label:'材料类别'},{key:'warehouseName',label:'库存地点',width:220},
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料名称',width:280},{key:'development',label:'对应开发'},
@@ -364,7 +365,7 @@ const reports: Record<StaticReportId, ReportConfig> = {
   'strategic-special-base': { title:'战略和专项材料备料基础数据', total:12846, columns:strategicSpecialBaseColumns, filters:[{key:'version',label:'数据版本',options:['V20260813-003','V20260813-002','V20260812-001']},{key:'materialCode',label:'物料编码',placeholder:'请输入物料编码'},{key:'materialDescription',label:'物料描述',placeholder:'请输入物料描述'},{key:'materialType',label:'物料类型',options:['战略','专项']},{key:'status',label:'状态',options:['有效','失效']},{key:'changeType',label:'对比上次版本',options:['保持','新增','移除']}], rows:strategicSpecialVersionRows['V20260813-003'] },
   'new-static': { title:'新增静态物料表', ...newStaticTabs.static },
    electromechanical: { title:'机电材料跟踪消耗报表', total:84, filters:[{key:'staticDate',label:'静态提出日期',type:'month'},{key:'factoryName',label:'工厂描述',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'},{key:'development',label:'对应开发',options:['定制','板木','软体','配套']},{key:'category',label:'材料类别',options:['板材','封边带','五金','电器']},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',options:configOptions('electromechanical', 'solution', true)}], columns:electromechanicalConsumptionColumns, rows:baseRows.filter(row=>row.category === '电器') },
-   'static-consumption': { title:'静态材料跟踪消耗报表', total:126, filters:[{key:'staticDate',label:'形成静态时间',type:'month'},{key:'factoryName',label:'工厂',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'solutionDepartment',label:'方案制定部门',options:['定制','板木','软体','板木产品部']},{key:'category',label:'材料类别',options:['板材','封边带','五金']},{key:'material',label:'物料',placeholder:'物料编码/描述'},{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'responsibleUnit',label:'静态责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',options:commonSolutions}], columns:staticConsumptionColumns, rows:staticConsumptionRows },
+   'static-consumption': { title:'静态材料跟踪消耗报表', total:126, filters:[{key:'staticDate',label:'形成静态时间',type:'month'},{key:'factoryName',label:'工厂',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'solutionDepartment',label:'方案制定部门',options:['定制','板木','软体','板木产品部']},{key:'category',label:'材料类别',options:['板材','封边带','五金']},{key:'material',label:'物料',placeholder:'物料编码/描述'},{key:'development',label:'开发类型',options:DEVELOPMENT_OPTIONS},{key:'responsibleUnit',label:'静态责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',placeholder:'请输入处理方案类型'},{key:'executionDepartment',label:'执行部门',placeholder:'请输入执行部门'}], columns:staticConsumptionColumns, rows:staticConsumptionRows },
    'static-internal-control': { title:'静态材料-内控', total:staticInternalControlRows.length, filters:[{key:'material',label:'物料',placeholder:'请输入物料编码或物料描述'},{key:'staticDate',label:'形成静态时间',type:'month'},{key:'solution',label:'处理方案类型',placeholder:'请输入处理方案类型'}], columns:staticInternalControlColumns, rows:staticInternalControlRows },
    warning: { title:'静态物料警报表', total:2117, filters:[{key:'factoryName',label:'工厂',options:['定制公司供应工厂','板木公司供应工厂','清丰分公司供应工厂']},{key:'development',label:'对应开发',options:['定制','板木','软体','配套']},{key:'category',label:'材料类别',options:['五金','板材','封边带','电器']},{key:'material',label:'物料编码',placeholder:'请输入物料编码'},{key:'responsibleUnit',label:'责任单位',options:responsibilityOptions()},{key:'solution',label:'处理方案类型',options:commonSolutions},{key:'staticMonths',label:'静态月数区间',options:['0-6个月','7-12个月','13-24个月','24个月以上']},{key:'retention',label:'留存率区间',options:['0-10%','10-30%','30-60%','60-90%','90-100%']},{key:'warningLevel',label:'警报级别',options:['高危','警报','预警','正常']}], columns:warningColumns, rows:baseRows.map((row,index)=>({...row,staticMonths:[78,77,9,8,6][index],retention:['8.74%','93.68%','90.00%','90.00%','100.00%'][index],warningLevel:['高危','高危','预警','预警','正常'][index]})) },
 };
