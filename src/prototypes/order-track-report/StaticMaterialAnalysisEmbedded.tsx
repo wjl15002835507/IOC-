@@ -202,7 +202,7 @@ const columns = [
   ['factoryName','工厂'],['category','材料类别'],['warehouse','库存地点'],['code','物料编码'],['name','物料名称'],['dev','对应开发'],['reported','应消耗总量'],['stock','现可用库存'],['unit','单位'],['reason','静态原因'],['plan','处理方案类型'],['solutionDepartment','方案制定部门'],['retainedQuantity','留用数量'],['retainedDate','留用时间'],['suggestion','处理意见'],['totalOutbound','总出库量'],['outboundRatio','出库比例'],['retention','留存率'],['alert','警报级别'],['staleDate','呆滞提出时间'],['ageMonths','静态月数'],
 ] as const;
 const detailColumnFormulas: Record<string, string> = {
-  reported: '提报时总应消耗量 = 库房有效库存量 + 供应商未交量 - 计划需求量 - 安全库存量；新增为静态物料时计算，静态展示',
+  reported: '提报时总应消耗量 = 现可用库存 + 当前供应商未交量；新增为静态物料时计算，静态展示',
   stock: '现可用库存=冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)',
   outboundRatio: '出库比例 = 总出库量 ÷ 提报时总应消耗量 × 100%',
   retention: '留存率 = 现可用库存 ÷ 提报时总应消耗量 × 100%',

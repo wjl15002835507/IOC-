@@ -39,27 +39,27 @@ const normalColumns: Column[] = [
   { key: 'staticDate', label: '形成静态时间', width: 116 },
   { key: 'normalAt', label: '转为正常时间', width: 128 },
   { key: 'staticMonths', label: '静态月数', width: 100, formula: '按形成静态时间计算已完成的完整自然月。' },
-  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: '形成时可用库存 + 核定供应商未交量；未导入核定值时使用形成供应商未交量。' },
+  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: '核定后总应消耗量 = 现可用库存 + 当前供应商未交量。' },
   { key: 'availableStockAtNormal', label: '转为正常时可用库存', width: 160, formula: '转为正常时 IOC 汇总的全部工厂可用库存。' },
   { key: 'supplierUnreceivedAtNormal', label: '转为正常时供应商未交量', width: 178, formula: '转为正常时 IOC 汇总的全部工厂供应商未交量。' },
   { key: 'plannedDemandAtNormal', label: '转为正常时计划需求量', width: 170, formula: '转为正常时 IOC 汇总的全部工厂计划需求量。' },
-  { key: 'totalRequiredAtNormal', label: '转为正常时应消耗总量', width: 172, formula: '转为正常时可用库存 + 供应商未交量 - 计划需求量。' },
+  { key: 'totalRequiredAtNormal', label: '转为正常时应消耗总量', width: 172, formula: '转为正常时应消耗总量 = 现可用库存 + 当前供应商未交量。' },
   { key: 'retention', label: '留存率', width: 90 },
 ];
 
 const noStockColumns: Column[] = [
   ...materialColumns,
   { key: 'staticDate', label: '形成静态时间', width: 116 },
-  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: '形成时可用库存 + 核定供应商未交量；未导入核定值时使用形成供应商未交量。' },
+  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: '核定后总应消耗量 = 现可用库存 + 当前供应商未交量。' },
   { key: 'noStockDate', label: '无余量日期', width: 116 },
   { key: 'firstPositiveAt', label: '有余量时间', width: 132, formula: '当月内首次有余量时间。' },
 ];
 
 const demoNormalRows: FocusRow[] = [
-  { material: '101013732', materialDescription: '3多层板单面贴水曲柳直纹木皮板2440*1220TT', productionType: '静态', category: '板材', staticDate: '2026-08-01', normalAt: '2026-10-12', staticMonths: 2, verifiedTotalRequired: 22, availableStockAtNormal: 18, supplierUnreceivedAtNormal: 0, plannedDemandAtNormal: 18, totalRequiredAtNormal: 0, retention: '81.82%', markChanges: [{ status: '正常', reason: 'SAP库房静态计算', changedAt: '2026-10-12 09:18:32' }, { status: '静态', reason: 'SAP库房静态计算', changedAt: '2026-08-01 08:05:11' }] },
-  { material: '104009061', materialDescription: 'H214#墨韵细木纹PVC浮雕封边带哑光1.2*28mm', productionType: '静态', category: '封边带', staticDate: '2026-07-01', normalAt: '2026-10-09', staticMonths: 3, verifiedTotalRequired: 610, availableStockAtNormal: 570, supplierUnreceivedAtNormal: 20, plannedDemandAtNormal: 590, totalRequiredAtNormal: 0, retention: '93.44%', markChanges: [{ status: '正常', reason: '开发中心产品工艺变更文件发布流程202283', changedAt: '2026-10-09 15:26:08' }, { status: '静态', reason: 'SAP库房静态计算', changedAt: '2026-07-01 08:13:42' }] },
-  { material: '104009061', materialDescription: 'H214#墨韵细木纹PVC浮雕封边带哑光1.2*28mm', productionType: '静态', category: '封边带', staticDate: '2026-07-01', normalAt: '2026-10-07', staticMonths: 3, verifiedTotalRequired: 610, availableStockAtNormal: 558, supplierUnreceivedAtNormal: 40, plannedDemandAtNormal: 598, totalRequiredAtNormal: 0, retention: '91.48%', markChanges: [{ status: '正常', reason: 'BOM回传正常', changedAt: '2026-10-07 10:16:24' }, { status: '静态', reason: 'SAP库房静态计算', changedAt: '2026-07-01 08:13:42' }] },
-  { material: '105099901', materialDescription: '清丰分厂专用装饰件', productionType: '预静态', category: '五金', staticDate: '2026-09-01', normalAt: '2026-10-03', staticMonths: 1, verifiedTotalRequired: 36, availableStockAtNormal: 36, supplierUnreceivedAtNormal: 0, plannedDemandAtNormal: 36, totalRequiredAtNormal: 0, retention: '100.00%', markChanges: [{ status: '正常', reason: 'BOM回传正常', changedAt: '2026-10-03 11:04:51' }, { status: '预静态', reason: 'SAP库房静态计算', changedAt: '2026-09-01 08:00:04' }] },
+  { material: '101013732', materialDescription: '3多层板单面贴水曲柳直纹木皮板2440*1220TT', productionType: '静态', category: '板材', staticDate: '2026-08-01', normalAt: '2026-10-12', staticMonths: 2, verifiedTotalRequired: 22, availableStockAtNormal: 18, supplierUnreceivedAtNormal: 0, plannedDemandAtNormal: 18, totalRequiredAtNormal: 18, retention: '81.82%', markChanges: [{ status: '正常', reason: 'SAP库房静态计算', changedAt: '2026-10-12 09:18:32' }, { status: '静态', reason: 'SAP库房静态计算', changedAt: '2026-08-01 08:05:11' }] },
+  { material: '104009061', materialDescription: 'H214#墨韵细木纹PVC浮雕封边带哑光1.2*28mm', productionType: '静态', category: '封边带', staticDate: '2026-07-01', normalAt: '2026-10-09', staticMonths: 3, verifiedTotalRequired: 610, availableStockAtNormal: 570, supplierUnreceivedAtNormal: 20, plannedDemandAtNormal: 590, totalRequiredAtNormal: 590, retention: '93.44%', markChanges: [{ status: '正常', reason: '开发中心产品工艺变更文件发布流程202283', changedAt: '2026-10-09 15:26:08' }, { status: '静态', reason: 'SAP库房静态计算', changedAt: '2026-07-01 08:13:42' }] },
+  { material: '104009061', materialDescription: 'H214#墨韵细木纹PVC浮雕封边带哑光1.2*28mm', productionType: '静态', category: '封边带', staticDate: '2026-07-01', normalAt: '2026-10-07', staticMonths: 3, verifiedTotalRequired: 610, availableStockAtNormal: 558, supplierUnreceivedAtNormal: 40, plannedDemandAtNormal: 598, totalRequiredAtNormal: 598, retention: '91.48%', markChanges: [{ status: '正常', reason: 'BOM回传正常', changedAt: '2026-10-07 10:16:24' }, { status: '静态', reason: 'SAP库房静态计算', changedAt: '2026-07-01 08:13:42' }] },
+  { material: '105099901', materialDescription: '清丰分厂专用装饰件', productionType: '预静态', category: '五金', staticDate: '2026-09-01', normalAt: '2026-10-03', staticMonths: 1, verifiedTotalRequired: 36, availableStockAtNormal: 36, supplierUnreceivedAtNormal: 0, plannedDemandAtNormal: 36, totalRequiredAtNormal: 36, retention: '100.00%', markChanges: [{ status: '正常', reason: 'BOM回传正常', changedAt: '2026-10-03 11:04:51' }, { status: '预静态', reason: 'SAP库房静态计算', changedAt: '2026-09-01 08:00:04' }] },
 ];
 
 const demoNoStockRows: FocusRow[] = [
