@@ -7,7 +7,7 @@ import FormulaHelp from './FormulaHelp';
 
 export type StaticReportId = 'strategic' | 'special' | 'strategic-special-base' | 'new-static' | 'electromechanical' | 'static-consumption' | 'static-internal-control' | 'warning';
 
-type Column = { key: string; label: string; width?: number; formula?: string; isNew?: boolean };
+type Column = { key: string; label: string; width?: number; formula?: string; isNew?: boolean; isChanged?: boolean };
 type Filter = { key: string; label: string; type?: 'select' | 'date' | 'month'; options?: string[]; placeholder?: string; isNew?: boolean };
 type ChangeRecord = { solution: string; opinion: string; updatedBy: string; updatedAt: string };
 type Row = Record<string, string | number | ChangeRecord[] | undefined> & { changeHistory?: ChangeRecord[] };
@@ -19,6 +19,9 @@ type ReportConfig = { title: string; total: number; columns: Column[]; filters: 
 type NewStaticTab = 'static' | 'electromechanical' | 'low-consumption';
 type NewStaticTabConfig = Omit<ReportConfig, 'title'> & { label: string; templateFields: string[] };
 type ImportMode = 'solution' | 'responsible-unit';
+
+const VERIFIED_TOTAL_REQUIRED_FORMULA = '定性：核定后总应消耗量 = 形成时可用库存 + 形成供应商未交量 - 核定计划需求量\n定量：核定后总应消耗量 = 形成时可用库存 + 形成供应商未交量 - 核定计划需求量 - 安全库存量';
+const REMAINING_TOTAL_REQUIRED_FORMULA = '定性：剩余总应消耗量 = 当前可用库存 + 当前供应商未交量 - 当前计划需求量\n定量：剩余总应消耗量 = 当前可用库存 + 当前供应商未交量 - 当前计划需求量 - 安全库存量';
 
 // Switch off when the new-static report is allowed to update existing plans.
 const NEW_STATIC_EMPTY_SOLUTION_ONLY = true;
@@ -197,7 +200,7 @@ const newStaticStaticColumns: Column[] = [
   {key:'availableStock',label:'形成时可用库存',formula:'提出时可用库存=冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)，新增为静态物料时计算，静态展示'},
   {key:'supplierUnreceived',label:'形成供应商未交量',width:120},
   {key:'plannedDemand',label:'形成计划需求量'},{key:'plannedDemandApproved',label:'核定计划需求量'},
-  {key:'totalRequiredApproved',label:'核定后总应消耗量',formula:'核定后总应消耗量 = 现可用库存 + 当前供应商未交量。'},
+  {key:'totalRequiredApproved',label:'核定后总应消耗量',formula:VERIFIED_TOTAL_REQUIRED_FORMULA,isChanged:true},
   {key:'threeMonthAverageConsumption',label:'近3个月月均消耗量',width:158,isNew:true,formula:'按工厂查询前三个月出库总量后除以 3。'},
   {key:'lastYearInbound',label:'近一年入库量',formula:'按工厂汇总配置的有效移动类型入库数量及采购订单对应的 101 入库数量。'},{key:'lastYearOutbound',label:'近一年出库量',formula:'按工厂汇总配置的有效移动类型出库数量及采购订单对应的 101 入库冲销数量。'},
   {key:'afterSalesOutbound',label:'其中售后出库量',width:142,isNew:true},
@@ -209,7 +212,7 @@ const newStaticElectromechanicalColumns: Column[] = [
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},
   {key:'materialGroup',label:'物料组'},
   {key:'materialGroupName',label:'物料组描述',width:220},{key:'factorySet',label:'工厂编码'},{key:'factoryName',label:'工厂描述',width:180},
-  {key:'unit',label:'单位'},{key:'totalRequired',label:'提报时总应消耗量',formula:'总应消耗量 = 现可用库存 + 当前供应商未交量。'},{key:'staticDate',label:'静态提出日期',width:112},
+  {key:'unit',label:'单位'},{key:'totalRequired',label:'核定后总应消耗量',formula:VERIFIED_TOTAL_REQUIRED_FORMULA,isChanged:true},{key:'staticDate',label:'静态提出日期',width:112},
   {key:'lastYearInbound',label:'近一年入库量',formula:'按工厂汇总配置的有效移动类型入库数量及采购订单对应的 101 入库数量。'},{key:'lastYearOutbound',label:'近一年出库量',formula:'按工厂汇总配置的有效移动类型出库数量及采购订单对应的 101 入库冲销数量。'},{key:'responsibleUnit',label:'责任单位',width:130},
   {key:'staticReason',label:'静态原因',width:130},{key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'solutionDepartment',label:'方案制定部门',width:130},
   {key:'retainedQuantity',label:'留用数量'},{key:'retainedDate',label:'留用时间',width:112},
@@ -231,7 +234,7 @@ const newStaticLowConsumptionColumns: Column[] = [
   {key:'supplierUnreceived',label:'形成供应商未交量'},
   {key:'plannedDemand',label:'形成计划需求量'},
   {key:'plannedDemandApproved',label:'核定计划需求量'},
-  {key:'totalRequiredApproved',label:'核定后总应消耗量'},
+  {key:'totalRequiredApproved',label:'核定后总应消耗量',formula:VERIFIED_TOTAL_REQUIRED_FORMULA,isChanged:true},
   {key:'lastYearInbound',label:'近一年入库量'},
   {key:'lastYearOutbound',label:'近一年出库量'},
   {key:'responsibleUnit',label:'静态责任单位',width:140},
@@ -288,22 +291,22 @@ const newStaticTabs: Record<NewStaticTab, NewStaticTabConfig> = {
 const electromechanicalConsumptionColumns: Column[] = [
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型'},{key:'factoryName',label:'工厂描述',width:180},
   {key:'development',label:'对应开发'},{key:'category',label:'材料类别'},{key:'unitName',label:'单位名称'},
-  {key:'reportedStock',label:'提报时总应消耗量',width:140,formula:'总应消耗量 = 现可用库存 + 当前供应商未交量。'},{key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'totalRequired',label:'当前应消耗总量',formula:'当前应消耗总量 = 现可用库存 + 当前供应商未交量。'},
+  {key:'reportedStock',label:'核定后总应消耗量',width:140,formula:VERIFIED_TOTAL_REQUIRED_FORMULA,isChanged:true},{key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'totalRequired',label:'剩余总应消耗量',formula:REMAINING_TOTAL_REQUIRED_FORMULA,isChanged:true},
   {key:'staticDate',label:'静态提出日期',width:112},{key:'received',label:'是否入库'},
   {key:'receivedQuantity',label:'入库数量'},{key:'responsibleUnit',label:'责任单位',width:130},{key:'staticReason',label:'静态原因',width:130},
   {key:'solution',label:'处理方案类型',width:130},{key:'opinion',label:'处理意见',width:280},{key:'retainedQuantity',label:'留用数量'},
-  {key:'retainedDate',label:'留用时间',width:112},{key:'totalOutbound',label:'总出库量'},{key:'outboundRatio',label:'总出库比例',formula:'总出库比例 = 总出库量 ÷ 提报时总应消耗量 × 100%'},
+  {key:'retainedDate',label:'留用时间',width:112},{key:'totalOutbound',label:'总出库量'},{key:'outboundRatio',label:'总出库比例',formula:'总出库比例 = 总出库量 ÷ 核定后总应消耗量 × 100%',isChanged:true},
 ];
 const staticConsumptionColumns: Column[] = [
   {key:'rowNumber',label:'序号',width:52},
   {key:'material',label:'物料编码',width:112},{key:'materialDescription',label:'物料描述',width:300},{key:'productionType',label:'产生类型',width:88},
   {key:'minimumOrderQuantity',label:'最小起订量',width:100},{key:'safetyStock',label:'安全库存',width:92},
   {key:'category',label:'材料类别',width:88},{key:'unit',label:'单位',width:64},{key:'staticDate',label:'形成静态时间',width:112},
-  {key:'totalRequiredApproved',label:'核定后总应消耗量',width:150,formula:'核定后总应消耗量 = 现可用库存 + 当前供应商未交量。'},
+  {key:'totalRequiredApproved',label:'核定后总应消耗量',width:150,formula:VERIFIED_TOTAL_REQUIRED_FORMULA,isChanged:true},
   {key:'plannedDemand',label:'形成计划需求量',width:120},{key:'plannedDemandApproved',label:'核定计划需求量',width:120},
   {key:'availableStock',label:'现可用库存',width:120,formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},
   {key:'supplierUnreceived',label:'当前供应商未交量',width:120,formula:'采购订单类型（CG01/CG03/CG07/CG08/CG09）的采购订单数量 − 已收货数量。'},{key:'currentPlannedDemand',label:'当前计划需求量',width:120,formula:'当前计划需求量 = 含备料 + 未排产 + 在制需求。'},
-  {key:'totalRequired',label:'剩余应消耗总量',width:140,formula:'剩余应消耗总量 = 现可用库存 + 当前供应商未交量。'},
+  {key:'totalRequired',label:'剩余总应消耗量',width:140,formula:REMAINING_TOTAL_REQUIRED_FORMULA,isChanged:true},
   {key:'factorySet',label:'工厂编码',width:80},{key:'currentStock',label:'各工厂现可用库存',width:150},
   {key:'warehouseSet',label:'库位',width:90,isNew:true},
   {key:'responsibleUnit',label:'静态责任单位',width:140},{key:'staticReason',label:'静态原因',width:140},
@@ -313,7 +316,7 @@ const staticConsumptionColumns: Column[] = [
   {key:'expectedSampleDate',label:'预计打样完成时间',width:140},{key:'expectedDate',label:'预计消耗完成时间',width:140},
   {key:'staticMonths',label:'静态月数',width:100,formula:'静态月数 = 按形成静态时间计算已完成的完整自然月'},
   {key:'receivedQuantity',label:'入库数量',width:80},{key:'totalOutbound',label:'总出库量',width:80},
-  {key:'retention',label:'留存率',width:84,formula:'留存率 = 现可用库存 ÷ 提报时总应消耗量 × 100%'},
+  {key:'retention',label:'留存率',width:84,formula:'留存率=剩余应消耗量/核定后的总应消耗量*100%',isChanged:true},
 ];
 const staticInternalControlColumns: Column[] = [
   {key:'material',label:'物料编码',width:112},
@@ -326,7 +329,7 @@ const staticInternalControlColumns: Column[] = [
   {key:'opinion',label:'处理意见',width:300},
   {key:'solution',label:'处理方案类型',width:130},
   {key:'plannedDemand',label:'当前计划需求量',width:120},
-  {key:'totalRequired',label:'剩余应消耗总量',width:130,formula:'剩余应消耗总量 = 现可用库存 + 当前供应商未交量。'},
+  {key:'totalRequired',label:'剩余总应消耗量',width:130,formula:REMAINING_TOTAL_REQUIRED_FORMULA,isChanged:true},
   {key:'availableStock',label:'当前库存可用量',width:130},
   {key:'expectedDate',label:'预计消耗完成时间',width:140},
 ];
@@ -365,10 +368,10 @@ const trackingPrimaryFilters = new Set(['staticDate', 'factoryName', 'solutionDe
 const warningColumns: Column[] = [
   {key:'factoryName',label:'工厂',width:180},{key:'category',label:'材料类别'},{key:'warehouseName',label:'库存地点',width:220},
   {key:'material',label:'物料编码'},{key:'materialDescription',label:'物料名称',width:280},{key:'development',label:'对应开发'},
-  {key:'totalRequired',label:'提报时总应消耗量',formula:'总应消耗量 = 现可用库存 + 当前供应商未交量。'},{key:'currentStock',label:'现可用库存',formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'unitName',label:'单位'},
+  {key:'totalRequired',label:'核定后总应消耗量',formula:VERIFIED_TOTAL_REQUIRED_FORMULA,isChanged:true},{key:'currentStock',label:'现可用库存',formula:'冻结库存(不可做账库存)+非限制库存(可做账库存)-中转库存(转运库存)'},{key:'unitName',label:'单位'},
   {key:'staticReason',label:'静态原因',width:130},{key:'solution',label:'处理方案类型',width:130},{key:'solutionDepartment',label:'方案制定部门',width:130},{key:'retainedQuantity',label:'留用数量'},
   {key:'retainedDate',label:'留用时间',width:112},{key:'opinion',label:'处理意见',width:280},{key:'totalOutbound',label:'总出库量'},
-  {key:'outboundRatio',label:'出库比例',formula:'出库比例 = 总出库量 ÷ 提报时总应消耗量 × 100%'},{key:'retention',label:'留存率',formula:'留存率 = 现可用库存 ÷ 提报时总应消耗量 × 100%'},{key:'warningLevel',label:'警报级别'},
+  {key:'outboundRatio',label:'出库比例',formula:'出库比例 = 总出库量 ÷ 核定后总应消耗量 × 100%',isChanged:true},{key:'retention',label:'留存率',formula:'留存率=剩余应消耗量/核定后的总应消耗量*100%',isChanged:true},{key:'warningLevel',label:'警报级别'},
   {key:'staticDate',label:'呆滞提出时间',width:120},{key:'staticMonths',label:'静态月数',formula:'静态月数 = 按静态提出日期计算已完成的完整自然月'},
 ];
 const reports: Record<StaticReportId, ReportConfig> = {
@@ -733,7 +736,7 @@ function StandardStaticMaterialReports({ reportId }: { reportId: StaticReportId 
     <section className="static-report-table-panel">
       <div className="static-report-toolbar"><div className="static-report-toolbar-context">{isTrackingReport && <span className="static-tracking-update">数据最后更新时间：<b>2026-10-16 07:00:00</b></span>}{reportId === 'strategic-special-base' && <><span>当前版本</span><b>{selectedVersion}</b><i>全量快照</i></>}</div><div className="static-report-toolbar-actions">{(reportId === 'strategic' || reportId === 'special') && <span className="static-report-data-updated-at"><span>数据更新时间：</span><b>{strategicDataUpdatedAt[reportId]}</b></span>}{reportId === 'strategic-special-base' && <button type="button" className="static-report-version-button" onClick={()=>setVersionDrawerOpen(true)}><History size={14}/>版本记录</button>}{(reportId === 'new-static' || isTrackingReport) && <button type="button" className="static-report-import-button" onClick={()=>{setImportMode('solution');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入处理方案</button>}{reportId === 'new-static' && <button type="button" className="static-report-import-button secondary" onClick={()=>{setImportMode('responsible-unit');setPendingDataDownloaded(false);setImportFile(null);setImportError('');setImportOpen(true)}}><Upload size={14}/>导入责任单位</button>}<button type="button" onClick={downloadReportExport}><Download size={14}/>导出</button></div></div>
       <div className="static-report-table-scroll"><table>
-        <thead><tr>{activeConfig.columns.map(column => <th key={column.key} data-column={column.key} className={column.formula ? 'formula-column' : undefined} style={{ width:column.width, minWidth:column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.isNew && <span className="static-report-new-badge">新增</span>}{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead>
+        <thead><tr>{activeConfig.columns.map(column => <th key={column.key} data-column={column.key} className={column.formula ? 'formula-column' : undefined} style={{ width:column.width, minWidth:column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.isNew && <span className="static-report-new-badge">新增</span>}{column.isChanged && <span className="static-report-new-badge" style={{ backgroundColor:'#2878c8' }}>变更</span>}{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead>
         <tbody>{visibleRows.map((row, index) => <tr key={`${recordKey(row)}-${index}`}>
           {activeConfig.columns.map(column => {
             if (shouldMergeFactoryCell(row, index, column.key)) return null;

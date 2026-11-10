@@ -24,8 +24,10 @@ type FocusRow = {
   firstPositiveAt?: string;
   markChanges: MarkChange[];
 };
-type Column = { key: keyof FocusRow; label: string; width?: number; formula?: string };
+type Column = { key: keyof FocusRow; label: string; width?: number; formula?: string; isChanged?: boolean };
 type Filters = { staticMonth: string; normalStart: string; normalEnd: string; noStockMonth: string; material: string; category: string };
+
+const VERIFIED_TOTAL_REQUIRED_FORMULA = '定性：核定后总应消耗量 = 形成时可用库存 + 形成供应商未交量 - 核定计划需求量\n定量：核定后总应消耗量 = 形成时可用库存 + 形成供应商未交量 - 核定计划需求量 - 安全库存量';
 
 const materialColumns: Column[] = [
   { key: 'material', label: '物料编码', width: 120 },
@@ -39,18 +41,18 @@ const normalColumns: Column[] = [
   { key: 'staticDate', label: '形成静态时间', width: 116 },
   { key: 'normalAt', label: '转为正常时间', width: 128 },
   { key: 'staticMonths', label: '静态月数', width: 100, formula: '按形成静态时间计算已完成的完整自然月。' },
-  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: '核定后总应消耗量 = 现可用库存 + 当前供应商未交量。' },
+  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: VERIFIED_TOTAL_REQUIRED_FORMULA, isChanged: true },
   { key: 'availableStockAtNormal', label: '转为正常时可用库存', width: 160, formula: '转为正常时 IOC 汇总的全部工厂可用库存。' },
   { key: 'supplierUnreceivedAtNormal', label: '转为正常时供应商未交量', width: 178, formula: '转为正常时 IOC 汇总的全部工厂供应商未交量。' },
   { key: 'plannedDemandAtNormal', label: '转为正常时计划需求量', width: 170, formula: '转为正常时 IOC 汇总的全部工厂计划需求量。' },
   { key: 'totalRequiredAtNormal', label: '转为正常时应消耗总量', width: 172, formula: '转为正常时应消耗总量 = 现可用库存 + 当前供应商未交量。' },
-  { key: 'retention', label: '留存率', width: 90 },
+  { key: 'retention', label: '留存率', width: 90, formula: '留存率=剩余应消耗量/核定后的总应消耗量*100%', isChanged: true },
 ];
 
 const noStockColumns: Column[] = [
   ...materialColumns,
   { key: 'staticDate', label: '形成静态时间', width: 116 },
-  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: '核定后总应消耗量 = 现可用库存 + 当前供应商未交量。' },
+  { key: 'verifiedTotalRequired', label: '核定后总应消耗量', width: 145, formula: VERIFIED_TOTAL_REQUIRED_FORMULA, isChanged: true },
   { key: 'noStockDate', label: '无余量日期', width: 116 },
   { key: 'firstPositiveAt', label: '有余量时间', width: 132, formula: '当月内首次有余量时间。' },
 ];
@@ -152,7 +154,7 @@ export default function StaticMaterialTrackingReport({ currentView }: { currentV
       </section>
       <section className="static-report-table-panel" key={tab}>
         <div className="static-report-toolbar"><div className="static-report-toolbar-context"><span>数据更新时间：</span><b>2026-10-14 08:30:00</b></div><div className="static-report-toolbar-actions"><button type="button" onClick={exportRows}><Download size={14}/>导出</button></div></div>
-        <div className="static-report-table-scroll"><table><thead><tr>{columns.map(column => <th key={column.key} style={{ width: column.width, minWidth: column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead><tbody>{visibleRows.map((row, index) => <tr key={`${row.material}-${row.normalAt ?? row.noStockDate}-${index}`}>{columns.map(column => <td key={column.key} className={column.key === 'productionType' ? 'static-focus-type-cell' : ''}>{column.key === 'productionType' ? <button type="button" onClick={() => setHistoryRow(row)}>{dash(row[column.key])}</button> : dash(row[column.key])}</td>)}</tr>)}{!visibleRows.length && <tr><td className="static-report-empty" colSpan={columns.length}>暂无匹配记录</td></tr>}</tbody></table></div>
+        <div className="static-report-table-scroll"><table><thead><tr>{columns.map(column => <th key={column.key} style={{ width: column.width, minWidth: column.width }}><span className="static-report-formula-header"><span className="static-report-formula-label">{column.label}</span>{column.isChanged && <span className="static-report-new-badge" style={{ backgroundColor:'#2878c8' }}>变更</span>}{column.formula && <FormulaHelp label={column.label} formula={column.formula}/>}</span></th>)}</tr></thead><tbody>{visibleRows.map((row, index) => <tr key={`${row.material}-${row.normalAt ?? row.noStockDate}-${index}`}>{columns.map(column => <td key={column.key} className={column.key === 'productionType' ? 'static-focus-type-cell' : ''}>{column.key === 'productionType' ? <button type="button" onClick={() => setHistoryRow(row)}>{dash(row[column.key])}</button> : dash(row[column.key])}</td>)}</tr>)}{!visibleRows.length && <tr><td className="static-report-empty" colSpan={columns.length}>暂无匹配记录</td></tr>}</tbody></table></div>
         <footer className="static-report-pagination"><span>共 {total} 条记录</span><div><select value={pageSize} onChange={event => { setPageSize(Number(event.target.value)); setPage(1); }}><option value="20">20 条/页</option><option value="50">50 条/页</option><option value="100">100 条/页</option></select><button type="button" aria-label="上一页" disabled={page === 1} onClick={() => setPage(value => Math.max(1, value - 1))}><ChevronLeft size={14}/></button>{Array.from({ length: Math.min(pageCount, 5) }, (_, index) => index + 1).map(value => <button type="button" key={value} className={page === value ? 'current' : ''} onClick={() => setPage(value)}>{value}</button>)}{pageCount > 5 && <><span>...</span><button type="button" className={page === pageCount ? 'current' : ''} onClick={() => setPage(pageCount)}>{pageCount}</button></>}<button type="button" aria-label="下一页" disabled={page === pageCount} onClick={() => setPage(value => Math.min(pageCount, value + 1))}><ChevronRight size={14}/></button><span>第 {page} / {pageCount} 页</span></div></footer>
       </section>
       {historyRow && <StaticMarkHistory row={historyRow} onClose={() => setHistoryRow(null)}/>}

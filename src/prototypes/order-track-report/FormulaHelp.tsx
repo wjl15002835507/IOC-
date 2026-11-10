@@ -75,7 +75,12 @@ export default function FormulaHelp({ label, formula, variant = 'report' }: Form
         role="tooltip"
         style={{ left: position.left, top: position.top }}
       >
-        {formula}
+        {formula.split('\n').map((line, index) => (
+          <React.Fragment key={`${index}-${line}`}>
+            {index > 0 && <br />}
+            {line}
+          </React.Fragment>
+        ))}
       </span>,
       document.body,
     )}
