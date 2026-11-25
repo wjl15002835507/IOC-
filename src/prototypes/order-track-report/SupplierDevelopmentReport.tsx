@@ -7,6 +7,26 @@ type Supplier = { code: string; name: string; introducedAt: string; officialAt: 
 type ReportFilters = { supplier: string; introducedFrom: string; introducedTo: string; orderFrom: string; orderTo: string };
 type ReportRow = { supplier: Supplier; materialCode: string; material: string; unit: string; orderCount: number; quantity: number };
 
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getRecentThreeMonths() {
+  const today = new Date();
+  const end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const monthStart = new Date(end.getFullYear(), end.getMonth() - 3, 1);
+  monthStart.setDate(Math.min(end.getDate(), new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate()));
+  return { from: toDateInputValue(monthStart), to: toDateInputValue(end) };
+}
+
+function createInitialFilters(): ReportFilters {
+  const recentRange = getRecentThreeMonths();
+  return { supplier: '', introducedFrom: recentRange.from, introducedTo: recentRange.to, orderFrom: '', orderTo: '' };
+}
+
 const sampleSuppliers: Supplier[] = [
   { code: 'V208641', name: '苏州精工五金有限公司', introducedAt: '2026-09-08', officialAt: '2026-09-18', orders: [
     { number: 'PO-261018-042', materialCode: 'M-100284', material: '缓冲铰链 110°', unit: '只', quantity: 1200, date: '2026-10-18' },
@@ -35,7 +55,7 @@ const sampleSuppliers: Supplier[] = [
   ] },
 ];
 
-const initialFilters: ReportFilters = { supplier: '', introducedFrom: '2026-08-24', introducedTo: '2026-11-24', orderFrom: '2026-08-24', orderTo: '2026-11-24' };
+const initialFilters = createInitialFilters();
 const milestones = ['业务需求', '采购开发', '核价完成', '正式供应商'];
 const within = (value: string, from: string, to: string) => value >= from && value <= to;
 
@@ -44,7 +64,7 @@ function getRows(filters: ReportFilters): ReportRow[] {
     if (!supplier.name.includes(filters.supplier) && !supplier.code.includes(filters.supplier)) return [];
     if (!within(supplier.introducedAt, filters.introducedFrom, filters.introducedTo)) return [];
     const byMaterial = new Map<string, ReportRow>();
-    supplier.orders.filter(order => order.date >= supplier.officialAt && within(order.date, filters.orderFrom, filters.orderTo)).forEach(order => {
+    supplier.orders.filter(order => order.date >= supplier.officialAt && (!filters.orderFrom || order.date >= filters.orderFrom) && (!filters.orderTo || order.date <= filters.orderTo)).forEach(order => {
       const key = `${order.materialCode}-${order.unit}`;
       const row = byMaterial.get(key) || { supplier, materialCode: order.materialCode, material: order.material, unit: order.unit, orderCount: 0, quantity: 0 };
       row.orderCount += 1;

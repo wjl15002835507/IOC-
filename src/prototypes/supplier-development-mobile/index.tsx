@@ -2,14 +2,14 @@
  * @name 新供应商开发进度跟踪（移动端）
  */
 import React, { useMemo, useState } from 'react';
-import { ChevronDown, Filter, RotateCcw, Search, X } from 'lucide-react';
+import { BellOff, ChevronDown, Filter, RotateCcw, Search, Signal, Wifi, X } from 'lucide-react';
 import './style.css';
 
 type OrderLine = { po: string; materialCode: string; material: string; unit: string; quantity: number; date: string };
 type Supplier = { code: string; name: string; introducedAt: string; officialAt: string; orders: OrderLine[] };
-type DatePreset = '近1个月' | '近3个月' | '近6个月' | '近1年' | '自定义';
+type DatePreset = '不限' | '近1个月' | '近3个月' | '近6个月' | '近1年' | '自定义';
 type Filters = { supplier: string; introducedPreset: DatePreset; introducedFrom: string; introducedTo: string; orderPreset: DatePreset; orderFrom: string; orderTo: string };
-type ActiveFilterDropdown = 'supplier' | 'introduced' | 'order' | null;
+type ActiveFilterDropdown = 'introduced' | 'order' | null;
 
 const suppliers: Supplier[] = [
   { code: 'V208641', name: '苏州精工五金有限公司', introducedAt: '2026-09-08', officialAt: '2026-09-18', orders: [
@@ -39,7 +39,7 @@ const suppliers: Supplier[] = [
   ] },
 ];
 
-const datePresets: DatePreset[] = ['近1个月', '近3个月', '近6个月', '近1年', '自定义'];
+const datePresets: DatePreset[] = ['不限', '近1个月', '近3个月', '近6个月', '近1年', '自定义'];
 const presetMonths: Partial<Record<DatePreset, number>> = { '近1个月': 1, '近3个月': 3, '近6个月': 6, '近1年': 12 };
 
 function toDateInputValue(date: Date) {
@@ -60,7 +60,7 @@ function getRangeForPreset(preset: Exclude<DatePreset, '自定义'>, today = new
 
 function createInitialFilters(): Filters {
   const recentRange = getRangeForPreset('近3个月');
-  return { supplier: '', introducedPreset: '近3个月', introducedFrom: recentRange.from, introducedTo: recentRange.to, orderPreset: '近3个月', orderFrom: recentRange.from, orderTo: recentRange.to };
+  return { supplier: '', introducedPreset: '近3个月', introducedFrom: recentRange.from, introducedTo: recentRange.to, orderPreset: '不限', orderFrom: '', orderTo: '' };
 }
 
 const initialFilters = createInitialFilters();
@@ -69,7 +69,7 @@ const stages = ['业务需求', '采购开发', '核价完成', '正式供应商
 function SupplierCard({ supplier, filters }: { supplier: Supplier; filters: Filters }) {
   const materialRows = useMemo(() => {
     const grouped = new Map<string, { code: string; name: string; unit: string; count: number; quantity: number }>();
-    supplier.orders.filter(order => order.date >= supplier.officialAt && order.date >= filters.orderFrom && order.date <= filters.orderTo).forEach(order => {
+    supplier.orders.filter(order => order.date >= supplier.officialAt && (!filters.orderFrom || order.date >= filters.orderFrom) && (!filters.orderTo || order.date <= filters.orderTo)).forEach(order => {
       const key = `${order.materialCode}-${order.unit}`;
       const row = grouped.get(key) || { code: order.materialCode, name: order.material, unit: order.unit, count: 0, quantity: 0 };
       row.count += 1;
@@ -85,9 +85,10 @@ function SupplierCard({ supplier, filters }: { supplier: Supplier; filters: Filt
     <div className="mobile-intro-date"><span>引进日期</span><b>{supplier.introducedAt}</b><i>示例</i></div>
     <div className="mobile-stage-list">{stages.map((stage, index) => <div className={`mobile-stage ${index === 3 ? 'pending' : ''}`} key={stage}><span className="mobile-stage-node"/><b>{stage}</b><small>{index < 3 ? '数据待补' : '日期待确认'}</small></div>)}</div>
     <div className="mobile-material-heading"><strong>物料下单</strong><span>{materialRows.length} 种物料</span></div>
+    <div className="mobile-material-columns"><span>物料名称</span><span>订单次数</span><span>下单数量</span></div>
     <div className="mobile-material-list">{materialRows.map(row => <div className="mobile-material-row" key={row.code}>
       <div className="mobile-material-name"><b>{row.name}</b><small>{row.code}</small></div>
-      <div className="mobile-material-metrics"><span><small>订单次数</small><b>{row.count}</b></span><span><small>下单数量</small><b>{row.quantity.toLocaleString()} <i>{row.unit}</i></b></span></div>
+      <div className="mobile-material-metrics"><span><b>{row.count}</b></span><span><b>{row.quantity.toLocaleString()} <i>{row.unit}</i></b></span></div>
     </div>)}</div>
   </article>;
 }
@@ -97,48 +98,54 @@ export default function SupplierDevelopmentMobile() {
   const [applied, setApplied] = useState<Filters>(initialFilters);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<ActiveFilterDropdown>(null);
+  const [supplierQuery, setSupplierQuery] = useState(initialFilters.supplier);
   const visibleSuppliers = suppliers.filter(supplier => (supplier.name.includes(applied.supplier) || supplier.code.includes(applied.supplier)) && supplier.introducedAt >= applied.introducedFrom && supplier.introducedAt <= applied.introducedTo && supplier.orders.some(order => order.date >= supplier.officialAt && order.date >= applied.orderFrom && order.date <= applied.orderTo));
+  const introducedFilterActive = Boolean(applied.introducedFrom && applied.introducedTo);
+  const orderFilterActive = Boolean(applied.orderFrom || applied.orderTo);
+  const hasActiveFilter = Boolean(applied.supplier.trim()) || introducedFilterActive || orderFilterActive;
   const update = (key: keyof Filters, value: string) => setFilters(current => ({ ...current, [key]: value }));
   const setDatePreset = (presetKey: 'introducedPreset' | 'orderPreset', fromKey: 'introducedFrom' | 'orderFrom', toKey: 'introducedTo' | 'orderTo', value: DatePreset) => {
     setFilters(current => {
       if (value === '自定义') return { ...current, [presetKey]: value };
+      if (value === '不限') return { ...current, [presetKey]: value, [fromKey]: '', [toKey]: '' };
       const range = getRangeForPreset(value);
       return { ...current, [presetKey]: value, [fromKey]: range.from, [toKey]: range.to };
     });
   };
-  const openFilters = () => { setFilters(applied); setFiltersOpen(true); };
+  const openFilters = () => { setActiveDropdown(null); setFilters(applied); setSupplierQuery(applied.supplier); setFiltersOpen(true); };
   const closeFilters = () => { setFilters(applied); setFiltersOpen(false); };
   const resetFilters = () => setFilters(createInitialFilters());
-  const applyFilters = () => { setApplied(filters); setFiltersOpen(false); };
+  const applyFilters = () => { setApplied(filters); setSupplierQuery(filters.supplier); setFiltersOpen(false); };
   const applyDropdown = () => { setApplied(filters); setActiveDropdown(null); };
-  const resetSupplierFilter = () => {
-    setFilters(current => ({ ...current, supplier: '' }));
-    setApplied(current => ({ ...current, supplier: '' }));
+  const searchSupplier = () => {
+    setFilters(current => ({ ...current, supplier: supplierQuery }));
+    setApplied(current => ({ ...current, supplier: supplierQuery }));
   };
 
   return <main className="mobile-report-app">
+    <div className="mobile-device-status" aria-label="设备状态栏"><span>19:31 <BellOff size={13}/></span><span><Signal size={15}/><Wifi size={16}/><b>98</b></span></div>
     <div className="mobile-top-accent" />
     <div className="mobile-screen-frame"><section className="mobile-screen-panel">
       <h1 className="mobile-report-title">新供应商开发进度跟踪</h1>
-      <div className="mobile-filter-toolbar">
-        <div className="mobile-filter-shortcuts">
-          <button type="button" aria-expanded={activeDropdown === 'supplier'} onClick={() => { setFilters(applied); setActiveDropdown(current => current === 'supplier' ? null : 'supplier'); }}>供应商<ChevronDown size={12}/></button>
-          <button type="button" aria-expanded={activeDropdown === 'introduced'} onClick={() => { setFilters(applied); setActiveDropdown(current => current === 'introduced' ? null : 'introduced'); }}>引进时间<ChevronDown size={12}/></button>
-          <button type="button" aria-expanded={activeDropdown === 'order'} onClick={() => { setFilters(applied); setActiveDropdown(current => current === 'order' ? null : 'order'); }}>下单时间<ChevronDown size={12}/></button>
+      <section className="mobile-filter-section" aria-label="筛选条件">
+        <div className="mobile-filter-row">
+          <div className="mobile-filter-controls">
+            <div className={`mobile-supplier-search ${applied.supplier.trim() ? 'selected' : ''}`}>
+              <input className="mobile-supplier-inline-search" aria-label="按供应商名称模糊搜索" value={supplierQuery} placeholder="供应商名称" onChange={event => setSupplierQuery(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') searchSupplier(); }} />
+              <button type="button" className="mobile-supplier-search-button" aria-label="搜索供应商" onClick={searchSupplier}><Search size={14}/></button>
+            </div>
+          <button type="button" className={`mobile-time-shortcut ${introducedFilterActive ? 'selected' : ''}`} aria-pressed={introducedFilterActive} aria-expanded={activeDropdown === 'introduced'} onClick={() => { setFilters(applied); setActiveDropdown(current => current === 'introduced' ? null : 'introduced'); }}>引进时间<ChevronDown size={11}/></button>
+          <button type="button" className={`mobile-time-shortcut ${orderFilterActive ? 'selected' : ''}`} aria-pressed={orderFilterActive} aria-expanded={activeDropdown === 'order'} onClick={() => { setFilters(applied); setActiveDropdown(current => current === 'order' ? null : 'order'); }}>下单时间<ChevronDown size={11}/></button>
+          </div>
+          <button type="button" className={`mobile-filter-button ${hasActiveFilter ? 'selected' : ''}`} aria-label="更多筛选条件" onClick={openFilters}><Filter size={17}/></button>
         </div>
-        <button type="button" className="mobile-filter-button" aria-label="筛选条件" onClick={openFilters}><Filter size={19}/></button>
         {activeDropdown && <div className="mobile-filter-dropdown">
-          {activeDropdown === 'supplier' ? <>
-            <label className="mobile-dropdown-supplier"><span>供应商名称</span><input autoFocus value={filters.supplier} placeholder="输入名称，支持模糊搜索" onChange={event => update('supplier', event.target.value)} onKeyDown={event => { if (event.key === 'Enter') applyDropdown(); }} /></label>
-            <div className="mobile-dropdown-actions"><button type="button" onClick={resetSupplierFilter}>重置</button><button type="button" className="confirm" onClick={applyDropdown}>确认</button></div>
-          </> : <>
-            <div className="mobile-dropdown-presets">{datePresets.map(preset => <button type="button" key={preset} className={filters[activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset'] === preset ? 'selected' : ''} onClick={() => setDatePreset(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom', activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo', preset)}>{preset}</button>)}</div>
-            <div className="mobile-dialog-date-range"><input aria-label={activeDropdown === 'introduced' ? '引进开始日期' : '下单开始日期'} type="date" value={filters[activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom']} onChange={event => { update(activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom', event.target.value); update(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', '自定义'); }} /><b>至</b><input aria-label={activeDropdown === 'introduced' ? '引进结束日期' : '下单结束日期'} type="date" value={filters[activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo']} onChange={event => { update(activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo', event.target.value); update(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', '自定义'); }} /></div>
-            <div className="mobile-dropdown-actions"><button type="button" onClick={() => setDatePreset(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom', activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo', '近3个月')}>重置</button><button type="button" className="confirm" onClick={applyDropdown}>确认</button></div>
-          </>}
+          <div className="mobile-dropdown-presets">{datePresets.map(preset => <button type="button" key={preset} className={filters[activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset'] === preset ? 'selected' : ''} onClick={() => setDatePreset(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom', activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo', preset)}>{preset}</button>)}</div>
+          <div className="mobile-dialog-date-range"><input aria-label={activeDropdown === 'introduced' ? '引进开始日期' : '下单开始日期'} type="date" value={filters[activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom']} onChange={event => { update(activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom', event.target.value); update(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', '自定义'); }} /><b>至</b><input aria-label={activeDropdown === 'introduced' ? '引进结束日期' : '下单结束日期'} type="date" value={filters[activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo']} onChange={event => { update(activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo', event.target.value); update(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', '自定义'); }} /></div>
+          <div className="mobile-dropdown-actions"><button type="button" onClick={() => setDatePreset(activeDropdown === 'introduced' ? 'introducedPreset' : 'orderPreset', activeDropdown === 'introduced' ? 'introducedFrom' : 'orderFrom', activeDropdown === 'introduced' ? 'introducedTo' : 'orderTo', activeDropdown === 'introduced' ? '近3个月' : '不限')}>重置</button><button type="button" className="confirm" onClick={applyDropdown}>确认</button></div>
         </div>}
-      </div>
-      <section className="mobile-supplier-list">{visibleSuppliers.map(supplier => <SupplierCard key={supplier.code} supplier={supplier} filters={applied} />)}{visibleSuppliers.length === 0 && <div className="mobile-empty">没有符合条件的记录</div>}</section>
+      </section>
+      <section className="mobile-supplier-list" aria-label="供应商下单情况">{visibleSuppliers.map(supplier => <SupplierCard key={supplier.code} supplier={supplier} filters={applied} />)}{visibleSuppliers.length === 0 && <div className="mobile-empty">没有符合条件的记录</div>}</section>
       <footer className="mobile-bottom-note">示例数据 · 仅统计正式下单及正式供应商日期之后的订单</footer>
     </section></div>
     {filtersOpen && <div className="mobile-filter-scrim" onClick={closeFilters}>
